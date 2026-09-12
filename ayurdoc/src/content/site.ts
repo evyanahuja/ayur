@@ -38,7 +38,7 @@ export const SITE = {
   googleMapsUrl: "https://maps.app.goo.gl/vhRYqg63chcGXLrr6", // optional: paste your Google Maps link
 
   // 🕐 Timings & languages
-  hours: "Mon–Sat • 10:00 AM–2:00 PM & 5:00 PM–8:00 PM IST",
+  hours: "Mon–Sat • 10 AM–2 PM & 5 PM–8 PM IST",
   hoursNote: "Evening + NRI-friendly online slots",
   languages: "Hindi • Marathi • English • Gujarati",
 
