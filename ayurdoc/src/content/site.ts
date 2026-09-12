@@ -18,35 +18,35 @@ import {
 export const SITE = {
   doctorName: "Dr. Priyanka Likhar",
   qualification: "BAMS • MD Kaumarbhritya (Balarog)",
-  shortCreds: "MD Kaumarbhritya • Balarog",
+  shortCreds: "MD Kaumarbhritya • BAMS",
   clinicName: "BalChikitsa Ayurved Clinic",
 
   // 📞 Phone — displayed on site
-  phoneDisplay: "+91 90000 00000",
+  phoneDisplay: "+91 98607 75010",
   // Used for click-to-call links (no spaces, with country code)
-  phoneHref: "+919000000000",
+  phoneHref: "+919860775010",
   // WhatsApp number (country code, NO plus sign, NO spaces)
-  whatsapp: "919000000000",
+  whatsapp: "919860775010",
   whatsappMessage: "Namaste Doctor, I want to consult for my child.",
 
   // ✉️ Public email shown on the website
-  email: "care@drpriyankalikhar.in",
+  email: "priyankalikhar333@gmail.com",
 
   // 📍 Address
   addressShort: "BalChikitsa Ayurved Clinic + Online worldwide",
-  addressFull: "Full address shared on booking",
-  googleMapsUrl: "", // optional: paste your Google Maps link
+  addressFull: "Sanchar Nagar Extension, Kanadia Road, Indore M.P. 452016",
+  googleMapsUrl: "https://maps.app.goo.gl/vhRYqg63chcGXLrr6", // optional: paste your Google Maps link
 
   // 🕐 Timings & languages
   hours: "Mon–Sat • 10–2 & 5–8 IST",
   hoursNote: "Evening + NRI-friendly online slots",
-  languages: "Hindi • Marathi • English",
+  languages: "Hindi • Marathi • English • Gujarati",
 
   // 🌐 Your live domain (used for SEO / social sharing)
-  siteUrl: "https://drpriyankalikhar.in",
+  siteUrl: "https://ayurveddoctor.netlify.app/",
 
   // Social links (leave "" to hide)
-  instagram: "",
+  instagram: "www.instagram.com/ayurvedoctor",
   facebook: "",
   youtube: "",
 };
@@ -55,12 +55,12 @@ export const SITE = {
  * 2) HEADLINE NUMBERS / SOCIAL PROOF  👈 update with your real figures
  * -------------------------------------------------------------------------- */
 export const STATS = {
-  patientsTreated: 5000,       // "5,000+ children guided"
-  yearsExperience: 10,         // "10+ years"
+  patientsTreated: 500,       // "500+ children guided"
+  yearsExperience: 5,         // "5+ years"
   improvementPercent: 92,      // "92% parents report improvement"
   citiesServed: 40,            // "40+ cities online"
   rating: 4.9,                 // star rating shown in hero & footer
-  reviewCount: 800,            // "800+ parent reviews"
+  reviewCount: 100,            // "100+ parent reviews"
   suvarnaprashanKids: 500,     // used in therapy copy
 };
 
@@ -96,8 +96,8 @@ export const STAT_BAND = [
  * ========================================================================== */
 export const IMAGES = {
   // — Your photos (already in public/images/) ——————————————————————
-  doctorPortrait: "/images/doctor-portrait.jpg", // big hero photo of the doctor
-  clinicCare: "/images/clinic-care.jpg",         // consultation photo in "Meet the Doctor"
+  doctorPortrait: "/images/doctor.png", // big hero photo of the doctor
+  clinicCare: "/images/clinic-care.png",         // consultation photo in "Meet the Doctor"
 
   // — Therapy showcase photos ————————————————————————————————
   therapySuvarnaprashan: "https://images.pexels.com/photos/7526061/pexels-photo-7526061.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
