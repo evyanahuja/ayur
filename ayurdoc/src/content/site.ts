@@ -301,8 +301,8 @@ export const TESTIMONIALS = [
     tag: "Skin Diseases",
   },
   {
-    name: "Farah Sheikh",
-    role: "Mother of Zayan, 5 • Asthma-type Wheeze",
+    name: "Jigyasa Patidar",
+    role: "Mother of Lavika, 5 • Asthma-type Wheeze",
     img: IMAGES.parent3,
     text: "Every month meant nebulizer and sleepless nights. After Suvarnaprashan + immunity plan, this entire winter passed with just one mild cold. I cried with relief. Worth every rupee.",
     stars: 5,
@@ -325,7 +325,7 @@ export const TESTIMONIALS = [
     tag: "Behaviour & Focus",
   },
   {
-    name: "NRI Parent • Dubai",
+    name: "NRI Parent • Sri Lanka",
     role: "Mother of Kiaan, 3 • Recurrent Cold & Allergy",
     img: IMAGES.parent6,
     text: "Online consults felt as warm as in-person. Medicines couriered easily, WhatsApp follow-ups in our timezone. Kiaan's dust allergy and monthly fevers are finally under control after 1 year of struggle.",
@@ -355,8 +355,8 @@ export const PLANS = [
     id: "first",
     name: "First Consultation",
     hindi: "Pehli Mulakat",
-    price: "₹1,100",
-    strike: "₹1,500",
+    price: "₹400",
+    strike: "₹500",
     period: "45-minute deep dive",
     desc: "Complete Prakruti & root-cause assessment + starter plan for one child.",
     features: [
@@ -374,7 +374,7 @@ export const PLANS = [
     id: "wellness",
     name: "Bal Wellness Program",
     hindi: "3-Month Transformation",
-    price: "₹5,999",
+    price: "₹4,999",
     strike: "₹8,500",
     period: "Most chosen • 3 months",
     desc: "For skin, growth, immunity & developmental concerns needing steady hand-holding.",
@@ -394,8 +394,8 @@ export const PLANS = [
     id: "followup",
     name: "Follow-up Care",
     hindi: "Review & Refine",
-    price: "₹600",
-    strike: "₹800",
+    price: "₹300",
+    strike: "₹400",
     period: "20-minute review",
     desc: "For existing patients: dose tuning, progress review & next-phase planning.",
     features: [
@@ -464,9 +464,9 @@ export const CONCERNS = [
 ];
 
 export const PLAN_OPTIONS: Record<string, string> = {
-  first: "First Consultation — ₹1,100",
-  wellness: "Bal Wellness Program (3 months) — ₹5,999",
-  followup: "Follow-up Care — ₹600",
+  first: "First Consultation — ₹400",
+  wellness: "Bal Wellness Program (3 months) — ₹4,999",
+  followup: "Follow-up Care — ₹300",
   suvarna: "Suvarnaprashan Only",
   unsure: "Not sure — need guidance",
 };
