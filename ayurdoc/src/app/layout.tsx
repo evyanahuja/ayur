@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
-import { Fraunces, Inter } from "next/font/google";
+import { Fraunces, Inter, Noto_Sans_Devanagari, Noto_Sans_Gujarati } from "next/font/google";
 import "./globals.css";
 import { SITE, STATS, IMAGES } from "@/content/site";
+import { SkipLink } from "@/components/SkipLink";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -19,6 +20,20 @@ const inter = Inter({
   weight: ["400", "500", "600", "700"],
 });
 
+const notoDevanagari = Noto_Sans_Devanagari({
+  subsets: ["devanagari", "latin"],
+  variable: "--font-devanagari",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
+const notoGujarati = Noto_Sans_Gujarati({
+  subsets: ["gujarati", "latin"],
+  variable: "--font-gujarati",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -28,8 +43,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.siteUrl),
   title: `${SITE.doctorName} | MD Kaumarbhritya — Ayurvedic Child Health Specialist`,
-  description:
-    `Gentle, root-cause Ayurvedic care for children by ${SITE.doctorName} (MD Kaumarbhritya – Balarog). Exceptional results in skin diseases, neurodevelopmental concerns, growth, respiratory issues, allergies & lifestyle disorders. Book online or in-clinic.`,
+  description: `Gentle, root-cause Ayurvedic care for children by ${SITE.doctorName} (MD Kaumarbhritya – Balarog). Exceptional results in skin diseases, neurodevelopmental concerns, growth, respiratory issues, allergies & lifestyle disorders. Book online or in-clinic. Available in English, Hindi, Marathi & Gujarati.`,
   keywords: [
     "ayurvedic doctor for kids",
     "child health specialist ayurveda",
@@ -40,6 +54,9 @@ export const metadata: Metadata = {
     "child skin ayurveda",
     "ADHD ayurveda",
     "child growth ayurveda",
+    "बाल आयुर्वेद",
+    "बालरोग आयुर्वेद",
+    "બાળ આયુર્વેદ",
   ],
   authors: [{ name: SITE.doctorName }],
   openGraph: {
@@ -47,6 +64,7 @@ export const metadata: Metadata = {
     description: `MD Kaumarbhritya (Balarog) specialist helping ${STATS.patientsTreated.toLocaleString("en-IN")}+ children heal from skin, growth, respiratory, allergy & neurodevelopmental concerns — naturally.`,
     type: "website",
     locale: "en_IN",
+    alternateLocale: ["hi_IN", "mr_IN", "gu_IN"],
     images: [{ url: IMAGES.doctorPortrait, width: 1200, height: 1200, alt: SITE.doctorName }],
   },
   twitter: {
@@ -59,14 +77,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${inter.variable}`}>
+    <html lang="en" className={`${fraunces.variable} ${inter.variable} ${notoDevanagari.variable} ${notoGujarati.variable}`}>
       <body className="bg-[#fffdf8] text-slate-900 antialiased min-h-screen">
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:bg-forest-900 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg"
-        >
-          Skip to content
-        </a>
+        <SkipLink />
         {children}
         <script
           type="application/ld+json"

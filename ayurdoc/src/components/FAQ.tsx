@@ -3,28 +3,37 @@
 import { useState } from "react";
 import { Plus, MessageCircleQuestionMark, PhoneCall } from "lucide-react";
 import { Reveal } from "./Reveal";
+import { SectionMandalas } from "./ScrollMandala";
 import { cn } from "@/lib/cn";
-import { FAQS } from "@/content/site";
-
-
+import { SITE, STATS } from "@/content/site";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export function FAQ() {
+  const { t } = useLanguage();
   const [open, setOpen] = useState<number | null>(0);
+  const items = t.faq.items.map((f) => ({
+    q: f.q,
+    a: f.a
+      .replace("{cities}", String(STATS.citiesServed))
+      .replace("{hours}", t.site.hours)
+      .replace("{languages}", t.site.languages),
+  }));
 
   return (
-    <section id="faq" className="relative py-20 sm:py-32 scroll-mt-24">
+    <section id="faq" className="mandala-section relative py-12 sm:py-16 scroll-mt-24">
+      <SectionMandalas id="faq" palette="peacock" side="left" />
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
         <Reveal className="text-center">
           <p className="inline-flex items-center gap-2 rounded-full bg-forest-900 text-cream-100 text-[11px] font-semibold tracking-[0.24em] uppercase px-4 py-2">
-            <MessageCircleQuestionMark className="w-3.5 h-3.5 text-saffron-400" /> Parents ask me this daily
+            <MessageCircleQuestionMark className="w-3.5 h-3.5 text-saffron-400" /> {t.faq.eyebrow}
           </p>
           <h2 className="mt-6 font-display font-light text-[clamp(2.1rem,4.6vw,3.4rem)] leading-[1.02] text-forest-950">
-            Everything you&apos;re wondering, <span className="italic text-gradient-gold">answered honestly.</span>
+            {t.faq.headingPre} <span className="italic text-gradient-gold">{t.faq.headingHighlight}</span>
           </h2>
         </Reveal>
 
-        <div className="mt-10 space-y-3">
-          {FAQS.map((f, i) => {
+        <div className="mt-8 space-y-3">
+          {items.map((f, i) => {
             const isOpen = open === i;
             return (
               <Reveal key={f.q} delay={Math.min(i * 60, 300)} variant="up">
@@ -71,11 +80,10 @@ export function FAQ() {
               <PhoneCall className="w-6 h-6" />
             </span>
             <p className="flex-1 text-white text-[14.5px] leading-relaxed">
-              <strong>Still unsure if Ayurveda fits your child&apos;s case?</strong> Describe it in the form — I personally review
-              every enquiry and will honestly tell you if I can help.
+              <strong>{t.faq.ctaTitle}</strong> {t.faq.ctaDesc}
             </p>
             <a href="#book" className="btn-shine shrink-0 rounded-full bg-gradient-to-r from-saffron-300 to-saffron-500 text-forest-950 font-medium tracking-wide text-[14px] px-7 py-3.5 hover:brightness-110 transition-all duration-500">
-              Ask Dr. Priyanka
+              {t.faq.ctaBtn}
             </a>
           </div>
         </Reveal>

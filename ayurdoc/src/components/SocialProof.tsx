@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Reveal } from "./Reveal";
-import { CONDITIONS, STAT_BAND, STATS } from "@/content/site";
+import { SectionMandalas } from "./ScrollMandala";
+import { CONDITIONS, STATS } from "@/content/site";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 function Counter({ target, suffix = "", duration = 1600 }: { target: number; suffix?: string; duration?: number }) {
   const [val, setVal] = useState(0);
@@ -48,18 +50,26 @@ function Counter({ target, suffix = "", duration = 1600 }: { target: number; suf
 }
 
 export function SocialProof() {
-  const doubled = [...CONDITIONS, ...CONDITIONS];
+  const { t } = useLanguage();
+  const localized = CONDITIONS.map((c, i) => ({ icon: c.icon, label: t.socialProof.conditions[i] ?? c.label }));
+  const doubled = [...localized, ...localized];
+  const band = [
+    { v: STATS.patientsTreated, suffix: "+", ...t.socialProof.stats[0] },
+    { v: STATS.yearsExperience, suffix: "+", ...t.socialProof.stats[1] },
+    { v: STATS.improvementPercent, suffix: "%", ...t.socialProof.stats[2] },
+    { v: STATS.citiesServed, suffix: "+", ...t.socialProof.stats[3] },
+  ];
 
   return (
-    <section aria-label="Conditions treated and results" className="relative py-10 sm:py-14">
+    <section id="proof" aria-label={t.socialProof.aria} className="mandala-section relative py-10 sm:py-14">
+      <SectionMandalas id="proof" palette="marigold" side="right" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <Reveal>
           <p className="text-center text-[10.5px] sm:text-[11px] font-semibold tracking-[0.28em] uppercase text-saffron-700/80">
-            Trusted by {STATS.patientsTreated.toLocaleString("en-IN")}+ parents • Exceptional success in
+            {t.socialProof.trustedByPre} {STATS.patientsTreated.toLocaleString("en-IN")}+ {t.socialProof.trustedByMid}
           </p>
         </Reveal>
 
-        {/* Marquee */}
         <Reveal delay={120} variant="scale" className="mt-6 relative">
           <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-28 bg-gradient-to-r from-[#fffdf8] to-transparent z-10 pointer-events-none" />
           <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-28 bg-gradient-to-l from-[#fffdf8] to-transparent z-10 pointer-events-none" />
@@ -81,7 +91,6 @@ export function SocialProof() {
           </div>
         </Reveal>
 
-        {/* Stats band */}
         <Reveal delay={150} className="mt-8">
           <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-b from-forest-900 to-forest-950 gold-hairline text-cream-50 shadow-luxe-lg">
             <div className="absolute inset-0 opacity-[0.14]" aria-hidden>
@@ -90,7 +99,7 @@ export function SocialProof() {
             </div>
             <div className="absolute inset-0 dot-pattern opacity-20" aria-hidden style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.35) 1.2px, transparent 1.2px)" }} />
             <dl className="relative grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-saffron-500/15">
-              {STAT_BAND.map((s) => (
+              {band.map((s) => (
                 <div key={s.label} className="px-6 py-7 sm:py-9 text-center group hover:bg-white/5 transition-colors">
                   <dd className="font-display font-light text-[38px] sm:text-[46px] text-gradient-gold group-hover:scale-105 transition-transform duration-700">
                     <Counter target={s.v} suffix={s.suffix} />
@@ -101,7 +110,7 @@ export function SocialProof() {
               ))}
             </dl>
             <p className="relative text-center text-[11px] text-white/40 pb-5 px-6">
-              *Based on parent-reported follow-up feedback, 2022–2025. Individual results vary; Ayurveda supports the body&apos;s natural healing.
+              {t.socialProof.disclaimer}
             </p>
           </div>
         </Reveal>

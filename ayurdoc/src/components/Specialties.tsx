@@ -3,34 +3,39 @@
 import { useState } from "react";
 import { ArrowUpRight, Star } from "lucide-react";
 import { Reveal } from "./Reveal";
+import { SectionMandalas } from "./ScrollMandala";
 import { cn } from "@/lib/cn";
 import { SPECIALTIES } from "@/content/site";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { GoldRule, TiltCard } from "./luxe";
 
-
-
 export function Specialties() {
+  const { t } = useLanguage();
   const [active, setActive] = useState(0);
+  const items = SPECIALTIES.map((s, i) => ({
+    ...s,
+    ...t.specialties.items[i],
+  }));
 
   return (
-    <section id="specialties" className="relative py-20 sm:py-32 scroll-mt-24">
+    <section id="specialties" className="mandala-section relative py-12 sm:py-16 scroll-mt-24">
+      <SectionMandalas id="specialties" palette="lotus" side="right" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <Reveal className="text-center max-w-3xl mx-auto">
           <p className="inline-flex items-center gap-2 rounded-full bg-saffron-500/10 border border-saffron-500/25 text-saffron-700 text-[11px] font-semibold tracking-[0.24em] uppercase px-4 py-2">
-            <Star className="w-3.5 h-3.5" fill="currentColor" /> Areas of exceptional success
+            <Star className="w-3.5 h-3.5" fill="currentColor" /> {t.specialties.eyebrow}
           </p>
           <h2 className="mt-6 font-display font-light text-[clamp(2.1rem,4.6vw,3.4rem)] leading-[1.02] text-forest-950">
-            Six specialties. One promise:{" "}
-            <span className="italic text-gradient-forest">heal the cause, not just the symptom.</span>
+            {t.specialties.headingPre}{" "}
+            <span className="italic text-gradient-forest">{t.specialties.headingHighlight}</span>
           </h2>
           <p className="mt-4 text-[16px] sm:text-[17.5px] text-forest-800/65 leading-[1.75]">
-            As an MD in Kaumarbhritya (Balarog), I don&apos;t do one-size-fits-all. Each plan blends classical formulations,
-            food-as-medicine and daily routine — dosed safely for your child&apos;s age and Prakruti.
+            {t.specialties.desc}
           </p>
         </Reveal>
 
-        <div className="mt-10 grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {SPECIALTIES.map((s, i) => (
+        <div className="mt-9 grid md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {items.map((s, i) => (
             <Reveal key={s.title} delay={(i % 3) * 110} variant="scale" className="h-full">
               <TiltCard className="h-full" max={5}>
               <article
@@ -73,9 +78,9 @@ export function Specialties() {
                   <a
                     href="#book"
                     className="inline-flex items-center gap-1 text-[13px] font-bold text-forest-900 hover:text-saffron-600 transition-colors"
-                    aria-label={`Book for ${s.title}`}
+                    aria-label={`${t.specialties.bookFor} ${s.title}`}
                   >
-                    Consult <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    {t.specialties.consult} <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                   </a>
                 </div>
               </article>
@@ -86,7 +91,7 @@ export function Specialties() {
 
         <Reveal delay={150} className="mt-8 text-center">
           <p className="text-sm text-forest-700/70">
-            Not sure which category your child fits? <a href="#book" className="font-bold text-forest-900 underline decoration-saffron-400 decoration-2 underline-offset-4 hover:text-saffron-700">Describe symptoms in the form</a> — I&apos;ll guide you.
+            {t.specialties.footerPre} <a href="#book" className="font-bold text-forest-900 underline decoration-saffron-400 decoration-2 underline-offset-4 hover:text-saffron-700">{t.specialties.footerLink}</a> {t.specialties.footerPost}
           </p>
         </Reveal>
       </div>

@@ -3,36 +3,46 @@
 import { useState } from "react";
 import { Check, Sparkles, Video, Building2, Crown, ArrowRight } from "lucide-react";
 import { Reveal } from "./Reveal";
+import { SectionMandalas } from "./ScrollMandala";
 import { cn } from "@/lib/cn";
 import { PLANS } from "@/content/site";
-
-
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export function Pricing() {
+  const { t } = useLanguage();
   const [mode, setMode] = useState<"online" | "clinic">("online");
+  const plans = PLANS.map((p, i) => ({
+    ...p,
+    name: t.pricing.plans[i].name,
+    hindi: t.pricing.plans[i].sub,
+    period: t.pricing.plans[i].period,
+    desc: t.pricing.plans[i].desc,
+    features: t.pricing.plans[i].features,
+    cta: t.pricing.plans[i].cta,
+  }));
+  const modes = [
+    { id: "online" as const, label: t.pricing.online, icon: Video },
+    { id: "clinic" as const, label: t.pricing.clinic, icon: Building2 },
+  ];
 
   return (
-    <section id="plans" className="relative py-20 sm:py-32 scroll-mt-24">
+    <section id="plans" className="mandala-section relative py-12 sm:py-16 scroll-mt-24">
+      <SectionMandalas id="plans" palette="marigold" side="right" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-forest-50/70 to-transparent" aria-hidden />
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <Reveal className="text-center max-w-3xl mx-auto">
           <p className="inline-flex items-center gap-2 rounded-full bg-saffron-500/10 border border-saffron-500/25 text-saffron-700 text-[11px] font-semibold tracking-[0.24em] uppercase px-4 py-2">
-            <Sparkles className="w-3.5 h-3.5" /> Honest, transparent pricing
+            <Sparkles className="w-3.5 h-3.5" /> {t.pricing.eyebrow}
           </p>
           <h2 className="mt-6 font-display font-light text-[clamp(2.1rem,4.6vw,3.4rem)] leading-[1.02] text-forest-950">
-            Invest once in root-cause healing. <span className="italic text-gradient-gold">Save years of repeat visits.</span>
+            {t.pricing.headingPre} <span className="italic text-gradient-gold">{t.pricing.headingHighlight}</span>
           </h2>
           <p className="mt-5 text-[16px] text-forest-800/65 leading-[1.75]">
-            No hidden charges. Medicines at MRP, couriered or locally sourced. Same care & time online and in-clinic.
+            {t.pricing.desc}
           </p>
 
-          <div className="mt-6 inline-flex rounded-full bg-white gold-hairline p-1.5 shadow-luxe" role="tablist" aria-label="Consultation mode">
-            {(
-              [
-                { id: "online", label: "Online • Worldwide", icon: Video },
-                { id: "clinic", label: "In-Clinic Visit", icon: Building2 },
-              ] as const
-            ).map((m) => (
+          <div className="mt-6 inline-flex rounded-full bg-white gold-hairline p-1.5 shadow-luxe" role="tablist" aria-label={t.pricing.modeAria}>
+            {modes.map((m) => (
               <button
                 key={m.id}
                 role="tab"
@@ -49,8 +59,8 @@ export function Pricing() {
           </div>
         </Reveal>
 
-        <div className="mt-10 grid md:grid-cols-3 gap-5 items-stretch max-w-6xl mx-auto">
-          {PLANS.map((p, i) => (
+        <div className="mt-9 grid md:grid-cols-3 gap-5 items-stretch max-w-6xl mx-auto">
+          {plans.map((p, i) => (
             <Reveal key={p.id} delay={i * 110} variant="scale" className="h-full">
               <article
                 className={cn(
@@ -64,7 +74,7 @@ export function Pricing() {
                   <>
                     <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-saffron-500/25 blur-3xl animate-halo" aria-hidden />
                     <span className="absolute top-6 right-6 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-saffron-300 via-saffron-400 to-saffron-500 text-forest-950 text-[9.5px] font-bold px-3.5 py-1.5 shadow-lg tracking-[0.16em] uppercase">
-                      <Crown className="w-3 h-3" /> Most Loved
+                      <Crown className="w-3 h-3" /> {t.pricing.mostLoved}
                     </span>
                   </>
                 )}
@@ -80,7 +90,7 @@ export function Pricing() {
                   <span className={cn("text-[13px] line-through mb-1.5", p.featured ? "text-white/35" : "text-slate-400")}>{p.strike}</span>
                 </div>
                 <p className={cn("mt-1 text-[13px] font-semibold", p.featured ? "text-saffron-300" : "text-forest-600")}>
-                  {p.period} • {mode === "online" ? "Online" : "In-Clinic"}
+                  {p.period} • {mode === "online" ? t.booking.modeOnline : t.booking.modeClinic}
                 </p>
 
                 <ul className="mt-6 space-y-2.5 flex-1">
@@ -118,8 +128,7 @@ export function Pricing() {
 
         <Reveal delay={150} className="mt-8 max-w-3xl mx-auto text-center">
           <p className="rounded-[22px] bg-white gold-hairline px-7 py-5 text-[13.5px] text-forest-700 leading-[1.75] shadow-luxe">
-            💛 <strong>Every plan includes parent coaching</strong> — because a confident parent heals faster than any medicine alone.
-            EMI available on 3-month program • UPI / Cards / International payments accepted.
+            💛 <strong>{t.pricing.footerStrong}</strong> {t.pricing.footerText}
           </p>
         </Reveal>
       </div>

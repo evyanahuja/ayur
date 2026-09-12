@@ -1,34 +1,42 @@
+"use client";
+
 import { HeartHandshake, X, Check, Quote } from "lucide-react";
 import { Reveal } from "./Reveal";
-import { BENEFITS, COMPARE, FEATURED_QUOTE, SITE } from "@/content/site";
-
-
+import { SectionMandalas } from "./ScrollMandala";
+import { BENEFITS } from "@/content/site";
+import { SITE } from "@/content/site";
+import { FEATURED_QUOTE } from "@/content/site";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export function Benefits() {
+  const { t } = useLanguage();
+  const items = BENEFITS.map((b, i) => ({ ...b, ...t.benefits.items[i] }));
+  const shortName = SITE.doctorName.split(" ").slice(0, 2).join(" ");
+
   return (
-    <section id="benefits" className="relative py-20 sm:py-32 scroll-mt-24">
+    <section id="benefits" className="mandala-section relative py-12 sm:py-16 scroll-mt-24">
+      <SectionMandalas id="benefits" palette="peacock" side="right" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
           <div>
             <Reveal>
               <p className="inline-flex items-center gap-2 rounded-full bg-forest-900 text-cream-100 text-[11px] font-semibold tracking-[0.24em] uppercase px-4 py-2">
-                <HeartHandshake className="w-3.5 h-3.5 text-saffron-400" /> Why parents switch to Ayurveda
+                <HeartHandshake className="w-3.5 h-3.5 text-saffron-400" /> {t.benefits.eyebrow}
               </p>
             </Reveal>
             <Reveal delay={80}>
               <h2 className="mt-6 font-display font-light text-[clamp(2.1rem,4.4vw,3.2rem)] leading-[1.03] text-forest-950">
-                Imagine 6 months from now: a child who <span className="italic text-gradient-gold">eats well, sleeps deep & falls sick rarely.</span>
+                {t.benefits.headingPre} <span className="italic text-gradient-gold">{t.benefits.headingHighlight}</span>
               </h2>
             </Reveal>
             <Reveal delay={140}>
               <p className="mt-5 text-[16px] text-forest-800/65 leading-[1.75] leading-relaxed">
-                That&apos;s the transformation parents describe most — not one dramatic overnight cure, but a steady, visible
-                shift from “always catching something” to “thriving.”
+                {t.benefits.desc}
               </p>
             </Reveal>
 
-            <div className="mt-8 grid sm:grid-cols-2 gap-4">
-              {BENEFITS.map((b, i) => (
+            <div className="mt-7 grid sm:grid-cols-2 gap-4">
+              {items.map((b, i) => (
                 <Reveal key={b.title} delay={i * 80} variant="scale">
                   <div className="card-lift h-full rounded-2xl bg-white gold-hairline p-5 shadow-luxe">
                     <span className="grid place-items-center w-11 h-11 rounded-xl bg-gradient-to-br from-forest-800 to-forest-600 text-cream-100 mb-3.5 shadow-md">
@@ -42,16 +50,15 @@ export function Benefits() {
             </div>
           </div>
 
-          {/* Comparison + quote */}
           <div className="lg:sticky lg:top-28 self-start space-y-5">
             <Reveal variant="right">
               <div className="rounded-[28px] overflow-hidden bg-white gold-hairline shadow-luxe">
                 <div className="grid grid-cols-[1fr_1fr_1.15fr] text-[12px] sm:text-[13px] font-bold">
-                  <div className="px-4 py-4 text-forest-500 bg-forest-50/60">Concern</div>
-                  <div className="px-4 py-4 text-center bg-slate-100/80 text-slate-500">Quick-fix only</div>
-                  <div className="px-4 py-4 text-center bg-forest-900 text-saffron-300">{SITE.doctorName.split(" ").slice(0, 2).join(" ")}&apos;s way 🌿</div>
+                  <div className="px-4 py-4 text-forest-500 bg-forest-50/60">{t.benefits.tableConcern}</div>
+                  <div className="px-4 py-4 text-center bg-slate-100/80 text-slate-500">{t.benefits.tableQuick}</div>
+                  <div className="px-4 py-4 text-center bg-forest-900 text-saffron-300">{shortName}{t.benefits.tableAyurSuffix}</div>
                 </div>
-                {COMPARE.map((r, i) => (
+                {t.benefits.compare.map((r, i) => (
                   <div key={r.label} className={`grid grid-cols-[1fr_1fr_1.15fr] text-[12.5px] sm:text-[13.5px] ${i % 2 ? "bg-cream-50/60" : "bg-white"}`}>
                     <div className="px-4 py-3.5 font-semibold text-forest-900">{r.label}</div>
                     <div className="px-4 py-3.5 text-slate-500 flex items-start gap-1.5">
@@ -64,8 +71,7 @@ export function Benefits() {
                 ))}
                 <div className="px-5 py-4 bg-gradient-to-r from-saffron-500/10 to-forest-50 border-t border-forest-100">
                   <p className="text-xs text-forest-700 leading-relaxed">
-                    <strong>Honest note:</strong> Ayurveda is not anti-modern medicine. For emergencies, high fever or breathing
-                    difficulty, I always guide you to the right urgent care first. Safety always comes before philosophy.
+                    <strong>{t.benefits.honestStrong}</strong> {t.benefits.honestText}
                   </p>
                 </div>
               </div>
@@ -76,17 +82,17 @@ export function Benefits() {
                 <div className="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-saffron-400/25 blur-2xl" aria-hidden />
                 <Quote className="w-8 h-8 text-saffron-400" fill="currentColor" aria-hidden />
                 <blockquote className="relative mt-4 font-display font-light text-[20px] sm:text-[23px] leading-[1.5]">
-                  “{FEATURED_QUOTE.text}”
+                  “{t.testimonials.featured.text}”
                 </blockquote>
                 <figcaption className="relative mt-4 flex items-center gap-3">
                   <img
                     src={FEATURED_QUOTE.img}
-                    alt="Parent"
+                    alt={t.benefits.parentAlt}
                     className="w-11 h-11 rounded-full object-cover border-2 border-saffron-300"
                   />
                   <span>
-                    <span className="block text-sm font-bold">{FEATURED_QUOTE.name}</span>
-                    <span className="block text-xs text-white/60">{FEATURED_QUOTE.detail}</span>
+                    <span className="block text-sm font-bold">{t.testimonials.featured.name}</span>
+                    <span className="block text-xs text-white/60">{t.testimonials.featured.detail}</span>
                   </span>
                 </figcaption>
               </figure>

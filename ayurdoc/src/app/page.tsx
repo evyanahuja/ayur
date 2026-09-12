@@ -11,14 +11,15 @@ import { FAQ } from "@/components/FAQ";
 import { BookingSection } from "@/components/BookingSection";
 import { Footer } from "@/components/Footer";
 import { FloatingActions } from "@/components/FloatingActions";
+import { LanguageProvider } from "@/i18n/LanguageContext";
 
 export const dynamic = "force-dynamic";
 
 export default function HomePage() {
   return (
-    <>
+    <LanguageProvider>
       <Navbar />
-      <main id="main">
+      <main id="main" className="relative bg-white">
         <Hero />
         <SocialProof />
         <DoctorIntro />
@@ -32,6 +33,6 @@ export default function HomePage() {
       </main>
       <Footer />
       <FloatingActions />
-    </>
+    </LanguageProvider>
   );
 }

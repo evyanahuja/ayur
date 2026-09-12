@@ -3,14 +3,21 @@
 import { useEffect, useState } from "react";
 import { Leaf, Menu, X, Phone, CalendarCheck, Sparkles } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { NAV_LINKS as LINKS, SITE, telLink } from "@/content/site";
+import { SITE, telLink } from "@/content/site";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { Magnetic } from "./luxe";
 
+const HREFS = ["#doctor", "#specialties", "#method", "#stories", "#plans", "#faq"];
+
 export function Navbar() {
+  const { t } = useLanguage();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [progress, setProgress] = useState(0);
   const [active, setActive] = useState<string>("");
+
+  const LINKS = t.nav.links.map((label, i) => ({ label, href: HREFS[i] }));
 
   useEffect(() => {
     const onScroll = () => {
@@ -23,9 +30,7 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Highlight the section currently in view
   useEffect(() => {
-    const ids = LINKS.map((l) => l.href.replace("#", ""));
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
@@ -34,7 +39,7 @@ export function Navbar() {
       },
       { rootMargin: "-45% 0px -50% 0px" }
     );
-    ids.forEach((id) => {
+    HREFS.map((h) => h.replace("#", "")).forEach((id) => {
       const el = document.getElementById(id);
       if (el) io.observe(el);
     });
@@ -46,7 +51,7 @@ export function Navbar() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [open]);
+  }, [open ]);
 
   return (
     <>
@@ -65,7 +70,7 @@ export function Navbar() {
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <nav
-            aria-label="Primary"
+            aria-label={t.nav.primaryNav}
             className={cn(
               "flex items-center justify-between gap-3 rounded-full px-4 sm:px-6 transition-all duration-700",
               scrolled
@@ -110,6 +115,7 @@ export function Navbar() {
             </div>
 
             <div className="hidden md:flex items-center gap-3">
+              <LanguageSwitcher compact />
               <a
                 href={telLink}
                 className="hidden xl:flex items-center gap-2.5 text-[13.5px] font-medium text-forest-800 hover:text-forest-950 transition-colors group"
@@ -122,19 +128,30 @@ export function Navbar() {
               <Magnetic strength={0.22}>
                 <a
                   href="#book"
-                  className="btn-shine inline-flex items-center gap-2 rounded-full bg-forest-950 text-cream-50 text-[13.5px] font-medium tracking-wide px-6 py-3.5 shadow-luxe hover:shadow-luxe-lg transition-shadow duration-700"
+                  className="btn-shine inline-flex items-center gap-2 rounded-full bg-forest-950 text-cream-50 text-[13.5px] font-medium tracking-wide px-6 py-3.5 shadow-luxe hover:shadow-luxe-lg transition-shadow duration-700 whitespace-nowrap"
                 >
                   <CalendarCheck className="w-4 h-4 text-saffron-400" />
-                  Book Consultation
+                  {t.nav.book}
                 </a>
               </Magnetic>
             </div>
 
+            <div className="flex md:hidden items-center gap-2">
+              <LanguageSwitcher compact />
+              <button
+                onClick={() => setOpen(!open)}
+                className="lg:hidden grid place-items-center w-11 h-11 rounded-full bg-forest-950 text-saffron-300 hover:bg-forest-900 transition-colors"
+                aria-expanded={open}
+                aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
+              >
+                {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </div>
             <button
               onClick={() => setOpen(!open)}
-              className="lg:hidden grid place-items-center w-11 h-11 rounded-full bg-forest-950 text-saffron-300 hover:bg-forest-900 transition-colors"
+              className="hidden md:grid lg:hidden place-items-center w-11 h-11 rounded-full bg-forest-950 text-saffron-300 hover:bg-forest-900 transition-colors"
               aria-expanded={open}
-              aria-label={open ? "Close menu" : "Open menu"}
+              aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
             >
               {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -183,10 +200,10 @@ export function Navbar() {
             onClick={() => setOpen(false)}
             className="btn-shine mt-4 flex items-center justify-center gap-2.5 rounded-full bg-forest-950 text-cream-50 font-medium px-5 py-4 hover:bg-forest-900 transition-colors"
           >
-            <CalendarCheck className="w-[18px] h-[18px] text-saffron-400" /> Book Consultation
+            <CalendarCheck className="w-[18px] h-[18px] text-saffron-400" /> {t.nav.book}
           </a>
           <p className="text-center text-[11px] text-forest-600/60 mt-4 tracking-wide">
-            Replies within 24 hours · {SITE.languages}
+            {t.nav.replies} · {t.site.languages}
           </p>
         </div>
       </div>
