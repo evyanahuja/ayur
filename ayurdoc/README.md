@@ -105,13 +105,16 @@ So enquiries reach your inbox:
 
 ### Step 3 — Deploy (choose Netlify **or** Vercel — both work)
 
-Whichever you pick, you'll add these **3 environment variables**:
+Whichever you pick, configure these environment variables:
 
-| Name | Value |
-|---|---|
-| `DATABASE_URL` | your Neon connection string |
-| `DOCTOR_EMAIL` | the email where you want enquiries |
-| `RESEND_API_KEY` | your Resend API key |
+| Name | Required | Value |
+|---|---|---|
+| `DATABASE_URL` | Yes | Your Neon connection string |
+| `DOCTOR_EMAIL` | Yes | The inbox where patient enquiries should arrive |
+| `RESEND_API_KEY` | Yes (when using Resend) | Your Resend API key |
+| `FROM_EMAIL` | Recommended for production | A sender on your verified Resend domain, for example `BalChikitsa <enquiries@yourdomain.com>` |
+
+> Resend's default `onboarding@resend.dev` sender can normally send only to the email address associated with your Resend account. To deliver to any doctor inbox, verify your domain in Resend and set `FROM_EMAIL` to an address on that domain. As an alternative to Resend, configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, and `SMTP_PASS`.
 
 #### 🟢 Option A — Netlify
 This project includes a ready-made `netlify.toml`, so there's nothing to configure.
