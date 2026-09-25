@@ -301,7 +301,7 @@ export const TESTIMONIALS = [
     tag: "Skin Diseases",
   },
   {
-    name: "Fatika Sheikh",
+    name: "Fatima Sheikh",
     role: "Mother of Mahira, 5 • Asthma-type Wheeze",
     img: IMAGES.parent3,
     text: "Every month meant nebulizer and sleepless nights. After Suvarnaprashan + immunity plan, this entire winter passed with just one mild cold. I cried with relief. Worth every rupee.",
