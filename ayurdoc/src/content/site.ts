@@ -27,10 +27,10 @@ export const SITE = {
   phoneHref: "+919860775010",
   // WhatsApp number (country code, NO plus sign, NO spaces)
   whatsapp: "919860775010",
-  whatsappMessage: "Namaste Doctor, I want to consult for my child.",
+  whatsappMessage: "Namaste Doctor Priyanka, I want to consult for my child.",
 
   // ✉️ Public email shown on the website
-  email: "priyankalikhar333@gmail.com",
+  email: "drpriyankalikhar@gmail.com",
 
   // 📍 Address
   addressShort: "BalChikitsa Ayurved Clinic + Online worldwide",
@@ -55,7 +55,7 @@ export const SITE = {
  * 2) HEADLINE NUMBERS / SOCIAL PROOF  👈 update with your real figures
  * -------------------------------------------------------------------------- */
 export const STATS = {
-  patientsTreated: 500,       // "500+ children guided"
+  patientsTreated: 1000,       // "1000+ children guided"
   yearsExperience: 5,         // "5+ years"
   improvementPercent: 92,      // "92% parents report improvement"
   citiesServed: 40,            // "40+ cities online"
@@ -301,8 +301,8 @@ export const TESTIMONIALS = [
     tag: "Skin Diseases",
   },
   {
-    name: "Jigyasa Patidar",
-    role: "Mother of Lavika, 5 • Asthma-type Wheeze",
+    name: "Fatika Sheikh",
+    role: "Mother of Mahira, 5 • Asthma-type Wheeze",
     img: IMAGES.parent3,
     text: "Every month meant nebulizer and sleepless nights. After Suvarnaprashan + immunity plan, this entire winter passed with just one mild cold. I cried with relief. Worth every rupee.",
     stars: 5,
@@ -358,7 +358,7 @@ export const PLANS = [
     price: "₹400",
     strike: "₹500",
     usdPrice: "$75",
-    usdStrike: "",
+    usdStrike: "$100",
     period: "45-minute deep dive",
     desc: "Complete Prakruti & root-cause assessment + starter plan for one child.",
     features: [
@@ -378,8 +378,8 @@ export const PLANS = [
     hindi: "3-Month Transformation",
     price: "₹4,999",
     strike: "₹8,500",
-    usdPrice: "$500",
-    usdStrike: "",
+    usdPrice: "$300",
+    usdStrike: "$500",
     period: "Most chosen • 3 months",
     desc: "For skin, growth, immunity & developmental concerns needing steady hand-holding.",
     features: [
@@ -401,7 +401,7 @@ export const PLANS = [
     price: "₹300",
     strike: "₹400",
     usdPrice: "$50",
-    usdStrike: "",
+    usdStrike: "$75",
     period: "20-minute review",
     desc: "For existing patients: dose tuning, progress review & next-phase planning.",
     features: [
@@ -427,15 +427,15 @@ export const FAQS = [
   },
   {
     q: "My child already takes allopathic medicines. Can we combine?",
-    a: "In most chronic cases, yes. Ayurveda works alongside ongoing treatment initially, and as your child stabilises we coordinate tapering with your pediatrician — never abrupt stopping. For asthma, epilepsy or any critical illness, modern monitoring continues. Safety-first integration is my standard practice.",
+    a: "In most chronic cases, yes. Ayurveda works alongside ongoing treatment initially, and as your child stabilises, we coordinate tapering with your pediatrician — never abrupt stopping. For asthma, epilepsy or any critical illness, modern monitoring continues. Safety-first integration is my standard practice.",
   },
   {
     q: "How soon will we see results?",
-    a: "Appetite, sleep and digestion often improve in 2–4 weeks. Skin, respiratory frequency and growth curves typically show visible change in 6–12 weeks of consistent treatment. Neurodevelopmental support is a 3–6 month journey with milestone tracking. I'll give you an honest timeline in your first visit — no false promises.",
+    a: "Appetite, sleep and digestion often improve in 2–4 weeks. Skin, respiratory frequency, and growth curves typically show visible change in 6–12 weeks of consistent treatment. Neurodevelopmental support is a 3–6 month journey with milestone tracking. I'll give you an honest timeline in your first visit — no false promises.",
   },
   {
     q: "Do online consultations really work for kids?",
-    a: `Absolutely — a majority of my patients consult online across ${STATS.citiesServed}+ cities and abroad. Video assessment, photos, growth charts and detailed history give me everything needed. Medicines are couriered or sourced near you, and WhatsApp follow-ups keep us closely connected between visits.`,
+    a: `Absolutely — a majority of my patients consult online across ${STATS.citiesServed}+ cities and abroad. Video assessment, photos, growth charts, and detailed history give me everything needed. Medicines are couriered or sourced near you, and WhatsApp follow-ups keep us closely connected between visits.`,
   },
   {
     q: "What is Suvarnaprashan and should my child take it?",
@@ -482,7 +482,7 @@ export const PLAN_OPTIONS: Record<string, string> = {
 
 export const PLAN_OPTIONS_USD: Record<string, string> = {
   first: "First Consultation — $75",
-  wellness: "Bal Wellness Program (3 months) — $500",
+  wellness: "Bal Wellness Program (3 months) — $300",
   followup: "Follow-up Care — $50",
   suvarna: "Suvarnaprashan Only",
   unsure: "Not sure — need guidance",
