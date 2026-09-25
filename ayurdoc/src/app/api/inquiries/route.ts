@@ -40,14 +40,17 @@ export async function POST(req: Request) {
 
     // Honeypot anti-spam
     if (body.website) {
-      return NextResponse.json({ ok: true, id: 0 }, { status: 200 });
+      return NextResponse.json(
+        { ok: true, id: null, dbSaved: false, emailSent: false },
+        { status: 200 }
+      );
     }
 
     if (Object.keys(errors).length > 0) {
       return NextResponse.json({ ok: false, errors }, { status: 400 });
     }
 
-    let id = 0;
+    let id: number | null = null;
     let dbSaved = false;
 
     if (isDatabaseConfigured()) {
@@ -72,8 +75,8 @@ export async function POST(req: Request) {
           })
           .returning({ id: patientInquiries.id });
 
-        id = inserted[0]?.id ?? 0;
-        dbSaved = true;
+        id = inserted[0]?.id ?? null;
+        dbSaved = id !== null;
       } catch (dbErr) {
         console.error("Database insert for /api/inquiries failed, continuing with notification:", dbErr);
       }
@@ -100,8 +103,29 @@ export async function POST(req: Request) {
       id
     );
 
+    if (!dbSaved && !mail.sent) {
+      console.error("Inquiry could not be saved or emailed:", mail.reason);
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "We could not deliver your enquiry. Please contact the clinic by phone or WhatsApp.",
+          dbSaved,
+          emailSent: false,
+          emailCode: mail.code,
+        },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
-      { ok: true, id, dbSaved, emailSent: mail.sent, emailNote: mail.reason },
+      {
+        ok: true,
+        id,
+        dbSaved,
+        emailSent: mail.sent,
+        emailNote: mail.reason,
+        emailCode: mail.sent ? null : mail.code,
+      },
       { status: 201 }
     );
   } catch (e) {
