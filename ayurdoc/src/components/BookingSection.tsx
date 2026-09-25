@@ -31,6 +31,7 @@ function withLivePrice(label: string, price: string): string {
 }
 
 type Status = "idle" | "sending" | "success" | "error";
+type DeliveryStatus = { dbSaved: boolean; emailSent: boolean };
 
 const initial = {
   parentName: "",
@@ -73,6 +74,10 @@ export function BookingSection() {
   const [status, setStatus] = useState<Status>("idle");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [refId, setRefId] = useState<number | null>(null);
+  const [delivery, setDelivery] = useState<DeliveryStatus>({
+    dbSaved: false,
+    emailSent: false,
+  });
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -115,12 +120,25 @@ export function BookingSection() {
           if (data.errors.childName) mapped.childName = t.booking.errors.childName;
           if (data.errors.childAge) mapped.childAge = t.booking.errors.childAge;
           setErrors(Object.keys(mapped).length ? mapped : { form: t.booking.errors.form });
-        } else setErrors({ form: t.booking.errors.form });
+        } else {
+          setErrors({
+            form:
+              typeof data.error === "string" && data.error
+                ? data.error
+                : t.booking.errors.form,
+          });
+        }
         setStatus("error");
-        setTimeout(() => setStatus("idle"), 2500);
+        setTimeout(() => setStatus("idle"), 5000);
         return;
       }
-      setRefId(data.id);
+      setRefId(
+        typeof data.id === "number" && data.id > 0 ? data.id : null
+      );
+      setDelivery({
+        dbSaved: data.dbSaved === true,
+        emailSent: data.emailSent === true,
+      });
       setStatus("success");
       setForm(initial);
     } catch {
@@ -244,14 +262,38 @@ export function BookingSection() {
                   </span>
                   <h3 className="font-display font-light text-[28px] sm:text-[34px] text-forest-950">{t.booking.successTitle}</h3>
                   <p className="mt-3 text-[15px] text-forest-700 leading-relaxed max-w-md mx-auto">
-                    {t.booking.successDescPre} <strong>#{refId}</strong> {t.booking.successDescMid} {SITE.doctorName}{t.booking.successDescPost}
+                    {t.booking.successDescPre}{" "}
+                    {refId && <strong>#{refId} </strong>}
+                    {delivery.emailSent
+                      ? t.booking.successDescMid
+                      : t.booking.successSavedMid}{" "}
+                    {SITE.doctorName}
+                    {delivery.emailSent
+                      ? t.booking.successDescPost
+                      : t.booking.successSavedPost}
                   </p>
+                  {!delivery.emailSent && delivery.dbSaved && (
+                    <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] leading-relaxed text-amber-900 max-w-md mx-auto">
+                      {t.booking.successEmailDelayed}
+                    </p>
+                  )}
                   <div className="mt-6 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-left max-w-md mx-auto space-y-2">
-                    {t.booking.successTips.map((tip, i) => (
-                      <p key={i} className="flex items-start gap-2 text-[13.5px] text-emerald-900">
-                        <CheckCircle2 className="w-[18px] h-[18px] shrink-0 mt-0.5" /> {tip}{i === 2 ? ` #{refId}` : ""}
-                      </p>
-                    ))}
+                    {t.booking.successTips.map((tip, i) => {
+                      const hasToken = tip.includes("{refId}");
+                      const renderedTip = tip.replace(
+                        /#?\{refId\}/g,
+                        refId ? `#${refId}` : ""
+                      );
+                      return (
+                        <p key={i} className="flex items-start gap-2 text-[13.5px] text-emerald-900">
+                          <CheckCircle2 className="w-[18px] h-[18px] shrink-0 mt-0.5" />
+                          <span>
+                            {renderedTip}
+                            {i === 2 && refId && !hasToken ? ` #${refId}` : ""}
+                          </span>
+                        </p>
+                      );
+                    })}
                   </div>
                   <button
                     onClick={() => setStatus("idle")}
