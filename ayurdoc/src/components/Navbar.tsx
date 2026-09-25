@@ -118,12 +118,14 @@ export function Navbar() {
               <LanguageSwitcher compact />
               <a
                 href={telLink}
-                className="hidden xl:flex items-center gap-2.5 text-[13.5px] font-medium text-forest-800 hover:text-forest-950 transition-colors group"
+                aria-label={`${t.nav.call} — ${SITE.phoneDisplay}`}
+                title={SITE.phoneDisplay}
+                className="group inline-flex items-center gap-2.5 rounded-full border border-saffron-500/30 bg-cream-100/60 text-[13.5px] font-medium text-forest-800 hover:text-white hover:bg-saffron-500 hover:border-saffron-500 transition-all duration-500 px-2 xl:px-4 py-2"
               >
-                <span className="grid place-items-center w-9 h-9 rounded-full border border-saffron-500/30 bg-cream-100/60 group-hover:bg-saffron-500 group-hover:text-white group-hover:border-saffron-500 transition-all duration-500">
-                  <Phone className="w-[15px] h-[15px]" />
+                <span className="grid place-items-center w-6 h-6 rounded-full bg-saffron-500 text-white group-hover:bg-white group-hover:text-saffron-600 transition-all duration-500 shrink-0">
+                  <Phone className="w-[14px] h-[14px]" />
                 </span>
-                <span className="tracking-wide">{SITE.phoneDisplay}</span>
+                <span className="hidden xl:inline tracking-wide whitespace-nowrap">{t.nav.call}</span>
               </a>
               <Magnetic strength={0.22}>
                 <a
@@ -137,6 +139,14 @@ export function Navbar() {
             </div>
 
             <div className="flex md:hidden items-center gap-2">
+              <a
+                href={telLink}
+                aria-label={`${t.nav.call} — ${SITE.phoneDisplay}`}
+                title={SITE.phoneDisplay}
+                className="grid place-items-center w-11 h-11 rounded-full border border-saffron-500/30 bg-cream-100/60 text-forest-800 hover:bg-saffron-500 hover:text-white hover:border-saffron-500 transition-all duration-500"
+              >
+                <Phone className="w-[17px] h-[17px]" />
+              </a>
               <LanguageSwitcher compact />
               <button
                 onClick={() => setOpen(!open)}
