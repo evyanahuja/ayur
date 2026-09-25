@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db";
+import { db, isDatabaseConfigured } from "@/db";
 import { patientInquiries } from "@/db/schema";
 import { sendDoctorNotification } from "@/lib/email";
 import { desc, count } from "drizzle-orm";
+
+export const dynamic = "force-dynamic";
 
 function sanitize(v: unknown, max = 500) {
   if (typeof v !== "string") return "";
@@ -45,27 +47,39 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, errors }, { status: 400 });
     }
 
-    const inserted = await db
-      .insert(patientInquiries)
-      .values({
-        parentName,
-        phone,
-        email: email || null,
-        childName,
-        childAge,
-        childGender: childGender || null,
-        concernCategory,
-        symptoms: symptoms || null,
-        preferredMode,
-        preferredDate: preferredDate || null,
-        preferredTime: preferredTime || null,
-        planInterest: planInterest || null,
-        message: message || null,
-        status: "new",
-      })
-      .returning({ id: patientInquiries.id });
+    let id = 0;
+    let dbSaved = false;
 
-    const id = inserted[0]?.id ?? 0;
+    if (isDatabaseConfigured()) {
+      try {
+        const inserted = await db
+          .insert(patientInquiries)
+          .values({
+            parentName,
+            phone,
+            email: email || null,
+            childName,
+            childAge,
+            childGender: childGender || null,
+            concernCategory,
+            symptoms: symptoms || null,
+            preferredMode,
+            preferredDate: preferredDate || null,
+            preferredTime: preferredTime || null,
+            planInterest: planInterest || null,
+            message: message || null,
+            status: "new",
+          })
+          .returning({ id: patientInquiries.id });
+
+        id = inserted[0]?.id ?? 0;
+        dbSaved = true;
+      } catch (dbErr) {
+        console.error("Database insert for /api/inquiries failed, continuing with notification:", dbErr);
+      }
+    } else {
+      console.warn("DATABASE_URL is not configured; skipping database insert for inquiry.");
+    }
 
     const mail = await sendDoctorNotification(
       {
@@ -86,15 +100,25 @@ export async function POST(req: Request) {
       id
     );
 
-    return NextResponse.json({ ok: true, id, emailSent: mail.sent, emailNote: mail.reason }, { status: 201 });
+    return NextResponse.json(
+      { ok: true, id, dbSaved, emailSent: mail.sent, emailNote: mail.reason },
+      { status: 201 }
+    );
   } catch (e) {
     console.error("POST /api/inquiries failed", e);
-    return NextResponse.json({ ok: false, error: "Something went wrong. Please try again or WhatsApp us." }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: "Something went wrong. Please try again or WhatsApp us." },
+      { status: 500 }
+    );
   }
 }
 
 export async function GET() {
   try {
+    if (!isDatabaseConfigured()) {
+      return NextResponse.json({ ok: true, total: 0, recentCount: 0 });
+    }
+
     const rows = await db
       .select()
       .from(patientInquiries)
