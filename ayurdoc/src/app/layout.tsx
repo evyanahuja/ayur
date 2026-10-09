@@ -62,6 +62,19 @@ export const metadata: Metadata = {
     "બાળ આયુર્વેદ",
   ],
   authors: [{ name: SITE.doctorName }],
+
+  // ✅ NEW — favicon links (renders <link rel="icon">, apple-touch-icon & manifest)
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+  manifest: "/site.webmanifest",
+
   openGraph: {
     title: `${SITE.doctorName} — Gentle Ayurvedic Care for Thriving Kids`,
     description: `MD Kaumarbhritya (Balarog) specialist helping ${STATS.patientsTreated.toLocaleString("en-IN")}+ children heal from skin, growth, respiratory, allergy & neurodevelopmental concerns — naturally.`,
@@ -98,6 +111,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               telephone: SITE.phoneHref,
               email: SITE.email,
               url: SITE.siteUrl,
+              image: `${SITE.siteUrl}/icon-512.png`,
               aggregateRating: {
                 "@type": "AggregateRating",
                 ratingValue: STATS.rating,
