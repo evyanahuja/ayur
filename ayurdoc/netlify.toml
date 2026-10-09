@@ -2,9 +2,14 @@
 #  Netlify configuration
 # -----------------------------------------------------------------------------
 #  Netlify auto-detects Next.js and installs the official runtime adapter
-#  (@netlify/plugin-nextjs) for you — SSR, API routes and the enquiry form
-#  all work out of the box. Do NOT pin the plugin version; Netlify keeps it
-#  updated automatically on every build.
+#  (@netlify/plugin-nextjs). Do NOT pin the plugin version.
+#
+#  SECURITY HEADERS — single CDN source of truth.
+#  (public/_headers has been DELETED: defining the same header in both
+#   _headers and netlify.toml can make Netlify merge the values, e.g.
+#   "X-Frame-Options: SAMEORIGIN, SAMEORIGIN", which scanners treat as invalid.)
+#  Dynamic / cached Next.js responses are additionally covered by src/proxy.ts
+#  and next.config.ts headers().
 # =============================================================================
 
 [build]
@@ -14,7 +19,6 @@
 [build.environment]
   NODE_VERSION = "20"
 
-# Direct CDN Edge Security Headers (Netlify serves pre-rendered / index directly)
 [[headers]]
   for = "/*"
   [headers.values]
@@ -22,12 +26,40 @@
     X-Frame-Options = "SAMEORIGIN"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    X-XSS-Protection = "1; mode=block"
     Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+    Cross-Origin-Opener-Policy = "same-origin"
 
-# Long-cache static images (clean: JPEGs are stable, name changes bust HTML)
+# Long-cache static images
 [[headers]]
   for = "/images/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# Favicons & manifest — cache for a week (names are stable, so not immutable)
+[[headers]]
+  for = "/favicon.ico"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/favicon.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+    Content-Type = "image/svg+xml"
+
+[[headers]]
+  for = "/apple-touch-icon.png"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/icon-*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/site.webmanifest"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+    Content-Type = "application/manifest+json"
