@@ -73,7 +73,7 @@ export function BookingSection() {
   const [form, setForm] = useState(initial);
   const [status, setStatus] = useState<Status>("idle");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [refId, setRefId] = useState<number | null>(null);
+  const [refId, setRefId] = useState<string | null>(null);
   const [delivery, setDelivery] = useState<DeliveryStatus>({
     dbSaved: false,
     emailSent: false,
@@ -108,7 +108,7 @@ export function BookingSection() {
       const res = await fetch("/api/inquiries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, currency }),
       });
       const data = await res.json();
       if (!res.ok || !data.ok) {
@@ -133,7 +133,11 @@ export function BookingSection() {
         return;
       }
       setRefId(
-        typeof data.id === "number" && data.id > 0 ? data.id : null
+        typeof data.ref === "string" && data.ref
+          ? data.ref
+          : typeof data.id === "number" && data.id > 0
+            ? `#${data.id}`
+            : null
       );
       setDelivery({
         dbSaved: data.dbSaved === true,
@@ -263,7 +267,7 @@ export function BookingSection() {
                   <h3 className="font-display font-light text-[28px] sm:text-[34px] text-forest-950">{t.booking.successTitle}</h3>
                   <p className="mt-3 text-[15px] text-forest-700 leading-relaxed max-w-md mx-auto">
                     {t.booking.successDescPre}{" "}
-                    {refId && <strong>#{refId} </strong>}
+                    {refId && <strong>({refId}) </strong>}
                     {delivery.emailSent
                       ? t.booking.successDescMid
                       : t.booking.successSavedMid}{" "}
@@ -279,17 +283,32 @@ export function BookingSection() {
                   )}
                   <div className="mt-6 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-left max-w-md mx-auto space-y-2">
                     {t.booking.successTips.map((tip, i) => {
-                      const hasToken = tip.includes("{refId}");
-                      const renderedTip = tip.replace(
-                        /#?\{refId\}/g,
-                        refId ? `#${refId}` : ""
-                      );
+                      // Tips may contain a {refId} token. If we have a reference, fill it in;
+                      // otherwise drop the whole "— mention Ref …" clause so no dangling "Ref" shows.
+                      const hasToken = /\{refId\}/.test(tip);
+                      const renderedTip = hasToken
+                        ? refId
+                          ? tip.replace(/#?\{refId\}/g, refId)
+                          : tip.replace(/\s*—.*$/, "")
+                        : tip;
                       return (
                         <p key={i} className="flex items-start gap-2 text-[13.5px] text-emerald-900">
                           <CheckCircle2 className="w-[18px] h-[18px] shrink-0 mt-0.5" />
                           <span>
-                            {renderedTip}
-                            {i === 2 && refId && !hasToken ? ` #${refId}` : ""}
+                            {hasToken ? (
+                              <a
+                                href={`https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(
+                                  `Hello Doctor, I just submitted an enquiry${refId ? ` (Ref ${refId})` : ""} for ${form.childName || "my child"}.`
+                                )}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline decoration-emerald-400 underline-offset-2 hover:text-emerald-700"
+                              >
+                                {renderedTip}
+                              </a>
+                            ) : (
+                              renderedTip
+                            )}
                           </span>
                         </p>
                       );
