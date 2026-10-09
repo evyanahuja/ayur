@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db, isDatabaseConfigured } from "@/db";
 import { patientInquiries } from "@/db/schema";
-import { sendDoctorNotification } from "@/lib/email";
+import { planLabel, sendDoctorNotification } from "@/lib/email";
 import { desc, count } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -28,6 +28,7 @@ export async function POST(req: Request) {
     const preferredTime = sanitize(body.preferredTime, 40);
     const planInterest = sanitize(body.planInterest, 60);
     const message = sanitize(body.message, 2000);
+    const currency = sanitize(body.currency, 3) === "USD" ? "USD" : "INR";
 
     // Validation
     const errors: Record<string, string> = {};
@@ -69,7 +70,7 @@ export async function POST(req: Request) {
             preferredMode,
             preferredDate: preferredDate || null,
             preferredTime: preferredTime || null,
-            planInterest: planInterest || null,
+            planInterest: planLabel(planInterest, currency).slice(0, 60) || null,
             message: message || null,
             status: "new",
           })
@@ -83,6 +84,15 @@ export async function POST(req: Request) {
     } else {
       console.warn("DATABASE_URL is not configured; skipping database insert for inquiry.");
     }
+
+    // Always produce a human-friendly reference, even if the DB is unavailable,
+    // so the parent can quote it on WhatsApp and the doctor sees it in the email.
+    const ref = id
+      ? `PL-${String(id).padStart(4, "0")}`
+      : `PL-${Date.now().toString(36).slice(-4).toUpperCase()}${Math.floor(Math.random() * 1296)
+          .toString(36)
+          .padStart(2, "0")
+          .toUpperCase()}`;
 
     const mail = await sendDoctorNotification(
       {
@@ -98,9 +108,10 @@ export async function POST(req: Request) {
         preferredDate,
         preferredTime,
         planInterest,
+        currency,
         message,
       },
-      id
+      ref
     );
 
     if (!dbSaved && !mail.sent) {
@@ -121,6 +132,7 @@ export async function POST(req: Request) {
       {
         ok: true,
         id,
+        ref,
         dbSaved,
         emailSent: mail.sent,
         emailNote: mail.reason,
