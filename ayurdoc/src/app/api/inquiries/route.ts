@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db, isDatabaseConfigured } from "@/db";
 import { patientInquiries } from "@/db/schema";
-import { planLabel, sendDoctorNotification } from "@/lib/email";
+import { planLabel, sendDoctorNotification, sendParentConfirmation } from "@/lib/email";
 import { desc, count } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -114,6 +114,36 @@ export async function POST(req: Request) {
       ref
     );
 
+    // Best-effort: send the parent a copy of their enquiry with the reference
+    // number. Never fail the request if this fails.
+    let parentMail: { sent: boolean; reason?: string } = { sent: false, reason: "skipped" };
+    if (email) {
+      try {
+        const r = await sendParentConfirmation(
+          {
+            parentName,
+            phone,
+            email,
+            childName,
+            childAge,
+            childGender,
+            concernCategory,
+            symptoms,
+            preferredMode,
+            preferredDate,
+            preferredTime,
+            planInterest,
+            currency,
+            message,
+          },
+          ref
+        );
+        parentMail = { sent: r.sent, reason: r.sent ? undefined : r.reason };
+      } catch (e) {
+        console.error("sendParentConfirmation threw:", e);
+      }
+    }
+
     if (!dbSaved && !mail.sent) {
       console.error("Inquiry could not be saved or emailed:", mail.reason);
       return NextResponse.json(
@@ -137,6 +167,7 @@ export async function POST(req: Request) {
         emailSent: mail.sent,
         emailNote: mail.reason,
         emailCode: mail.sent ? null : mail.code,
+        parentEmailSent: parentMail.sent,
       },
       { status: 201 }
     );

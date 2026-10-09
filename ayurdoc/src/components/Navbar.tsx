@@ -130,10 +130,11 @@ export function Navbar() {
               <Magnetic strength={0.22}>
                 <a
                   href="#book"
-                  className="btn-shine inline-flex items-center gap-2 rounded-full bg-forest-950 text-cream-50 text-[13.5px] font-medium tracking-wide px-6 py-3.5 shadow-luxe hover:shadow-luxe-lg transition-shadow duration-700 whitespace-nowrap"
+                  aria-label={t.nav.book}
+                  className="btn-shine inline-flex items-center gap-2 rounded-full bg-forest-950 text-cream-50 text-[13px] font-medium tracking-wide px-2.5 lg:px-4 py-2 shadow-luxe hover:shadow-luxe-lg transition-shadow duration-700 whitespace-nowrap"
                 >
-                  <CalendarCheck className="w-4 h-4 text-saffron-400" />
-                  {t.nav.book}
+                  <CalendarCheck className="w-4 h-4 text-saffron-400 shrink-0" />
+                  <span className="hidden lg:inline">{t.nav.book}</span>
                 </a>
               </Magnetic>
             </div>

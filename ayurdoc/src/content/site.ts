@@ -96,8 +96,8 @@ export const STAT_BAND = [
  * ========================================================================== */
 export const IMAGES = {
   // — Your photos (already in public/images/) ——————————————————————
-  doctorPortrait: "/images/doctor.png", // big hero photo of the doctor
-  clinicCare: "/images/clinic-care.png",         // consultation photo in "Meet the Doctor"
+  doctorPortrait: "/images/doctor.webp", // optimized hero photo of the doctor
+  clinicCare: "/images/clinic-care.webp",         // optimized consultation photo
 
   // — Therapy showcase photos ————————————————————————————————
   therapySuvarnaprashan: "https://images.pexels.com/photos/7526061/pexels-photo-7526061.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",

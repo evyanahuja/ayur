@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import {
   Star,
@@ -127,12 +128,14 @@ export function Hero() {
               <div className="flex items-center gap-3.5">
                 <div className="flex -space-x-3">
                   {AVATARS.map((src, i) => (
-                    <img
-                      key={i}
+                    <Image
+                      key={src}
                       src={src}
                       alt=""
+                      width={44}
+                      height={44}
+                      sizes="44px"
                       className="w-11 h-11 rounded-full object-cover ring-2 ring-cream-50 shadow-md hover:scale-110 hover:z-10 transition-transform duration-500"
-                      loading="eager"
                     />
                   ))}
                   <span className="grid place-items-center w-11 h-11 rounded-full bg-forest-950 text-saffron-300 text-[10px] font-bold ring-2 ring-cream-50 shadow-md">
@@ -182,12 +185,14 @@ export function Hero() {
               </div>
               <div data-portrait-frame="hero" className="relative p-1.5 sm:p-2 arch-frame bg-gradient-to-br from-saffron-400/70 via-cream-100 to-saffron-500/50 shadow-luxe-lg">
                 <div className="relative arch-frame overflow-hidden bg-forest-100">
-                  <img
+                  <Image
                     src={IMAGES.doctorPortrait}
                     alt={`${SITE.doctorName} — ${SITE.qualification}, Ayurvedic child health specialist`}
+                    width={600}
+                    height={900}
+                    sizes="(min-width: 1024px) 440px, (min-width: 640px) 420px, calc(100vw - 2rem)"
+                    priority
                     className="w-full h-[360px] sm:h-[420px] lg:h-[460px] object-cover object-top"
-                    loading="eager"
-                    fetchPriority="high"
                   />
                   <div className="absolute inset-x-0 bottom-0 h-40 sm:h-44 bg-gradient-to-t from-forest-950 via-forest-950/45 to-transparent" aria-hidden />
                   <div className="absolute bottom-0 inset-x-0 p-4 sm:p-5 text-left">

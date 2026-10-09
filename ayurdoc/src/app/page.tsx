@@ -13,8 +13,6 @@ import { Footer } from "@/components/Footer";
 import { FloatingActions } from "@/components/FloatingActions";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 
-export const dynamic = "force-dynamic";
-
 export default function HomePage() {
   return (
     <LanguageProvider>

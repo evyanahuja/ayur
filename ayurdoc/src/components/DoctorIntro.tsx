@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { GraduationCap, Award, Heart, CheckCircle2, Quote, ArrowRight, Languages, MapPin } from "lucide-react";
 import { Reveal } from "./Reveal";
 import { SectionMandalas } from "./ScrollMandala";
@@ -24,15 +25,24 @@ export function DoctorIntro() {
               <div className="absolute -inset-4 rounded-[36px] bg-gradient-to-br from-saffron-300/50 via-cream-200 to-forest-100 blur-xl opacity-80" aria-hidden />
               <div data-portrait-frame="doctor" className="relative rounded-[34px] p-2 bg-gradient-to-br from-saffron-400/70 via-cream-100 to-forest-200/60 shadow-luxe-lg">
                 <div className="relative rounded-[27px] overflow-hidden group">
-                  <img
+                  <Image
                     src={IMAGES.clinicCare}
                     alt={`${SITE.doctorName} ${t.doctor.photoAlt}`}
+                    width={857}
+                    height={1000}
+                    sizes="(min-width: 1024px) 500px, (min-width: 640px) 500px, calc(100vw - 2rem)"
                     className="w-full h-[440px] sm:h-[520px] object-cover group-hover:scale-[1.06] transition-transform duration-[1.6s] ease-out"
-                    loading="lazy"
                   />
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-forest-950 via-forest-950/55 to-transparent pt-20 pb-6 px-6">
                     <div className="flex items-center gap-3.5">
-                      <img src={IMAGES.doctorPortrait} alt={SITE.doctorName} className="w-12 h-12 shrink-0 rounded-full object-cover ring-2 ring-saffron-400/80" />
+                      <Image
+                        src={IMAGES.doctorPortrait}
+                        alt={SITE.doctorName}
+                        width={48}
+                        height={48}
+                        sizes="48px"
+                        className="w-12 h-12 shrink-0 rounded-full object-cover ring-2 ring-saffron-400/80"
+                      />
                       <div className="min-w-0">
                         <p className="text-white font-display font-normal text-[19px] leading-tight">{SITE.doctorName}</p>
                         <p className="text-saffron-300/80 text-[10px] font-semibold tracking-[0.16em] uppercase mt-1">{SITE.qualification}</p>

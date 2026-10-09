@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Leaf, ArrowRight, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { Reveal } from "./Reveal";
@@ -56,7 +57,8 @@ export function MethodShowcase() {
             <Leaf className="w-3.5 h-3.5" /> {t.method.eyebrow}
           </p>
           <h2 className="mt-6 font-display font-light text-[clamp(2.1rem,4.6vw,3.4rem)] leading-[1.02] text-white">
-            {t.method.headingPre} <span className="italic text-saffron-300">{t.method.headingHighlight}</span>
+            <span className="block">{t.method.headingPre}</span>
+            <span className="block italic text-saffron-300">{t.method.headingHighlight}</span>
           </h2>
           <p className="mt-5 text-[16px] sm:text-[17.5px] text-white/60 leading-[1.75]">
             {t.method.desc}
@@ -165,12 +167,13 @@ export function MethodShowcase() {
                 else if (dx - start > 40) go(-1);
               }}
             >
-              <img
+              <Image
                 key={cur.img}
                 src={cur.img}
                 alt={cur.name}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.4s] group-hover:scale-105"
-                loading="lazy"
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover transition-transform duration-[1.4s] group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-forest-950 via-forest-950/35 to-transparent" aria-hidden />
               <div className="absolute top-5 left-5 right-5 flex items-center justify-between">

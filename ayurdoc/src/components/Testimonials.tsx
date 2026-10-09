@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Star, Quote, ChevronLeft, ChevronRight, BadgeCheck, Heart } from "lucide-react";
 import { Reveal } from "./Reveal";
@@ -85,7 +86,14 @@ export function Testimonials() {
                           <BadgeCheck className="w-3.5 h-3.5 text-saffron-400" /> {item.tag}
                         </span>
                         <div className="mt-4 flex sm:flex-col items-center sm:items-start gap-4">
-                          <img src={item.img} alt={item.name} className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover shadow-md" loading="lazy" />
+                          <Image
+                            src={item.img}
+                            alt={item.name}
+                            width={80}
+                            height={80}
+                            sizes="(min-width: 640px) 80px, 64px"
+                            className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover shadow-md"
+                          />
                           <div>
                             <p className="font-bold text-forest-950 text-[15px]">{item.name}</p>
                             <p className="text-xs text-forest-600 mt-0.5">{item.role}</p>

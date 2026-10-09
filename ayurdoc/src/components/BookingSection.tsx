@@ -283,14 +283,21 @@ export function BookingSection() {
                   )}
                   <div className="mt-6 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-left max-w-md mx-auto space-y-2">
                     {t.booking.successTips.map((tip, i) => {
-                      // Tips may contain a {refId} token. If we have a reference, fill it in;
-                      // otherwise drop the whole "— mention Ref …" clause so no dangling "Ref" shows.
+                      // Two tip formats are supported:
+                      //   1. New: "… mention Ref {refId}" — token is filled in if refId is known.
+                      //   2. Old (still on a cached deploy): "… mention Ref" — we append the ref
+                      //      when we have one, or strip the trailing clause when we don't, so
+                      //      the line never reads "— mention Ref" on its own.
                       const hasToken = /\{refId\}/.test(tip);
-                      const renderedTip = hasToken
-                        ? refId
+                      const isRefTip = hasToken || /mention\s+Ref/i.test(tip);
+                      let renderedTip = tip;
+                      if (hasToken) {
+                        renderedTip = refId
                           ? tip.replace(/#?\{refId\}/g, refId)
-                          : tip.replace(/\s*—.*$/, "")
-                        : tip;
+                          : tip.replace(/\s*—.*$/, "");
+                      } else if (isRefTip) {
+                        renderedTip = refId ? `${tip} ${refId}` : tip.replace(/\s*—.*$/, "");
+                      }
                       return (
                         <p key={i} className="flex items-start gap-2 text-[13.5px] text-emerald-900">
                           <CheckCircle2 className="w-[18px] h-[18px] shrink-0 mt-0.5" />

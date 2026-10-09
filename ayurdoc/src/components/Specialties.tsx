@@ -26,8 +26,8 @@ export function Specialties() {
             <Star className="w-3.5 h-3.5" fill="currentColor" /> {t.specialties.eyebrow}
           </p>
           <h2 className="mt-6 font-display font-light text-[clamp(2.1rem,4.6vw,3.4rem)] leading-[1.02] text-forest-950">
-            {t.specialties.headingPre}{" "}
-            <span className="italic text-gradient-forest">{t.specialties.headingHighlight}</span>
+            <span className="block">{t.specialties.headingPre}</span>
+            <span className="block italic text-gradient-forest">{t.specialties.headingHighlight}</span>
           </h2>
           <p className="mt-4 text-[16px] sm:text-[17.5px] text-forest-800/65 leading-[1.75]">
             {t.specialties.desc}

@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     alternateLocale: ["hi_IN", "mr_IN", "gu_IN"],
-    images: [{ url: IMAGES.doctorPortrait, width: 1200, height: 1200, alt: SITE.doctorName }],
+    images: [{ url: IMAGES.doctorPortrait, width: 600, height: 900, alt: SITE.doctorName }],
   },
   twitter: {
     card: "summary_large_image",
@@ -78,10 +78,16 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${fraunces.variable} ${inter.variable} ${notoDevanagari.variable} ${notoGujarati.variable}`}>
+      <head>
+        {/* A tiny above-the-fold baseline avoids an unstyled first paint while the
+            generated Tailwind stylesheet is downloaded. */}
+        <style>{`html{background:#fffdf8}body{margin:0;min-height:100vh;background:#fffdf8;color:#0e2b21;font-family:var(--font-sans),Arial,sans-serif}*,::before,::after{box-sizing:border-box}`}</style>
+      </head>
       <body className="bg-[#fffdf8] text-slate-900 antialiased min-h-screen">
         <SkipLink />
         {children}
         <script
+          async
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({

@@ -12,8 +12,8 @@ export const en = {
   hero: {
     badge: "MD KAUMARBHRITYA",
     badgeSub: "Ayurvedic Pediatrician · Balarog Specialist",
-    line1: "Gentle Ayurvedic care for",
-    line2Pre: "your child's",
+    line1: "Gentle Ayurvedic care",
+    line2Pre: "for your child's",
     highlight: "healthiest",
     line3: "childhood",
     descPre: "I'm",
@@ -97,7 +97,7 @@ export const en = {
   specialties: {
     eyebrow: "Areas of exceptional success",
     headingPre: "Six specialties. One promise:",
-    headingHighlight: "heal the cause, not just the symptom.",
+    headingHighlight: "Heal the cause, not just the symptom.",
     desc: "As an MD in Kaumarbhritya (Balarog), I don't do one-size-fits-all. Each plan blends classical formulations, food-as-medicine and daily routine — dosed safely for your child's age and Prakruti.",
     items: [
       {
@@ -182,7 +182,7 @@ export const en = {
   benefits: {
     eyebrow: "Why parents switch to Ayurveda",
     headingPre: "Imagine 6 months from now: a child who",
-    headingHighlight: "eats well, sleeps deep & falls sick rarely.",
+    headingHighlight: "eats well, sleeps deep & rarely falls sick.",
     desc: "That's the transformation parents describe most — not one dramatic overnight cure, but a steady, visible shift from “always catching something” to “thriving.”",
     items: [
       { title: "Fewer antibiotics & steroids", desc: "By fixing digestion & immunity, kids need rescue medicines far less often — winters become peaceful." },
@@ -364,7 +364,7 @@ export const en = {
     successTips: [
       "Keep your child's recent reports & growth records ready",
       "Note 2–3 photos if skin/allergy concern (helps a lot)",
-      "Urgent? WhatsApp us directly — mention Ref",
+      "Urgent? WhatsApp us directly — mention Ref {refId}",
     ],
     successBtn: "Submit another enquiry",
     errors: {
