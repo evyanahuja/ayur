@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { PLANS } from "@/content/site";
 
 type InquiryPayload = {
   parentName: string;
@@ -13,6 +14,7 @@ type InquiryPayload = {
   preferredDate?: string;
   preferredTime?: string;
   planInterest?: string;
+  currency?: string;
   message?: string;
 };
 
@@ -35,6 +37,24 @@ const CONCERN_LABELS: Record<string, string> = {
   other: "Other Concern",
 };
 
+const PLAN_NAMES: Record<string, string> = {
+  first: "First Consultation",
+  wellness: "Bal Wellness Program (3 months)",
+  followup: "Follow-up Care",
+  suvarna: "Suvarnaprashan Only",
+  unsure: "Not sure — needs guidance",
+};
+
+/** Turn a plan key like "first" into "First Consultation — ₹400" for the doctor. */
+export function planLabel(key: string | undefined, currency?: string) {
+  if (!key) return "";
+  const name = PLAN_NAMES[key] ?? key;
+  const plan = PLANS.find((p) => p.id === key);
+  if (!plan) return name;
+  const price = currency === "USD" ? `${plan.usdPrice} (USD)` : plan.price;
+  return `${name} — ${price}`;
+}
+
 export function concernLabel(key: string) {
   return CONCERN_LABELS[key] ?? key;
 }
@@ -48,11 +68,11 @@ function escapeHtml(value: string | undefined) {
     .replaceAll("'", "&#039;");
 }
 
-function referenceLabel(id: number | null) {
-  return id ? ` #${id}` : "";
+function referenceLabel(ref: string | null) {
+  return ref ? ` ${ref}` : "";
 }
 
-function buildHtml(p: InquiryPayload, id: number | null) {
+function buildHtml(p: InquiryPayload, ref: string | null) {
   const parentName = escapeHtml(p.parentName);
   const phone = escapeHtml(p.phone);
   const email = escapeHtml(p.email) || "—";
@@ -63,13 +83,13 @@ function buildHtml(p: InquiryPayload, id: number | null) {
   const symptoms = escapeHtml(p.symptoms) || "—";
   const preferredDate = escapeHtml(p.preferredDate) || "Flexible";
   const preferredTime = escapeHtml(p.preferredTime);
-  const planInterest = escapeHtml(p.planInterest) || "Not specified";
+  const planInterest = escapeHtml(planLabel(p.planInterest, p.currency)) || "Not specified";
   const message = escapeHtml(p.message);
 
   return `
   <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fffdf8;border:1px solid #e7e0cf;border-radius:16px;overflow:hidden">
     <div style="background:#0e2b21;color:#fdf0d3;padding:24px 28px">
-      <p style="margin:0;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#f4bc4f">New Patient Inquiry${referenceLabel(id)}</p>
+      <p style="margin:0;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#f4bc4f">New Patient Inquiry${referenceLabel(ref)}</p>
       <h2 style="margin:8px 0 0;font-size:22px">🌿 ${parentName} — for ${childName} (${childAge})</h2>
       <p style="margin:6px 0 0;font-size:14px;color:#d2e2c9">${concern} • ${p.preferredMode === "online" ? "Online Consultation" : "In-Clinic Visit"}</p>
     </div>
@@ -89,20 +109,20 @@ function buildHtml(p: InquiryPayload, id: number | null) {
   </div>`;
 }
 
-function buildText(p: InquiryPayload, id: number | null) {
-  return `New Patient Inquiry${referenceLabel(id)}
+function buildText(p: InquiryPayload, ref: string | null) {
+  return `New Patient Inquiry${referenceLabel(ref)}
 Parent: ${p.parentName} (${p.phone}, ${p.email || "no email"})
 Child: ${p.childName}, ${p.childAge}${p.childGender ? `, ${p.childGender}` : ""}
 Concern: ${concernLabel(p.concernCategory)}
 Symptoms: ${p.symptoms || "-"}
 Mode: ${p.preferredMode} | Slot: ${p.preferredDate || "Flexible"} ${p.preferredTime || ""}
-Plan: ${p.planInterest || "-"}
+Plan: ${planLabel(p.planInterest, p.currency) || "-"}
 Message: ${p.message || "-"}`;
 }
 
 export async function sendDoctorNotification(
   payload: InquiryPayload,
-  id: number | null
+  ref: string | null
 ): Promise<MailResult> {
   const doctorEmail =
     process.env.DOCTOR_EMAIL?.trim() ||
@@ -111,7 +131,7 @@ export async function sendDoctorNotification(
     "";
 
   console.log(
-    `[inquiry${referenceLabel(id)}] Notification requested for ${payload.childName}. Recipient configured: ${Boolean(doctorEmail)}`
+    `[inquiry${referenceLabel(ref)}] Notification requested for ${payload.childName}. Recipient configured: ${Boolean(doctorEmail)}`
   );
 
   if (!doctorEmail) {
@@ -122,7 +142,7 @@ export async function sendDoctorNotification(
     };
   }
 
-  const subject = `🌿 New Patient: ${payload.childName} (${payload.childAge}) — ${concernLabel(payload.concernCategory)}`;
+  const subject = `🌿 New Patient${referenceLabel(ref)}: ${payload.childName} (${payload.childAge}) — ${concernLabel(payload.concernCategory)}`;
 
   if (process.env.RESEND_API_KEY?.trim()) {
     try {
@@ -137,8 +157,8 @@ export async function sendDoctorNotification(
           to: [doctorEmail],
           reply_to: payload.email || undefined,
           subject,
-          html: buildHtml(payload, id),
-          text: buildText(payload, id),
+          html: buildHtml(payload, ref),
+          text: buildText(payload, ref),
         }),
       });
       const responseText = await res.text();
@@ -185,8 +205,8 @@ export async function sendDoctorNotification(
         to: doctorEmail,
         replyTo: payload.email || undefined,
         subject,
-        text: buildText(payload, id),
-        html: buildHtml(payload, id),
+        text: buildText(payload, ref),
+        html: buildHtml(payload, ref),
       });
       console.log("SMTP accepted inquiry notification:", info.messageId);
       return { sent: true, provider: "smtp", reason: "Email notification sent." };
