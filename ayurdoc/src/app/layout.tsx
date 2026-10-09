@@ -42,8 +42,11 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.siteUrl),
-  title: `${SITE.doctorName} | MD Kaumarbhritya — Ayurvedic Child Health Specialist`,
-  description: `Gentle, root-cause Ayurvedic care for children by ${SITE.doctorName} (MD Kaumarbhritya – Balarog). Exceptional results in skin diseases, neurodevelopmental concerns, growth, respiratory issues, allergies & lifestyle disorders. Book online or in-clinic. Available in English, Hindi, Marathi & Gujarati.`,
+  alternates: {
+    canonical: "/",
+  },
+  title: `${SITE.doctorName} | Ayurvedic Child Specialist`,
+  description: `Gentle, root-cause Ayurvedic pediatric care by ${SITE.doctorName} (MD Kaumarbhritya). Treat skin, growth, developmental & allergy concerns naturally.`,
   keywords: [
     "ayurvedic doctor for kids",
     "child health specialist ayurveda",
@@ -65,7 +68,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     alternateLocale: ["hi_IN", "mr_IN", "gu_IN"],
-    images: [{ url: IMAGES.doctorPortrait, width: 600, height: 900, alt: SITE.doctorName }],
+    images: [{ url: IMAGES.doctorPortrait, width: 1024, height: 1536, alt: SITE.doctorName }],
   },
   twitter: {
     card: "summary_large_image",
@@ -78,16 +81,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${fraunces.variable} ${inter.variable} ${notoDevanagari.variable} ${notoGujarati.variable}`}>
-      <head>
-        {/* A tiny above-the-fold baseline avoids an unstyled first paint while the
-            generated Tailwind stylesheet is downloaded. */}
-        <style>{`html{background:#fffdf8}body{margin:0;min-height:100vh;background:#fffdf8;color:#0e2b21;font-family:var(--font-sans),Arial,sans-serif}*,::before,::after{box-sizing:border-box}`}</style>
-      </head>
       <body className="bg-[#fffdf8] text-slate-900 antialiased min-h-screen">
         <SkipLink />
         {children}
         <script
-          async
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
