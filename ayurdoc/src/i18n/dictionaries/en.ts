@@ -404,6 +404,8 @@ export const en = {
   floating: {
     whatsappAria: "Chat on WhatsApp",
     chatTooltip: "Chat with clinic 💬",
+    bookTooltip: "Book a consultation",
+    bookAria: "Book a consultation with Dr. Priyanka", 
     backToTop: "Back to top",
     bookBtn: "Book Your Child's Visit",
   },
