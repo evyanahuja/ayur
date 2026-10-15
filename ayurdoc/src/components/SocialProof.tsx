@@ -7,7 +7,8 @@ import { CONDITIONS, STATS } from "@/content/site";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 function Counter({ target, suffix = "", duration = 1600 }: { target: number; suffix?: string; duration?: number }) {
-  const [val, setVal] = useState(0);
+  // Start at the real number so server HTML (what Google indexes) never says "0+".
+  const [val, setVal] = useState(target);
   const ref = useRef<HTMLSpanElement>(null);
   const [started, setStarted] = useState(false);
 
@@ -29,6 +30,7 @@ function Counter({ target, suffix = "", duration = 1600 }: { target: number; suf
 
   useEffect(() => {
     if (!started) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let raf: number;
     const t0 = performance.now();
     const tick = (t: number) => {

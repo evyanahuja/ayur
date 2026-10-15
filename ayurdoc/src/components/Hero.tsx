@@ -20,9 +20,11 @@ import { LineReveal, CredentialGrid } from "./luxe";
 import { SectionMandalas } from "./ScrollMandala";
 
 function useCountUp(target: number, duration = 2200, started: boolean) {
-  const [val, setVal] = useState(0);
+  // Start at the real number so server HTML (what Google indexes) never says "0+".
+  const [val, setVal] = useState(target);
   useEffect(() => {
     if (!started) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let raf: number;
     const t0 = performance.now();
     const tick = (t: number) => {

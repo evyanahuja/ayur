@@ -162,7 +162,7 @@ export function BookingSection() {
   const shortDoc = SITE.doctorName.split(" ").slice(0, 2).join(" ");
 
   return (
-    <section id="book" className="mandala-section relative py-12 sm:py-16 scroll-mt-20 overflow-hidden">
+    <section id="book" className="mandala-section relative py-12 sm:py-16 scroll-mt-24 overflow-hidden">
       <SectionMandalas id="book" palette="lotus" side="right" dark />
       <div className="absolute inset-0 -z-10" aria-hidden>
         <div className="absolute inset-0 bg-gradient-to-b from-forest-950 via-[#0f3527] to-forest-950" />
