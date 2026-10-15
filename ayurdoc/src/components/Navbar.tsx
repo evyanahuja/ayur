@@ -68,26 +68,26 @@ export function Navbar() {
           scrolled ? "py-2.5" : "py-5"
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="mx-auto max-w-7xl px-2.5 sm:px-6">
           <nav
             aria-label={t.nav.primaryNav}
             className={cn(
-              "flex items-center justify-between gap-3 rounded-full px-4 sm:px-6 transition-all duration-700",
+              "flex items-center justify-between gap-1.5 rounded-full px-2.5 sm:gap-3 sm:px-6 transition-all duration-700",
               scrolled
                 ? "glass gold-hairline shadow-luxe py-2.5"
                 : "bg-white/25 backdrop-blur-md border border-white/40 py-3.5"
             )}
           >
-            <a href="#top" className="flex items-center gap-3 group shrink-0" aria-label={`${SITE.doctorName} — Home`}>
-              <span className="relative grid place-items-center w-11 h-11 rounded-2xl bg-gradient-to-br from-forest-800 via-forest-900 to-forest-950 text-saffron-300 shadow-lg group-hover:scale-105 group-hover:rotate-[5deg] transition-transform duration-700">
+            <a href="#top" className="flex min-w-0 items-center gap-2 group shrink-0 sm:gap-3" aria-label={`${SITE.doctorName} — Home`}>
+              <span className="relative grid place-items-center w-10 h-10 shrink-0 rounded-2xl bg-gradient-to-br from-forest-800 via-forest-900 to-forest-950 text-saffron-300 shadow-lg group-hover:scale-105 group-hover:rotate-[5deg] transition-transform duration-700 sm:w-11 sm:h-11">
                 <Leaf className="w-[18px] h-[18px]" strokeWidth={2} />
                 <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-gradient-to-br from-saffron-300 to-saffron-500 ring-2 ring-cream-50" />
               </span>
-              <span className="leading-tight">
-                <span className="block font-display font-normal text-[17px] sm:text-[19px] text-forest-950 tracking-[-0.02em]">
-                  {SITE.doctorName}
+              <span className="min-w-0 leading-tight">
+                <span className="block whitespace-nowrap font-display font-normal text-[14px] sm:text-[19px] text-forest-950 tracking-[-0.02em]">
+                  <span className="min-[380px]:hidden">Dr. Priyanka</span><span className="hidden min-[380px]:inline">{SITE.doctorName}</span>
                 </span>
-                <span className="flex items-center gap-1.5 text-[9.5px] sm:text-[10px] font-semibold tracking-[0.12em] text-saffron-700 uppercase mt-0.5 whitespace-nowrap">
+                <span className="hidden sm:flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.12em] text-saffron-700 uppercase mt-0.5 whitespace-nowrap">
                   <Sparkles className="w-2.5 h-2.5 shrink-0" /> {SITE.shortCreds}
                 </span>
               </span>
@@ -139,19 +139,20 @@ export function Navbar() {
               </Magnetic>
             </div>
 
-            <div className="flex md:hidden items-center gap-2">
+            <div className="flex md:hidden shrink-0 items-center gap-1">
               <a
                 href={telLink}
                 aria-label={`${t.nav.call} — ${SITE.phoneDisplay}`}
                 title={SITE.phoneDisplay}
-                className="grid place-items-center w-11 h-11 rounded-full border border-saffron-500/30 bg-cream-100/60 text-forest-800 hover:bg-saffron-500 hover:text-white hover:border-saffron-500 transition-all duration-500"
+                className="hidden sm:grid place-items-center w-11 h-11 rounded-full border border-saffron-500/30 bg-cream-100/60 text-forest-800 hover:bg-saffron-500 hover:text-white hover:border-saffron-500 transition-all duration-500"
               >
                 <Phone className="w-[17px] h-[17px]" />
               </a>
-              <LanguageSwitcher compact />
+              <LanguageSwitcher compact mobile />
               <button
+                type="button"
                 onClick={() => setOpen(!open)}
-                className="lg:hidden grid place-items-center w-11 h-11 rounded-full bg-forest-950 text-saffron-300 hover:bg-forest-900 transition-colors"
+                className="lg:hidden grid shrink-0 place-items-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-forest-950 text-saffron-300 hover:bg-forest-900 transition-colors"
                 aria-expanded={open}
                 aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
               >
@@ -206,6 +207,9 @@ export function Navbar() {
               </a>
             ))}
           </div>
+          <a href={telLink} onClick={() => setOpen(false)} className="mt-3 flex items-center justify-center gap-2 rounded-full border border-saffron-500/30 px-5 py-3 text-[14px] font-medium text-forest-900 sm:hidden">
+            <Phone className="h-4 w-4 text-saffron-600" /> {t.nav.call} · {SITE.phoneDisplay}
+          </a>
           <a
             href="#book"
             onClick={() => setOpen(false)}
