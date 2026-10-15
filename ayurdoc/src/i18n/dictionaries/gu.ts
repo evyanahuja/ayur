@@ -405,6 +405,8 @@ export const gu: Dictionary = {
   floating: {
     whatsappAria: "WhatsApp પર ચેટ કરો",
     chatTooltip: "ક્લિનિક સાથે ચેટ 💬",
+    bookTooltip: "પરામર્શ બુક કરો",
+    bookAria: "ડૉ. પ્રિયંકા સાથે પરામર્શ બુક કરો",
     backToTop: "ઉપર જાઓ",
     bookBtn: "તમારા બાળકની મુલાકાત બુક કરો",
   },

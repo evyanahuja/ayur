@@ -405,6 +405,8 @@ export const mr: Dictionary = {
   floating: {
     whatsappAria: "WhatsApp वर गप्पा मारा",
     chatTooltip: "क्लिनिकशी गप्पा 💬",
+    bookTooltip: "सल्ला बुक करा",
+    bookAria: "डॉ. प्रियंका यांच्याशी सल्ला बुक करा",
     backToTop: "वर जा",
     bookBtn: "तुमच्या बाळाची भेट बुक करा",
   },
