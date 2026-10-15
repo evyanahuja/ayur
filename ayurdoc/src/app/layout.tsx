@@ -4,6 +4,8 @@ import { Fraunces, Inter, Noto_Sans_Devanagari, Noto_Sans_Gujarati } from "next/
 import "./globals.css";
 import { SITE, STATS, IMAGES } from "@/content/site";
 import { SkipLink } from "@/components/SkipLink";
+import { SITE, SEO } from "@/content/site";
+import { buildJsonLd } from "@/lib/jsonld";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -42,85 +44,66 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.siteUrl),
-  alternates: {
-    canonical: "/",
+  title: { default: SEO.title, template: SEO.titleTemplate },
+  description: SEO.description,
+  applicationName: SITE.clinicName,
+  authors: [{ name: SITE.doctorName, url: SITE.siteUrl }],
+  creator: SITE.doctorName,
+  category: "health",
+  alternates: { canonical: "/" },
+  formatDetection: { telephone: true, email: true, address: true },
+  verification: {
+    google: SEO.verification.google || undefined,
+    other: SEO.verification.bing ? { "msvalidate.01": SEO.verification.bing } : undefined,
   },
-  title: `${SITE.doctorName} | Ayurvedic Child Specialist`,
-  description: `Gentle, root-cause Ayurvedic pediatric care by ${SITE.doctorName} (MD Kaumarbhritya). Treat skin, growth, developmental & allergy concerns naturally.`,
-  keywords: [
-    "ayurvedic doctor for kids",
-    "child health specialist ayurveda",
-    "Kaumarbhritya",
-    "Balarog",
-    SITE.doctorName,
-    "Suvarnaprashan",
-    "child skin ayurveda",
-    "ADHD ayurveda",
-    "child growth ayurveda",
-    "बाल आयुर्वेद",
-    "बालरोग आयुर्वेद",
-    "બાળ આયુર્વેદ",
-  ],
-  authors: [{ name: SITE.doctorName }],
-
-  // ✅ NEW — favicon links (renders <link rel="icon">, apple-touch-icon & manifest)
-  icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "48x48" },
-      { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-    ],
-    shortcut: "/favicon.ico",
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
-  },
-  manifest: "/site.webmanifest",
-
   openGraph: {
-    title: `${SITE.doctorName} — Gentle Ayurvedic Care for Thriving Kids`,
-    description: `MD Kaumarbhritya (Balarog) specialist helping ${STATS.patientsTreated.toLocaleString("en-IN")}+ children heal from skin, growth, respiratory, allergy & neurodevelopmental concerns — naturally.`,
     type: "website",
-    locale: "en_IN",
-    alternateLocale: ["hi_IN", "mr_IN", "gu_IN"],
-    images: [{ url: IMAGES.doctorPortrait, width: 1024, height: 1536, alt: SITE.doctorName }],
+    url: "/",
+    siteName: SITE.clinicName,
+    locale: SEO.locale,
+    title: SEO.title,
+    description: SEO.description,
+    // no images here → Next uses app/opengraph-image.tsx automatically
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE.doctorName} | Ayurvedic Child Specialist`,
-    description: "Root-cause Ayurvedic healing for kids — skin, growth, immunity, development & more.",
+    title: SEO.title,
+    description: SEO.description,
   },
-  robots: { index: true, follow: true },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }, { url: "/icon", sizes: "512x512", type: "image/png" }],
+    apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
+  },
+  manifest: "/manifest.webmanifest",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
+  const jsonLd = buildJsonLd();
   return (
-    <html lang="en" className={`${fraunces.variable} ${inter.variable} ${notoDevanagari.variable} ${notoGujarati.variable}`}>
+    <html lang="en-IN" className={`${fraunces.variable} ${inter.variable}`}>
       <body className="bg-[#fffdf8] text-slate-900 antialiased min-h-screen">
         <SkipLink />
         {children}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Physician",
-              name: SITE.doctorName,
-              medicalSpecialty: "Ayurvedic Pediatrics (Kaumarbhritya - Balarog)",
-              description:
-                "MD Kaumarbhritya Ayurvedic doctor specializing in child skin diseases, neurodevelopmental, growth, respiratory, allergies and lifestyle disorders.",
-              areaServed: "IN",
-              telephone: SITE.phoneHref,
-              email: SITE.email,
-              url: SITE.siteUrl,
-              image: `${SITE.siteUrl}/icon-512.png`,
-              aggregateRating: {
-                "@type": "AggregateRating",
-                ratingValue: STATS.rating,
-                reviewCount: STATS.reviewCount,
-              },
-            }),
-          }}
+          // JSON.stringify output is safe; escape "<" to prevent script break-out
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
         />
       </body>
     </html>
   );
 }
+
+/* Fonts: keep Fraunces + Inter global. Load Noto Devanagari / Gujarati only in the
+   /hi and /gu locale layouts (phase 2) — saves ~180 KB on first paint. */
