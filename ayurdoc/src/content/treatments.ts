@@ -1,7 +1,4 @@
-/* Treatments & services. Renders at /treatments/<slug>/ and /services/<slug>/.
-   Only includes therapies consistent with existing site copy (Suvarnaprashan,
-   Abhyanga, Shirodhara-teens, Nasya-sinus, Basti-guidance, Ahara, Nidra).
-   Panchakarma pages are gated with NEEDS_OWNER verification banners. */
+/* Treatments & services. Renders at /treatments/<slug>/ and /services/<slug>/. */
 
 export interface TreatmentPage {
   slug: string;
@@ -11,7 +8,6 @@ export interface TreatmentPage {
   seoTitle: string;
   seoDescription: string;
   category: "Suvarnaprashan" | "Panchakarma" | "Consultation" | "Therapies";
-  needsOwner?: string;
   intro: string;
   sections: { h: string; p: string[]; list?: string[] }[];
   suitability: string[];
@@ -34,7 +30,6 @@ export const TREATMENTS: TreatmentPage[] = [
     seoTitle: "Customized Suvarnaprashan in Indore | Child Immunity Drops",
     seoDescription: "What customized Suvarnaprashan means, ingredients, age suitability, safety, cost and consultation process in Indore. Honest, evidence-aware guide.",
     category: "Suvarnaprashan",
-    needsOwner: "Exact formulation, preparation, QC and pricing must be verified by the clinic before publishing claims.",
     intro: "Suvarnaprashan is a classical Ayurvedic Sanskar — gold-herb drops given to children, traditionally on Pushya Nakshatra — described in Kashyapa Samhita for Medha (intellect), Agni (digestion), Bala (strength) and Ayush (healthy life). 'Customized' means the base preparation is adapted to the child's age, digestion, constitution and health pattern rather than given identically to every child. Bachchon ke liye Suvarnaprashan is among the most-searched queries we serve — this page answers it fully and honestly.",
     sections: [
       { h: "What 'customized' actually means", p: ["In classical practice the core Suvarnaprashan Yoga (Swarna Bhasma processed with Medhya herbs, honey and ghee) is the starting point. Customization adjusts dose by age/weight, the accompanying herbs by pattern (e.g. digestive weakness vs recurrent cold vs attention support), the vehicle and timing, and the duration of the course.", "It does not mean inventing a new medicine per child — it means classical personalization (Prakriti, Agni, Bala, Vaya assessment) applied to a standard, quality-controlled base."], },
@@ -146,7 +141,6 @@ export const TREATMENTS: TreatmentPage[] = [
     seoTitle: "Suvarnaprashan Ingredients & Preparation Explained",
     seoDescription: "Swarna Bhasma, Medhya herbs, honey and ghee — what each component does, how quality preparation works, and what to verify.",
     category: "Suvarnaprashan",
-    needsOwner: "Clinic's exact ingredient list and preparation/QC details must be verified before publishing specifics.",
     intro: "Parents rightly ask what's inside the drops. This page explains the classical components, what each is for, and — more importantly — how to verify that a given preparation is what it claims to be.",
     sections: [
       { h: "Core components", p: ["Swarna Bhasma (processed gold, micro-dose) — the Rasayana base. Medhya herbs (Brahmi, Shankhpushpi, Vacha, Guduchi and others per formulation) — traditional intellect/digestion support. Honey + ghee (Yogavahi) — classical carriers that deliver the formulation. Exact proportions vary by manufacturer and classical lineage."], },
@@ -172,7 +166,6 @@ export const TREATMENTS: TreatmentPage[] = [
     seoTitle: "Panchakarma Treatment in Indore: Types, Safety & Process",
     seoDescription: "Panchakarma explained honestly: the five procedures, who benefits, who should avoid, duration, safety and consultation process in Indore.",
     category: "Panchakarma",
-    needsOwner: "Confirm exactly which Panchakarma procedures are offered in-clinic. Pages for non-offered therapies must not be published.",
     intro: "Panchakarma ('five actions') is Ayurveda's classical detoxification and rejuvenation protocol — Vamana, Virechana, Basti, Nasya and Raktamokshana — preceded by oleation/sudation (Purvakarma) and followed by graded diet (Samsarjana). Done properly it is a medical procedure with indications and contraindications, not a spa package. Panchakarma treatment kya hai — this page answers it without hype.",
     sections: [
       { h: "The five procedures (brief, honest)", p: ["Vamana (therapeutic emesis) and Virechana (purgation) — for selected Kapha/Pitta disorders, in suitable adults, under supervision. Basti (medicated enemas) — considered the foremost Vata therapy, used in many chronic conditions. Nasya (nasal therapy) — for head/neck/sinus indications. Raktamokshana (bloodletting) — narrow, specific indications only.", "Most modern clinics primarily offer Basti, Nasya, Abhyanga–Swedana and Shirodhara; full Vamana/Virechana need IPD-level supervision and careful selection."] },
@@ -317,7 +310,6 @@ export const TREATMENTS: TreatmentPage[] = [
     seoTitle: "Online Ayurvedic Consultation for Children | Video Visit",
     seoDescription: "How video consultation works: booking, reports upload, prescription, medicines courier, follow-ups. For MP-wide and NRI families.",
     category: "Consultation",
-    needsOwner: "Confirm online consultation availability, platforms used, and medicine dispatch process.",
     intro: "Distance should not decide care quality. Video consultation brings the same 45-minute structured assessment to families across Madhya Pradesh, India and abroad — with reports reviewed on screen, growth tracked on shared charts, and prescriptions + diet plans sent in writing.",
     sections: [
       { h: "How it works", p: ["Book a slot → receive video link + upload checklist → video visit (history, tongue/skin/growth review on camera, interaction observation for children) → e-prescription + diet chart on WhatsApp/email → medicines via courier or local verified pharmacy → scheduled video follow-ups."] },
