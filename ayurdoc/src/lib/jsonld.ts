@@ -1,10 +1,6 @@
 /**
  * Structured data (schema.org JSON-LD) for Google / Bing.
- * All data comes from src/content/site.ts — edit there, not here.
- *
- * Deliberately NOT included: aggregateRating. Google does not allow a business
- * to mark up star ratings about itself on its own website ("self-serving
- * reviews"). Collect reviews on your Google Business Profile instead.
+ * Includes verified medical registration (Reg. No. 63934) and alumniOf credentials.
  */
 import { SITE, SEO, STATS, FAQS, SPECIALTIES, IMAGES } from "@/content/site";
 
@@ -66,14 +62,42 @@ export function buildJsonLd() {
         "@id": doctorId,
         name: SITE.doctorName,
         image: abs(IMAGES.doctorPortrait),
-        url: SITE.siteUrl,
+        url: `${SITE.siteUrl}/about-doctor/`,
         telephone: SITE.phoneHref,
         email: SITE.email,
+        identifier: {
+          "@type": "PropertyValue",
+          name: "Medical Registration Number",
+          value: SITE.registrationNumber,
+        },
         medicalSpecialty: "Pediatric",
-        description: `${SITE.qualification}. Ayurvedic child specialist with ${STATS.yearsExperience}+ years in Balarog, treating skin, growth, respiratory, allergy and neurodevelopmental concerns in children.`,
+        description: `${SITE.qualification} (Reg. No. ${SITE.registrationNumber}). Post-graduation (MD — Pediatrician / Kaumarbhritya) from ${SITE.pgCollege} and BAMS from ${SITE.ugCollege}. Ayurvedic child specialist with ${STATS.yearsExperience}+ years in Balarog.`,
+        alumniOf: [
+          {
+            "@type": "CollegeOrUniversity",
+            name: SITE.pgCollege,
+          },
+          {
+            "@type": "CollegeOrUniversity",
+            name: SITE.ugCollege,
+          },
+        ],
         hasCredential: [
-          { "@type": "EducationalOccupationalCredential", credentialCategory: "degree", name: "BAMS" },
-          { "@type": "EducationalOccupationalCredential", credentialCategory: "degree", name: "MD Kaumarbhritya (Balarog)" },
+          {
+            "@type": "EducationalOccupationalCredential",
+            credentialCategory: "degree",
+            name: `MD — Pediatrician (Kaumarbhritya / Balarog), ${SITE.pgCollege}`,
+          },
+          {
+            "@type": "EducationalOccupationalCredential",
+            credentialCategory: "degree",
+            name: `BAMS, ${SITE.ugCollege}`,
+          },
+          {
+            "@type": "EducationalOccupationalCredential",
+            credentialCategory: "license",
+            name: `Medical Registration No. ${SITE.registrationNumber}`,
+          },
         ],
         knowsLanguage: ["hi", "mr", "en", "gu"],
         address,
@@ -85,7 +109,7 @@ export function buildJsonLd() {
         "@id": websiteId,
         url: SITE.siteUrl,
         name: SITE.clinicName,
-        inLanguage: "en-IN",
+        inLanguage: ["en-IN", "hi-IN", "mr-IN", "gu-IN"],
         publisher: { "@id": clinicId },
       },
       {
