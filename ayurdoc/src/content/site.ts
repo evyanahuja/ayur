@@ -17,8 +17,13 @@ import {
  * -------------------------------------------------------------------------- */
 export const SITE = {
   doctorName: "Dr. Priyanka Likhar",
-  qualification: "BAMS • MD Kaumarbhritya (Balarog)",
-  shortCreds: "MD Kaumarbhritya • BAMS",
+  registrationNumber: "63934",
+  pgDegree: "MD — Pediatrician (Kaumarbhritya / Balarog)",
+  pgCollege: "Institute of Teaching and Research in Ayurveda",
+  ugDegree: "BAMS",
+  ugCollege: "Dr. Vandanatai J. Dhone Gramin Ayurved College, Patur",
+  qualification: "BAMS • MD (Pediatrician — Kaumarbhritya) • Reg. No. 63934",
+  shortCreds: "MD (Pediatrics) • BAMS • Reg. 63934",
   clinicName: "BalChikitsa Ayurved Clinic",
 
   // 📞 Phone — displayed on site
