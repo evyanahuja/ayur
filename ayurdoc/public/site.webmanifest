@@ -1,0 +1,14 @@
+{
+  "name": "Dr. Priyanka Likhar — BalChikitsa Ayurved Clinic, Indore",
+  "short_name": "BalChikitsa",
+  "description": "Ayurvedic child healthcare in Indore + online: ADHD support, speech delay, skin, appetite, growth, immunity, sleep & Suvarnaprashan.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fffefb",
+  "theme_color": "#051410",
+  "lang": "en-IN",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
