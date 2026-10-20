@@ -12,7 +12,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 export function Benefits() {
   const { t } = useLanguage();
   const items = BENEFITS.map((b, i) => ({ ...b, ...t.benefits.items[i] }));
-  const shortName = SITE.doctorName.split(" ").slice(0, 2).join(" ");
+  const shortName = t.site.shortDoctorName;
 
   return (
     <section id="benefits" className="mandala-section relative py-12 sm:py-16 scroll-mt-24">

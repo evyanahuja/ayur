@@ -102,7 +102,7 @@ export function Hero() {
             <p
               className={`mt-4 sm:mt-5 text-[15px] sm:text-[16.5px] lg:text-[16px] leading-[1.7] text-forest-800/70 max-w-xl transition-all duration-1000 delay-[700ms] ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}
             >
-              {t.hero.descPre} <strong className="text-forest-950 font-semibold">{SITE.doctorName}</strong> {t.hero.descMid1}{" "}
+              {t.hero.descPre} <strong className="text-forest-950 font-semibold">{t.site.doctorName}</strong> {t.hero.descMid1}{" "}
               <em className="font-display italic text-forest-900">{t.hero.rootCause}</em> {t.hero.descMid2}
             </p>
 
@@ -208,7 +208,7 @@ export function Hero() {
                     <p className="mt-2.5 font-display font-light text-white text-[17px] sm:text-[19px] leading-[1.3]">
                       “{t.hero.quote1} <em className="text-saffron-300">{t.hero.quoteHighlight}</em>{t.hero.quote2}”
                     </p>
-                    <p className="mt-1.5 text-[11px] sm:text-[12px] text-white/60 font-medium tracking-[0.14em] uppercase">— {SITE.doctorName}</p>
+                    <p className="mt-1.5 text-[11px] sm:text-[12px] text-white/60 font-medium tracking-[0.14em] uppercase">— {t.site.doctorName}</p>
                   </div>
                 </div>
               </div>

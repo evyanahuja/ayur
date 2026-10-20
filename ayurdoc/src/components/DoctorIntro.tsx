@@ -44,8 +44,8 @@ export function DoctorIntro() {
                         className="w-12 h-12 shrink-0 rounded-full object-cover ring-2 ring-saffron-400/80"
                       />
                       <div className="min-w-0">
-                        <p className="text-white font-display font-normal text-[19px] leading-tight">{SITE.doctorName}</p>
-                        <p className="text-saffron-300/80 text-[10px] font-semibold tracking-[0.16em] uppercase mt-1">{SITE.qualification}</p>
+                        <p className="text-white font-display font-normal text-[19px] leading-tight">{t.site.doctorName}</p>
+                        <p className="text-saffron-300/80 text-[10px] font-semibold tracking-[0.16em] uppercase mt-1">{t.site.qualification}</p>
                       </div>
                     </div>
                   </div>

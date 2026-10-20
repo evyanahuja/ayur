@@ -159,7 +159,7 @@ export function BookingSection() {
     );
 
   const labelCls = "block text-[10.5px] font-semibold tracking-[0.14em] uppercase text-forest-800 mb-2";
-  const shortDoc = SITE.doctorName.split(" ").slice(0, 2).join(" ");
+  const shortDoc = t.site.shortDoctorName;
 
   return (
     <section id="book" className="mandala-section relative py-12 sm:py-16 scroll-mt-24 overflow-hidden">
@@ -226,7 +226,7 @@ export function BookingSection() {
                   { icon: Clock, t: t.site.hours, s: t.site.hoursNote },
                   { icon: Phone, t: SITE.phoneDisplay, s: t.booking.repliesSameDay },
                   { icon: Mail, t: SITE.email, s: t.booking.formAlerts },
-                  { icon: MapPin, t: SITE.clinicName, s: t.site.addressFull },
+                  { icon: MapPin, t: t.site.clinicName, s: t.site.addressFull },
                 ].map((c) => (
                   <li key={c.t} className="flex items-center gap-3.5">
                     <span className="grid place-items-center w-10 h-10 rounded-xl bg-white/10 text-saffron-300 shrink-0"><c.icon className="w-[18px] h-[18px]" /></span>
