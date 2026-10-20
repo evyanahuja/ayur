@@ -1,12 +1,16 @@
-/* Central SEO + business configuration.
-   Everything the templates, sitemap, robots and JSON-LD need lives here.
-   Verified values come from src/content/site.ts. Anything marked
-   NEEDS_OWNER must be supplied by the clinic owner (see /owner-checklist). */
+/* Central SEO + verified clinic & practitioner configuration + pure JSON-LD helpers.
+   Pure TypeScript module (safe in both Server Components and Client Components). */
 
 export const SITE_URL = "https://ayurveddoctor.netlify.app";
 export const SITE_NAME = "BalChikitsa Ayurved Clinic";
 export const DOCTOR_NAME = "Dr. Priyanka Likhar";
-export const DOCTOR_CREDS = "BAMS, MD Kaumarbhritya (Balarog)";
+export const DOCTOR_REG_NO = "63934";
+export const DOCTOR_CREDS = "BAMS, MD (Ayurvedic Pediatrician — Kaumarbhritya) • Reg. No. 63934";
+export const DOCTOR_PG_DEGREE = "MD — Pediatrician (Kaumarbhritya / Balarog)";
+export const DOCTOR_PG_COLLEGE = "Institute of Teaching and Research in Ayurveda (ITRA)";
+export const DOCTOR_UG_DEGREE = "BAMS (Bachelor of Ayurvedic Medicine & Surgery)";
+export const DOCTOR_UG_COLLEGE = "Dr. Vandanatai J. Dhone Gramin Ayurved College, Patur";
+
 export const CLINIC_PHONE_DISPLAY = "+91 98607 75010";
 export const CLINIC_PHONE_HREF = "+919860775010";
 export const CLINIC_WHATSAPP = "919860775010";
@@ -21,17 +25,6 @@ export const CLINIC_HOURS = "Mon–Sat • 10 AM–2 PM & 5 PM–8 PM IST";
 export const CLINIC_MAPS_URL = "https://maps.app.goo.gl/vhRYqg63chcGXLrr6";
 export const DEFAULT_LOCALE = "en-IN";
 
-/* Owner must verify / supply these — rendered as editable placeholders, never invented */
-export const NEEDS_OWNER = {
-  registrationNumber: "NEEDS_OWNER: State Ayurvedic Council registration number + year",
-  registrationCouncil: "NEEDS_OWNER: e.g. Madhya Pradesh Ayurvedic Evam Unani Chikitsa Paddhati Evam Prakritik Chikitsa Board",
-  clinicGeo: "NEEDS_OWNER: exact clinic latitude,longitude from Google Maps pin",
-  onlineConsultAvailable: "NEEDS_OWNER: confirm online video consultation is offered (assumed YES from existing site copy)",
-  suvarnaprashanDetails: "NEEDS_OWNER: exact Suvarnaprashan formulation, preparation method, quality controls, price",
-  panchakarmaOffered: "NEEDS_OWNER: confirm which Panchakarma therapies are actually offered in-clinic (Abhyanga? Shirodhara? Basti? Nasya?)",
-  awards: "NEEDS_OWNER: any awards/affiliations — do not publish until verified",
-} as const;
-
 export const HOURS_SPEC = [
   { days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], opens: "10:00", closes: "14:00" },
   { days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], opens: "17:00", closes: "20:00" },
@@ -43,25 +36,16 @@ export const SOCIALS = {
   youtube: "",
 };
 
-/* Advertising: centrally managed, OFF by default. No fake IDs. */
-export const ADS_CONFIG = {
-  enabled: false,
-  provider: "adsense" as const,
-  publisherId: "", // e.g. "ca-pub-XXXXXXXXXXXXXXXX" — only when approved
-  slots: {
-    inArticle: "",
-    sidebar: "",
-    belowHero: "",
-  },
-};
-
 export const MEDICAL_REVIEWER = {
   name: DOCTOR_NAME,
+  registrationNumber: DOCTOR_REG_NO,
   credentials: DOCTOR_CREDS,
-  role: "Author & medical reviewer",
+  pgQualification: `${DOCTOR_PG_DEGREE} — ${DOCTOR_PG_COLLEGE}`,
+  ugQualification: `${DOCTOR_UG_DEGREE} — ${DOCTOR_UG_COLLEGE}`,
+  role: "Author & Medical Reviewer",
 };
 
-export const REVIEW_DATE = "2026-10-15";
+export const REVIEW_DATE = "2026-04-15";
 
 export function canonical(path: string) {
   const p = path.startsWith("/") ? path : `/${path}`;
@@ -71,4 +55,88 @@ export function canonical(path: string) {
 
 export function waLink(message: string) {
   return `https://wa.me/${CLINIC_WHATSAPP}?text=${encodeURIComponent(message)}`;
+}
+
+/* ---------- Pure Server-Safe Schema.org JSON-LD Builders ---------- */
+export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((it, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      name: it.name,
+      item: canonical(it.path),
+    })),
+  };
+}
+
+export function faqJsonLd(faqs: { q: string; a: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+}
+
+export function medicalWebPageJsonLd(opts: { path: string; name: string; description: string; about?: string }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": ["MedicalWebPage", "Article"],
+    "@id": `${canonical(opts.path)}#page`,
+    url: canonical(opts.path),
+    name: opts.name,
+    headline: opts.name,
+    description: opts.description,
+    inLanguage: ["en-IN", "hi-IN", "mr-IN", "gu-IN"],
+    dateModified: REVIEW_DATE,
+    author: {
+      "@type": "Physician",
+      name: MEDICAL_REVIEWER.name,
+      identifier: MEDICAL_REVIEWER.registrationNumber,
+      jobTitle: MEDICAL_REVIEWER.credentials,
+      alumniOf: [MEDICAL_REVIEWER.pgQualification, MEDICAL_REVIEWER.ugQualification],
+    },
+    reviewedBy: {
+      "@type": "Physician",
+      name: MEDICAL_REVIEWER.name,
+      identifier: MEDICAL_REVIEWER.registrationNumber,
+    },
+    publisher: {
+      "@type": "MedicalClinic",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+    ...(opts.about ? { about: { "@type": "MedicalCondition", name: opts.about } } : {}),
+  };
+}
+
+export function localBusinessJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "MedicalClinic",
+    "@id": `${SITE_URL}/#clinic`,
+    name: SITE_NAME,
+    url: SITE_URL,
+    telephone: CLINIC_PHONE_HREF,
+    email: CLINIC_EMAIL,
+    priceRange: "₹₹",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: CLINIC_AREA,
+      addressLocality: CLINIC_CITY,
+      addressRegion: CLINIC_STATE,
+      postalCode: CLINIC_PIN,
+      addressCountry: CLINIC_COUNTRY,
+    },
+    openingHoursSpecification: [
+      { "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], opens: "10:00", closes: "14:00" },
+      { "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], opens: "17:00", closes: "20:00" },
+    ],
+    medicalSpecialty: "Pediatric",
+  };
 }
