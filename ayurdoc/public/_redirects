@@ -1,9 +1,0 @@
-# Netlify SPA fallback — every clean URL serves the app shell (client router renders the page).
-# Keep /sitemap.xml, /robots.txt and /images/* as real files (they exist, so they are served directly).
-/about/  /about-doctor/  301
-/doctor/  /about-doctor/  301
-/contact-us/  /contact/  301
-/privacy/  /privacy-policy/  301
-/conditions/speech-delay/  /conditions/speech-delay-in-children/  301
-/conditions/adhd/  /conditions/adhd-in-children/  301
-/*  /index.html  200
