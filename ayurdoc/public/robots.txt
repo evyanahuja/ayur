@@ -1,7 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /owner-checklist/
-Disallow: /*?*sort=
-Disallow: /*?*utm_
-
-Sitemap: https://ayurveddoctor.netlify.app/sitemap.xml
