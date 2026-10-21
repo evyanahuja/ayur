@@ -45,10 +45,10 @@ export const LOCAL_PAGES: LocalPage[] = [
     ],
     hinglish: ["Indore mein Ayurvedic doctor", "Kanadia road ayurvedic clinic", "bachchon ke doctor Indore"],
     relatedLinks: [
-      { label: "About Dr. Priyanka Likhar", href: "/about-doctor/" },
-      { label: "Child Healthcare in Indore", href: "/child-healthcare-indore/" },
-      { label: "Ayurvedic Consultation — process & fees", href: "/services/ayurvedic-consultation/" },
-      { label: "Contact & appointments", href: "/contact/" },
+      { label: "About Dr. Priyanka Likhar", href: "/about-doctor" },
+      { label: "Child Healthcare in Indore", href: "/child-healthcare-indore" },
+      { label: "Ayurvedic Consultation — process & fees", href: "/services/ayurvedic-consultation" },
+      { label: "Contact & appointments", href: "/contact" },
     ],
   },
   {
@@ -75,9 +75,9 @@ export const LOCAL_PAGES: LocalPage[] = [
     ],
     hinglish: ["Indore me best ayurvedic doctor kaise chune", "achche vaidya ki pehchan"],
     relatedLinks: [
-      { label: "Ayurvedic Doctor in Indore", href: "/ayurvedic-doctor-indore/" },
-      { label: "Doctor profile & qualifications", href: "/about-doctor/" },
-      { label: "Consultation process", href: "/services/ayurvedic-consultation/" },
+      { label: "Ayurvedic Doctor in Indore", href: "/ayurvedic-doctor-indore" },
+      { label: "Doctor profile & qualifications", href: "/about-doctor" },
+      { label: "Consultation process", href: "/services/ayurvedic-consultation" },
     ],
   },
   {
@@ -102,9 +102,9 @@ export const LOCAL_PAGES: LocalPage[] = [
     ],
     hinglish: ["Bachchon ke doctor in Indore", "bachchon ka clinic Kanadia", "child specialist ayurvedic Indore"],
     relatedLinks: [
-      { label: "Conditions library", href: "/conditions/" },
-      { label: "Suvarnaprashan in Indore", href: "/treatments/customized-suvarnaprashan/" },
-      { label: "Book a visit", href: "/contact/" },
+      { label: "Conditions library", href: "/conditions" },
+      { label: "Suvarnaprashan in Indore", href: "/treatments/customized-suvarnaprashan" },
+      { label: "Book a visit", href: "/contact" },
     ],
   },
   {
@@ -120,8 +120,8 @@ export const LOCAL_PAGES: LocalPage[] = [
     faqs: [{ q: "MP me bahar se online consult kaise hoga?", a: "Slot book karein → reports/weight/vaccine details bhejein → video visit → likhit prescription + diet chart → dawai courier/local se → scheduled follow-up." }],
     hinglish: ["MP me ayurvedic doctor online", "Ujjain Dewas se consult"],
     relatedLinks: [
-      { label: "Online consultation — how it works", href: "/services/online-ayurvedic-consultation/" },
-      { label: "Ayurvedic doctor in Indore", href: "/ayurvedic-doctor-indore/" },
+      { label: "Online consultation — how it works", href: "/services/online-ayurvedic-consultation" },
+      { label: "Ayurvedic doctor in Indore", href: "/ayurvedic-doctor-indore" },
     ],
   },
   {
@@ -140,9 +140,9 @@ export const LOCAL_PAGES: LocalPage[] = [
     ],
     hinglish: ["Indore me Suvarnaprashan", "Pushya Nakshatra drops Indore", "suvarnaprashan price Indore"],
     relatedLinks: [
-      { label: "Customized Suvarnaprashan — full guide", href: "/treatments/customized-suvarnaprashan/" },
-      { label: "Safety & quality checks", href: "/treatments/suvarnaprashan-safety-quality/" },
-      { label: "Book assessment", href: "/contact/" },
+      { label: "Customized Suvarnaprashan — full guide", href: "/treatments/customized-suvarnaprashan" },
+      { label: "Safety & quality checks", href: "/treatments/suvarnaprashan-safety-quality" },
+      { label: "Book assessment", href: "/contact" },
     ],
   },
   {
@@ -161,9 +161,9 @@ export const LOCAL_PAGES: LocalPage[] = [
     ],
     hinglish: ["Indore me panchakarma", "panchakarma kharcha kitna"],
     relatedLinks: [
-      { label: "Panchakarma — full explainer", href: "/treatments/panchakarma/" },
-      { label: "Abhyanga", href: "/treatments/abhyanga/" },
-      { label: "Book assessment", href: "/contact/" },
+      { label: "Panchakarma — full explainer", href: "/treatments/panchakarma" },
+      { label: "Abhyanga", href: "/treatments/abhyanga" },
+      { label: "Book assessment", href: "/contact" },
     ],
   },
   {
@@ -179,8 +179,8 @@ export const LOCAL_PAGES: LocalPage[] = [
     faqs: [{ q: "'Child specialist' aur 'Kaumarbhritya' me antar?", a: "'Child specialist/paediatrician' aam taur par MBBS+MD Paediatrics ke liye prayog hota hai. 'Kaumarbhritya/Balarog' Ayurveda ki baal-chikitsa specialty hai. Dono alag prashikshan, alag bhoomika — hum apni seema saaf batate hain aur zaroorat par refer karte hain." }],
     hinglish: ["Balarog doctor Indore", "kaumarbhritya kya hai"],
     relatedLinks: [
-      { label: "About the doctor", href: "/about-doctor/" },
-      { label: "Conditions library", href: "/conditions/" },
+      { label: "About the doctor", href: "/about-doctor" },
+      { label: "Conditions library", href: "/conditions" },
     ],
   },
 ];

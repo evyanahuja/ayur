@@ -58,7 +58,7 @@ export function AuthorBox({ date = REVIEW_DATE }: { date?: string }) {
       </span>
       <div className="text-[13.5px] leading-relaxed">
         <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-          <Link href="/about-doctor/" className="font-semibold text-forest-950 hover:text-saffron-700 hover:underline underline-offset-4">
+          <Link href="/about-doctor" className="font-semibold text-forest-950 hover:text-saffron-700 hover:underline underline-offset-4">
             {t.site.doctorName}
           </Link>
           <span className="inline-flex items-center rounded-full bg-forest-950/90 text-cream-50 px-2.5 py-0.5 text-[11px] font-medium">
@@ -115,7 +115,7 @@ export function CtaBand({
       <p className="mt-2 text-cream-100/75 text-[14.5px] max-w-2xl relative">{resolvedBody}</p>
       <div className="mt-5 flex flex-wrap gap-3 relative">
         <Link
-          href="/contact/"
+          href="/contact"
           className="btn-shine inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-saffron-300 via-saffron-400 to-saffron-500 text-forest-950 font-semibold px-6 py-3 text-[14px]"
         >
           <CalendarCheck className="w-4 h-4" /> {p.seoBlocks.ctaBook}

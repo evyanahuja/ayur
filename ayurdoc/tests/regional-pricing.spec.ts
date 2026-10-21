@@ -28,12 +28,12 @@ test("visitors outside India see USD pricing and USD booking options", async ({ 
   await openPricing(page);
   const plans = page.locator("#plans article");
   await expect(plans.nth(0)).toContainText("$75");
-  await expect(plans.nth(1)).toContainText("$500");
+  await expect(plans.nth(1)).toContainText("$300");
   await expect(plans.nth(2)).toContainText("$50");
   await expect(page.locator("#plans")).toContainText(/USD/);
   await page.locator("#book").scrollIntoViewIfNeeded();
   await expect(page.locator("#plan option[value='first']")).toContainText("$75");
-  await expect(page.locator("#plan option[value='wellness']")).toContainText("$500");
+  await expect(page.locator("#plan option[value='wellness']")).toContainText("$300");
   await expect(page.locator("#plan option[value='followup']")).toContainText("$50");
   await context.close();
 });

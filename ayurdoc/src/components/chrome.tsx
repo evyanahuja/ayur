@@ -8,6 +8,7 @@ import { cn } from "@/lib/cn";
 import { SITE, telLink } from "@/content/site";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { SocialLinks } from "./SocialLinks";
+import { SectionMandalas } from "./ScrollMandala";
 import { CONDITIONS_1 } from "@/content/conditions";
 import { CONDITIONS_2 } from "@/content/conditions2";
 import { TREATMENTS } from "@/content/treatments";
@@ -83,12 +84,12 @@ export function SiteHeader() {
             <Link href="/" className={navClass(isExact("/"))}>
               {p.header.home}
             </Link>
-            <Link href="/about-doctor/" className={navClass(pathname.startsWith("/about-doctor"))}>
+            <Link href="/about-doctor" className={navClass(pathname.startsWith("/about-doctor"))}>
               {p.header.doctor}
             </Link>
             <div className="relative" onMouseEnter={() => setDrop("cond")} onMouseLeave={() => setDrop(null)}>
               <Link
-                href="/conditions/"
+                href="/conditions"
                 className={cn(navClass(pathname.startsWith("/conditions")), "flex items-center gap-1")}
               >
                 {p.header.conditions} <ChevronDown className="w-3 h-3" />
@@ -99,7 +100,7 @@ export function SiteHeader() {
                     {ALL_CONDITIONS.map((c) => (
                       <Link
                         key={c.slug}
-                        href={`/conditions/${c.slug}/`}
+                        href={`/conditions/${c.slug}`}
                         className="rounded-xl px-3 py-2 text-[13px] text-forest-900/80 hover:bg-forest-50 hover:text-forest-950"
                       >
                         <span className="block font-medium">{trText(c.title, lang)}</span>
@@ -112,7 +113,7 @@ export function SiteHeader() {
             </div>
             <div className="relative" onMouseEnter={() => setDrop("treat")} onMouseLeave={() => setDrop(null)}>
               <Link
-                href="/treatments/"
+                href="/treatments"
                 className={cn(navClass(pathname.startsWith("/treatments") || pathname.startsWith("/services")), "flex items-center gap-1")}
               >
                 {p.header.treatments} <ChevronDown className="w-3 h-3" />
@@ -123,7 +124,7 @@ export function SiteHeader() {
                     {TREATMENTS.map((tr) => (
                       <Link
                         key={tr.slug}
-                        href={`/${tr.base}/${tr.slug}/`}
+                        href={`/${tr.base}/${tr.slug}`}
                         className="rounded-xl px-3 py-2 text-[13px] hover:bg-forest-50"
                       >
                         <span className="block font-medium text-forest-950">{trText(tr.title, lang)}</span>
@@ -134,13 +135,13 @@ export function SiteHeader() {
                 </div>
               )}
             </div>
-            <Link href="/articles/" className={navClass(pathname.startsWith("/articles"))}>
+            <Link href="/articles" className={navClass(pathname.startsWith("/articles"))}>
               {p.header.articles}
             </Link>
-            <Link href="/faq/" className={navClass(pathname.startsWith("/faq"))}>
+            <Link href="/faq" className={navClass(pathname.startsWith("/faq"))}>
               {p.header.faq}
             </Link>
-            <Link href="/contact/" className={navClass(pathname.startsWith("/contact"))}>
+            <Link href="/contact" className={navClass(pathname.startsWith("/contact"))}>
               {p.header.contact}
             </Link>
           </div>
@@ -159,7 +160,7 @@ export function SiteHeader() {
               <span className="2xl:hidden">{p.header.callShort}</span>
             </a>
             <Link
-              href="/contact/"
+              href="/contact"
               className="btn-shine hidden sm:inline-flex items-center gap-2 rounded-full bg-forest-950 text-cream-50 px-3.5 xl:px-4 py-2.5 text-[12.5px] font-medium shadow hover:bg-forest-900 transition-colors whitespace-nowrap"
             >
               <CalendarCheck className="w-4 h-4 text-saffron-400 shrink-0" /> {p.header.bookVisit}
@@ -200,7 +201,7 @@ export function SiteHeader() {
               </a>
             </div>
             <Link
-              href="/contact/"
+              href="/contact"
               className="btn-shine mt-3 flex items-center justify-center gap-2 rounded-full bg-forest-950 text-cream-50 px-4 py-3.5 font-medium"
             >
               <CalendarCheck className="w-5 h-5 text-saffron-400" /> {p.header.bookChildVisit}
@@ -226,7 +227,8 @@ export function SiteFooter() {
   const p = usePagesDict(lang);
 
   return (
-    <footer className="relative bg-forest-950 text-cream-100 overflow-hidden" aria-label={t.footer.footerAria}>
+    <footer id="footer" className="mandala-section relative bg-forest-950 text-cream-100 overflow-hidden" aria-label={t.footer.footerAria}>
+      <SectionMandalas id="footer" palette="marigold" side="right" dark />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 grid gap-10 md:grid-cols-2 lg:grid-cols-[1.25fr_0.9fr_0.9fr_1fr]">
         <div>
           <Link href="/" className="flex items-center gap-3">
@@ -253,13 +255,13 @@ export function SiteFooter() {
           <ul className="mt-3 space-y-2 text-[13.5px]">
             {FOOTER_CONDITIONS.map((item) => (
               <li key={item.slug}>
-                <Link href={`/conditions/${item.slug}/`} className="text-white/65 hover:text-saffron-300">
+                <Link href={`/conditions/${item.slug}`} className="text-white/65 hover:text-saffron-300">
                   {trText(item.title, lang)}
                 </Link>
               </li>
             ))}
             <li>
-              <Link href="/conditions/" className="text-saffron-300 hover:text-white font-medium">
+              <Link href="/conditions" className="text-saffron-300 hover:text-white font-medium">
                 {p.footer.allConditions}
               </Link>
             </li>
@@ -270,32 +272,32 @@ export function SiteFooter() {
           <p className="text-[10px] font-semibold tracking-[0.22em] uppercase text-saffron-400">{p.footer.treatmentsTitle}</p>
           <ul className="mt-3 space-y-2 text-[13.5px]">
             <li>
-              <Link href="/treatments/customized-suvarnaprashan/" className="text-white/65 hover:text-saffron-300">
+              <Link href="/treatments/customized-suvarnaprashan" className="text-white/65 hover:text-saffron-300">
                 {trText("Customized Suvarnaprashan", lang)}
               </Link>
             </li>
             <li>
-              <Link href="/treatments/panchakarma/" className="text-white/65 hover:text-saffron-300">
+              <Link href="/treatments/panchakarma" className="text-white/65 hover:text-saffron-300">
                 {trText("Panchakarma Treatment", lang)}
               </Link>
             </li>
             <li>
-              <Link href="/services/ayurvedic-consultation/" className="text-white/65 hover:text-saffron-300">
+              <Link href="/services/ayurvedic-consultation" className="text-white/65 hover:text-saffron-300">
                 {p.footer.consultationLink}
               </Link>
             </li>
             <li>
-              <Link href="/articles/" className="text-white/65 hover:text-saffron-300">
+              <Link href="/articles" className="text-white/65 hover:text-saffron-300">
                 {p.footer.articlesLink}
               </Link>
             </li>
             <li>
-              <Link href="/faq/" className="text-white/65 hover:text-saffron-300">
+              <Link href="/faq" className="text-white/65 hover:text-saffron-300">
                 {p.footer.faqLink}
               </Link>
             </li>
             <li>
-              <Link href="/sitemap/" className="text-white/65 hover:text-saffron-300">
+              <Link href="/sitemap" className="text-white/65 hover:text-saffron-300">
                 {p.footer.sitemapLink}
               </Link>
             </li>
@@ -327,7 +329,7 @@ export function SiteFooter() {
             </li>
           </ul>
           <Link
-            href="/contact/"
+            href="/contact"
             className="mt-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-saffron-300 via-saffron-400 to-saffron-500 text-forest-950 font-semibold px-5 py-2.5 text-[13.5px]"
           >
             <CalendarCheck className="w-4 h-4" /> {p.footer.bookBtn}
@@ -341,13 +343,13 @@ export function SiteFooter() {
             © {year} {t.site.doctorName} • {t.site.clinicName}. {p.footer.rights}
           </p>
           <p className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-            <Link href="/about-doctor/" className="hover:text-white/75">
+            <Link href="/about-doctor" className="hover:text-white/75">
               {p.footer.aboutDoctor}
             </Link>
-            <Link href="/privacy-policy/" className="hover:text-white/75">
+            <Link href="/privacy-policy" className="hover:text-white/75">
               {p.footer.privacy}
             </Link>
-            <Link href="/terms/" className="hover:text-white/75">
+            <Link href="/terms" className="hover:text-white/75">
               {p.footer.terms}
             </Link>
           </p>

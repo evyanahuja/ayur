@@ -47,8 +47,8 @@ export const SITE = {
   hoursNote: "Evening + NRI-friendly online slots",
   languages: "Hindi • Marathi • English • Gujarati",
 
-  // 🌐 Your live domain (used for SEO / social sharing)
-  siteUrl: "https://ayurveddoctor.netlify.app", // NO trailing slash
+  // 🌐 Your live domain (override with NEXT_PUBLIC_SITE_URL on custom domains)
+  siteUrl: (process.env.NEXT_PUBLIC_SITE_URL || "https://ayurveddoctor.netlify.app").replace(/\/+$/, ""),
 
   // Social links (leave "" to hide)
   instagram: "https://www.instagram.com/ayurvedoctor",
@@ -80,8 +80,14 @@ export const SEO = {
   ],
   sameAs: ["https://www.instagram.com/ayurvedoctor"],
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || "",
-    bing: process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION || "",
+    google:
+      process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ||
+      process.env.GOOGLE_SITE_VERIFICATION ||
+      "",
+    bing:
+      process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION ||
+      process.env.BING_SITE_VERIFICATION ||
+      "",
   },
 };
 

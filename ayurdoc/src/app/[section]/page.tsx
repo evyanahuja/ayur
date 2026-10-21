@@ -24,11 +24,11 @@ import {
 import { PAGES_DICTIONARY } from "@/i18n/pagesDictionary";
 
 const TOP_LEVEL_REDIRECTS: Record<string, string> = {
-  about: "/about-doctor/",
-  doctor: "/about-doctor/",
-  "contact-us": "/contact/",
-  privacy: "/privacy-policy/",
-  "owner-checklist": "/about-doctor/",
+  about: "/about-doctor",
+  doctor: "/about-doctor",
+  "contact-us": "/contact",
+  privacy: "/privacy-policy",
+  "owner-checklist": "/about-doctor",
 };
 
 function JsonLd({ data }: { data: object | object[] }) {
@@ -62,8 +62,19 @@ function buildMeta(title: string, description: string, path: string): Metadata {
     title: { absolute: title },
     description,
     alternates: { canonical: url },
-    openGraph: { title, description, url, type: "website" },
-    twitter: { card: "summary_large_image", title, description },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "website",
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/opengraph-image"],
+    },
   };
 }
 
@@ -76,19 +87,19 @@ export async function generateMetadata({
   const key = section.toLowerCase();
   const en = PAGES_DICTIONARY.en;
 
-  if (key === "about-doctor") return buildMeta(en.staticPages.about.seoTitle, en.staticPages.about.seoDesc, "/about-doctor/");
-  if (key === "child-health") return buildMeta("Child Health Hub | Growth, Immunity, Behaviour & Nutrition", en.hubs.childHealthIntro, "/child-health/");
-  if (key === "conditions") return buildMeta("Child Health Conditions Library (A–Z) | BalChikitsa Indore", en.hubs.conditionsIntro, "/conditions/");
-  if (key === "treatments") return buildMeta("Treatments & Services | Suvarnaprashan, Panchakarma, Consultation", en.hubs.treatmentsIntro, "/treatments/");
-  if (key === "articles") return buildMeta("Health Articles Library | Child & Family Health Guides", en.hubs.articlesIntro, "/articles/");
-  if (key === "faq") return buildMeta("Frequently Asked Questions | BalChikitsa Ayurved Clinic", en.hubs.faqIntro, "/faq/");
-  if (key === "contact") return buildMeta(en.staticPages.contact.seoTitle, en.staticPages.contact.seoDesc, "/contact/");
-  if (key === "privacy-policy") return buildMeta(en.staticPages.privacy.seoTitle, en.staticPages.privacy.seoDesc, "/privacy-policy/");
-  if (key === "terms") return buildMeta(en.staticPages.terms.seoTitle, en.staticPages.terms.seoDesc, "/terms/");
-  if (key === "sitemap") return buildMeta(en.staticPages.sitemap.seoTitle, en.staticPages.sitemap.seoDesc, "/sitemap/");
+  if (key === "about-doctor") return buildMeta(en.staticPages.about.seoTitle, en.staticPages.about.seoDesc, "/about-doctor");
+  if (key === "child-health") return buildMeta("Child Health Hub | Growth, Immunity, Behaviour & Nutrition", en.hubs.childHealthIntro, "/child-health");
+  if (key === "conditions") return buildMeta("Child Health Conditions Library (A–Z) | BalChikitsa Indore", en.hubs.conditionsIntro, "/conditions");
+  if (key === "treatments") return buildMeta("Treatments & Services | Suvarnaprashan, Panchakarma, Consultation", en.hubs.treatmentsIntro, "/treatments");
+  if (key === "articles") return buildMeta("Health Articles Library | Child & Family Health Guides", en.hubs.articlesIntro, "/articles");
+  if (key === "faq") return buildMeta("Frequently Asked Questions | BalChikitsa Ayurved Clinic", en.hubs.faqIntro, "/faq");
+  if (key === "contact") return buildMeta(en.staticPages.contact.seoTitle, en.staticPages.contact.seoDesc, "/contact");
+  if (key === "privacy-policy") return buildMeta(en.staticPages.privacy.seoTitle, en.staticPages.privacy.seoDesc, "/privacy-policy");
+  if (key === "terms") return buildMeta(en.staticPages.terms.seoTitle, en.staticPages.terms.seoDesc, "/terms");
+  if (key === "sitemap") return buildMeta(en.staticPages.sitemap.seoTitle, en.staticPages.sitemap.seoDesc, "/sitemap");
 
   const loc = LOCAL_PAGES.find((l) => l.slug === key);
-  if (loc) return buildMeta(loc.seoTitle, loc.seoDescription, `/${loc.slug}/`);
+  if (loc) return buildMeta(loc.seoTitle, loc.seoDescription, `/${loc.slug}`);
 
   return {
     title: "Page Not Found | BalChikitsa Ayurved Clinic",
@@ -117,7 +128,7 @@ export default async function SectionPage({
           data={[
             breadcrumbJsonLd([
               { name: "Home", path: "/" },
-              { name: "About the Doctor", path: "/about-doctor/" },
+              { name: "About the Doctor", path: "/about-doctor" },
             ]),
             localBusinessJsonLd(),
           ]}
@@ -133,7 +144,7 @@ export default async function SectionPage({
         <JsonLd
           data={breadcrumbJsonLd([
             { name: "Home", path: "/" },
-            { name: "Child Health", path: "/child-health/" },
+            { name: "Child Health", path: "/child-health" },
           ])}
         />
         <ChildHealthHubView />
@@ -147,7 +158,7 @@ export default async function SectionPage({
         <JsonLd
           data={breadcrumbJsonLd([
             { name: "Home", path: "/" },
-            { name: "Conditions", path: "/conditions/" },
+            { name: "Conditions", path: "/conditions" },
           ])}
         />
         <ConditionsIndexView />
@@ -161,7 +172,7 @@ export default async function SectionPage({
         <JsonLd
           data={breadcrumbJsonLd([
             { name: "Home", path: "/" },
-            { name: "Treatments", path: "/treatments/" },
+            { name: "Treatments", path: "/treatments" },
           ])}
         />
         <TreatmentsIndexView />
@@ -175,7 +186,7 @@ export default async function SectionPage({
         <JsonLd
           data={breadcrumbJsonLd([
             { name: "Home", path: "/" },
-            { name: "Articles", path: "/articles/" },
+            { name: "Articles", path: "/articles" },
           ])}
         />
         <ArticlesIndexView />
@@ -191,7 +202,7 @@ export default async function SectionPage({
           data={[
             breadcrumbJsonLd([
               { name: "Home", path: "/" },
-              { name: "FAQ", path: "/faq/" },
+              { name: "FAQ", path: "/faq" },
             ]),
             faqJsonLd(allFaqs),
           ]}
@@ -208,7 +219,7 @@ export default async function SectionPage({
           data={[
             breadcrumbJsonLd([
               { name: "Home", path: "/" },
-              { name: "Contact", path: "/contact/" },
+              { name: "Contact", path: "/contact" },
             ]),
             localBusinessJsonLd(),
           ]}
@@ -224,7 +235,7 @@ export default async function SectionPage({
 
   const loc = LOCAL_PAGES.find((l) => l.slug === key);
   if (loc) {
-    const path = `/${loc.slug}/`;
+    const path = `/${loc.slug}`;
     return (
       <>
         <JsonLd

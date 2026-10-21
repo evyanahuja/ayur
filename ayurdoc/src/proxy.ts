@@ -46,8 +46,8 @@ export function proxy(_request: NextRequest) {
 }
 
 export const config = {
-  // Skip static build assets, images and icons (already covered by netlify.toml)
+  // Skip static build assets, images, icons, and search crawler verification files
   matcher: [
-    "/((?!_next/static|_next/image|images/|favicon\\.ico|favicon\\.svg|apple-touch-icon\\.png|icon-|site\\.webmanifest).*)",
+    "/((?!_next/static|_next/image|images/|favicon\\.ico|favicon\\.svg|apple-touch-icon\\.png|icon-|site\\.webmanifest|google[a-z0-9]+\\.html|BingSiteAuth\\.xml|indexnow-key\\.txt|sitemap\\.xml|robots\\.txt).*)",
   ],
 };

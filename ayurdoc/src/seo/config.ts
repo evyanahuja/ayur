@@ -1,7 +1,9 @@
 /* Central SEO + verified clinic & practitioner configuration + pure JSON-LD helpers.
    Pure TypeScript module (safe in both Server Components and Client Components). */
 
-export const SITE_URL = "https://ayurveddoctor.netlify.app";
+export const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL || "https://ayurveddoctor.netlify.app"
+).replace(/\/+$/, "");
 export const SITE_NAME = "BalChikitsa Ayurved Clinic";
 export const DOCTOR_NAME = "Dr. Priyanka Likhar";
 export const DOCTOR_REG_NO = "63934";
@@ -50,7 +52,7 @@ export const REVIEW_DATE = "2026-04-15";
 export function canonical(path: string) {
   const p = path.startsWith("/") ? path : `/${path}`;
   const clean = p === "/" ? "/" : p.replace(/\/+$/, "");
-  return `${SITE_URL}${clean}`;
+  return clean === "/" ? SITE_URL : `${SITE_URL}${clean}`;
 }
 
 export function waLink(message: string) {
@@ -124,7 +126,7 @@ export function localBusinessJsonLd() {
     url: SITE_URL,
     telephone: CLINIC_PHONE_HREF,
     email: CLINIC_EMAIL,
-    priceRange: "₹₹",
+    priceRange: "₹300–₹4,999",
     address: {
       "@type": "PostalAddress",
       streetAddress: CLINIC_AREA,

@@ -19,8 +19,8 @@ import {
 const ALL_CONDITIONS = [...CONDITIONS_1, ...CONDITIONS_2];
 
 const NESTED_REDIRECTS: Record<string, string> = {
-  "conditions/speech-delay": "/conditions/speech-delay-in-children/",
-  "conditions/adhd": "/conditions/adhd-in-children/",
+  "conditions/speech-delay": "/conditions/speech-delay-in-children",
+  "conditions/adhd": "/conditions/adhd-in-children",
 };
 
 function JsonLd({ data }: { data: object | object[] }) {
@@ -46,8 +46,19 @@ function buildArticleMeta(title: string, description: string, path: string): Met
     title: { absolute: title },
     description,
     alternates: { canonical: url },
-    openGraph: { title, description, url, type: "article" },
-    twitter: { card: "summary_large_image", title, description },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "article",
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/opengraph-image"],
+    },
   };
 }
 
@@ -62,17 +73,17 @@ export async function generateMetadata({
 
   if (sec === "conditions") {
     const cond = ALL_CONDITIONS.find((c) => c.slug === sl);
-    if (cond) return buildArticleMeta(cond.seoTitle, cond.seoDescription, `/conditions/${cond.slug}/`);
+    if (cond) return buildArticleMeta(cond.seoTitle, cond.seoDescription, `/conditions/${cond.slug}`);
   }
 
   if (sec === "treatments" || sec === "services") {
     const treat = TREATMENTS.find((t) => t.base === sec && t.slug === sl);
-    if (treat) return buildArticleMeta(treat.seoTitle, treat.seoDescription, `/${treat.base}/${treat.slug}/`);
+    if (treat) return buildArticleMeta(treat.seoTitle, treat.seoDescription, `/${treat.base}/${treat.slug}`);
   }
 
   if (sec === "articles") {
     const art = ARTICLES.find((a) => a.slug === sl);
-    if (art) return buildArticleMeta(art.seoTitle, art.seoDescription, `/articles/${art.slug}/`);
+    if (art) return buildArticleMeta(art.seoTitle, art.seoDescription, `/articles/${art.slug}`);
   }
 
   return {
@@ -98,14 +109,14 @@ export default async function NestedDetailPage({
   if (sec === "conditions") {
     const cond = ALL_CONDITIONS.find((c) => c.slug === sl);
     if (cond) {
-      const path = `/conditions/${cond.slug}/`;
+      const path = `/conditions/${cond.slug}`;
       return (
         <>
           <JsonLd
             data={[
               breadcrumbJsonLd([
                 { name: "Home", path: "/" },
-                { name: "Conditions", path: "/conditions/" },
+                { name: "Conditions", path: "/conditions" },
                 { name: cond.title, path },
               ]),
               medicalWebPageJsonLd({
@@ -126,14 +137,14 @@ export default async function NestedDetailPage({
   if (sec === "treatments" || sec === "services") {
     const treat = TREATMENTS.find((t) => t.base === sec && t.slug === sl);
     if (treat) {
-      const path = `/${treat.base}/${treat.slug}/`;
+      const path = `/${treat.base}/${treat.slug}`;
       return (
         <>
           <JsonLd
             data={[
               breadcrumbJsonLd([
                 { name: "Home", path: "/" },
-                { name: "Treatments", path: "/treatments/" },
+                { name: "Treatments", path: "/treatments" },
                 { name: treat.title, path },
               ]),
               medicalWebPageJsonLd({
@@ -153,14 +164,14 @@ export default async function NestedDetailPage({
   if (sec === "articles") {
     const art = ARTICLES.find((a) => a.slug === sl);
     if (art) {
-      const path = `/articles/${art.slug}/`;
+      const path = `/articles/${art.slug}`;
       return (
         <>
           <JsonLd
             data={[
               breadcrumbJsonLd([
                 { name: "Home", path: "/" },
-                { name: "Articles", path: "/articles/" },
+                { name: "Articles", path: "/articles" },
                 { name: art.title, path },
               ]),
               medicalWebPageJsonLd({

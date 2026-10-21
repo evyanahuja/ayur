@@ -474,16 +474,15 @@ html[lang="hi"] .eyebrow, html[lang="mr"] .eyebrow, html[lang="gu"] .eyebrow {
 
   @media (max-width: 767px) {
     .mandala-edge { --mandala-size: 300px; top: 12px; }
-    .mandala-edge--left { left: -205px; }
-    .mandala-edge--right { right: -205px; }
+    .mandala-edge--left { left: -185px; }
+    .mandala-edge--right { left: auto; right: -185px; }
     .mandala-corner { --mandala-size: 184px; }
-    /* On phones, reserve the entire left column for copy. The first half
-       mandala is only a tiny edge glimpse; the colour sits to the right. */
-    .mandala-backdrop--hero .mandala-hero-left { --mandala-size: 310px; left: -294px; top: 82px; opacity: .28 !important; }
+    /* On phones, anchor the left half-mandala below .hero-copy::before so both H1 readability and crescent colour remain clear. */
+    .mandala-backdrop--hero .mandala-hero-left { --mandala-size: 310px; left: -240px; top: auto; bottom: 24px; opacity: .76 !important; }
     .mandala-backdrop--hero .mandala-hero-right { --mandala-size: 340px; right: -202px; top: 66%; opacity: .66 !important; }
     .mandala-backdrop--hero .mandala-hero-corner { --mandala-size: 175px; left: auto; right: -34px; bottom: -86px; opacity: .38 !important; }
-    .mandala-motif { opacity: .66; }
-    .mandala-backdrop--dark .mandala-motif { opacity: .55; }
+    .mandala-motif { opacity: .78; }
+    .mandala-backdrop--dark .mandala-motif { opacity: .62; }
   }
 }
 @keyframes mandala-orbit {

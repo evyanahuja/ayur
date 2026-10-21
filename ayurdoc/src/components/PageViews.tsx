@@ -196,7 +196,7 @@ function RelatedGrid({
       .map((c) => ({
         kind: p.templates.relatedKindCondition,
         label: trText(c.title, lang),
-        href: `/conditions/${c.slug}/`,
+        href: `/conditions/${c.slug}`,
       })),
     ...treatments
       .map((slug) => TREATMENTS.find((t) => t.slug === slug))
@@ -204,7 +204,7 @@ function RelatedGrid({
       .map((t) => ({
         kind: p.templates.relatedKindTreatment,
         label: trText(t.title, lang),
-        href: `/${t.base}/${t.slug}/`,
+        href: `/${t.base}/${t.slug}`,
       })),
     ...articles
       .map((slug) => ARTICLES.find((a) => a.slug === slug))
@@ -212,7 +212,7 @@ function RelatedGrid({
       .map((a) => ({
         kind: p.templates.relatedKindArticle,
         label: trText(a.title, lang),
-        href: `/articles/${a.slug}/`,
+        href: `/articles/${a.slug}`,
       })),
   ];
 
@@ -291,7 +291,7 @@ export function HomeContent() {
             return (
               <Link
                 key={c.slug}
-                href={`/conditions/${c.slug}/`}
+                href={`/conditions/${c.slug}`}
                 className="group rounded-2xl border border-forest-900/10 bg-white p-5 hover:border-saffron-500/50 hover:shadow-luxe transition-all"
               >
                 <span className="text-[10px] font-bold tracking-[0.16em] uppercase text-saffron-700">
@@ -343,7 +343,7 @@ export function HomeContent() {
             return (
               <Link
                 key={tItem.slug}
-                href={`/${tItem.base}/${tItem.slug}/`}
+                href={`/${tItem.base}/${tItem.slug}`}
                 className="rounded-2xl border border-forest-900/10 bg-cream-100 p-5 hover:border-saffron-500/50 hover:shadow-luxe transition-all"
               >
                 <span className="text-[10px] font-bold tracking-[0.16em] uppercase text-saffron-700">
@@ -358,7 +358,7 @@ export function HomeContent() {
           })}
         </div>
         <p className="mt-4 text-center">
-          <Link href="/treatments/" className="text-[14px] font-semibold text-saffron-700 hover:text-forest-900">
+          <Link href="/treatments" className="text-[14px] font-semibold text-saffron-700 hover:text-forest-900">
             {p.homeHubs.allTreatments.replace("{count}", String(TREATMENTS.length))}
           </Link>
         </p>
@@ -379,7 +379,7 @@ export function HomeContent() {
             return (
               <Link
                 key={art.slug}
-                href={`/articles/${art.slug}/`}
+                href={`/articles/${art.slug}`}
                 className="rounded-2xl border border-forest-900/10 bg-white p-5 hover:border-saffron-500/50 hover:shadow-luxe transition-all"
               >
                 <span className="text-[10px] font-bold tracking-[0.16em] uppercase text-saffron-700">
@@ -391,7 +391,7 @@ export function HomeContent() {
           })}
         </div>
         <p className="mt-4 text-center">
-          <Link href="/articles/" className="text-[14px] font-semibold text-saffron-700 hover:text-forest-900">
+          <Link href="/articles" className="text-[14px] font-semibold text-saffron-700 hover:text-forest-900">
             {p.homeHubs.browseArticles.replace("{count}", String(ARTICLES.length))}
           </Link>
         </p>
@@ -447,7 +447,7 @@ export function ConditionsIndexView() {
                 return (
                   <Link
                     key={c.slug}
-                    href={`/conditions/${c.slug}/`}
+                    href={`/conditions/${c.slug}`}
                     className="group rounded-2xl border border-forest-900/10 bg-white p-5 hover:border-saffron-500/50 hover:shadow-luxe transition-all"
                   >
                     <span className="font-display text-[18px] text-forest-950 group-hover:text-saffron-700 transition-colors">
@@ -519,7 +519,7 @@ export function TreatmentsIndexView() {
                 return (
                   <Link
                     key={slug}
-                    href={`/${item.base}/${slug}/`}
+                    href={`/${item.base}/${slug}`}
                     className="group rounded-2xl border border-forest-900/10 bg-white p-5 hover:border-saffron-500/50 hover:shadow-luxe transition-all"
                   >
                     <span className="font-display text-[18px] text-forest-950 group-hover:text-saffron-700">
@@ -568,7 +568,7 @@ export function ArticlesIndexView() {
             return (
               <Link
                 key={a.slug}
-                href={`/articles/${a.slug}/`}
+                href={`/articles/${a.slug}`}
                 className="group rounded-2xl border border-forest-900/10 bg-white p-5 hover:border-saffron-500/50 hover:shadow-luxe transition-all"
               >
                 <span className="text-[10px] font-bold tracking-[0.16em] uppercase text-saffron-700">
@@ -1064,35 +1064,35 @@ export function SitemapPageView() {
       h: s.condHeading,
       links: ALL_CONDITIONS.map((c) => ({
         label: trText(c.title, lang),
-        href: `/conditions/${c.slug}/`,
+        href: `/conditions/${c.slug}`,
       })),
     },
     {
       h: s.treatHeading,
       links: TREATMENTS.map((t) => ({
         label: trText(t.title, lang),
-        href: `/${t.base}/${t.slug}/`,
+        href: `/${t.base}/${t.slug}`,
       })),
     },
     {
       h: s.artHeading,
       links: ARTICLES.map((a) => ({
         label: trText(a.title, lang),
-        href: `/articles/${a.slug}/`,
+        href: `/articles/${a.slug}`,
       })),
     },
     {
       h: s.localHeading,
       links: LOCAL_PAGES.map((l) => ({
         label: trText(l.title, lang),
-        href: `/${l.slug}/`,
+        href: `/${l.slug}`,
       })),
     },
     {
       h: s.legalHeading,
       links: [
-        { label: p.footer.privacy, href: "/privacy-policy/" },
-        { label: p.footer.terms, href: "/terms/" },
+        { label: p.footer.privacy, href: "/privacy-policy" },
+        { label: p.footer.terms, href: "/terms" },
       ],
     },
   ];
@@ -1147,13 +1147,13 @@ export function NotFoundView() {
           {s.homeBtn}
         </Link>
         <Link
-          href="/conditions/"
+          href="/conditions"
           className="rounded-full border border-forest-900/15 px-6 py-3 text-[14px] font-medium text-forest-950"
         >
           {s.condBtn}
         </Link>
         <Link
-          href="/contact/"
+          href="/contact"
           className="rounded-full border border-forest-900/15 px-6 py-3 text-[14px] font-medium text-forest-950"
         >
           {s.contactBtn}
@@ -1183,7 +1183,7 @@ export function ConditionTemplateView({ page: raw }: { page: ConditionPage }) {
         <Breadcrumbs
           items={[
             { label: p.hubs.homeCrumb, href: "/" },
-            { label: p.hubs.conditionsCrumb, href: "/conditions/" },
+            { label: p.hubs.conditionsCrumb, href: "/conditions" },
             { label: page.title },
           ]}
         />
@@ -1314,7 +1314,7 @@ export function TreatmentTemplateView({ page: raw }: { page: TreatmentPage }) {
         <Breadcrumbs
           items={[
             { label: p.hubs.homeCrumb, href: "/" },
-            { label: p.hubs.treatmentsCrumb, href: "/treatments/" },
+            { label: p.hubs.treatmentsCrumb, href: "/treatments" },
             { label: page.title },
           ]}
         />
@@ -1402,7 +1402,7 @@ export function ArticleTemplateView({ page: raw }: { page: Article }) {
         <Breadcrumbs
           items={[
             { label: p.hubs.homeCrumb, href: "/" },
-            { label: p.hubs.articlesCrumb, href: "/articles/" },
+            { label: p.hubs.articlesCrumb, href: "/articles" },
             { label: page.title },
           ]}
         />

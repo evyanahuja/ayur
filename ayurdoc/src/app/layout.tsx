@@ -7,7 +7,6 @@ import { SkipLink } from "@/components/SkipLink";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { SiteHeader, SiteFooter } from "@/components/chrome";
 import { FloatingActions } from "@/components/FloatingActions";
-import { ManualSyncPill } from "@/components/ManualSyncPill";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -20,10 +19,10 @@ export const metadata: Metadata = {
   title: { default: SEO.title, template: SEO.titleTemplate },
   description: SEO.description,
   applicationName: SITE.clinicName,
-  authors: [{ name: SITE.doctorName, url: `${SITE.siteUrl}/about-doctor/` }],
+  authors: [{ name: SITE.doctorName, url: `${SITE.siteUrl}/about-doctor` }],
   creator: SITE.doctorName,
   category: "health",
-  alternates: { canonical: "/" },
+  alternates: { canonical: `${SITE.siteUrl}/` },
   formatDetection: { telephone: true, email: true, address: true },
   verification: {
     ...(SEO.verification.google ? { google: SEO.verification.google } : {}),
@@ -31,16 +30,25 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    url: "/",
+    url: `${SITE.siteUrl}/`,
     siteName: SITE.clinicName,
     locale: SEO.locale,
     title: SEO.title,
     description: SEO.description,
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: SEO.title,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: SEO.title,
     description: SEO.description,
+    images: ["/opengraph-image"],
   },
   robots: {
     index: true,
@@ -80,7 +88,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           {children}
           <SiteFooter />
           <FloatingActions />
-          <ManualSyncPill />
         </LanguageProvider>
         <script
           type="application/ld+json"

@@ -62,7 +62,7 @@ export function buildJsonLd() {
         "@id": doctorId,
         name: SITE.doctorName,
         image: abs(IMAGES.doctorPortrait),
-        url: `${SITE.siteUrl}/about-doctor/`,
+        url: `${SITE.siteUrl}/about-doctor`,
         telephone: SITE.phoneHref,
         email: SITE.email,
         identifier: {
@@ -107,20 +107,24 @@ export function buildJsonLd() {
       {
         "@type": "WebSite",
         "@id": websiteId,
-        url: SITE.siteUrl,
+        url: `${SITE.siteUrl}/`,
         name: SITE.clinicName,
         inLanguage: ["en-IN", "hi-IN", "mr-IN", "gu-IN"],
         publisher: { "@id": clinicId },
       },
-      {
-        "@type": "FAQPage",
-        "@id": `${SITE.siteUrl}/#faq`,
-        mainEntity: FAQS.map((f) => ({
-          "@type": "Question",
-          name: f.q,
-          acceptedAnswer: { "@type": "Answer", text: f.a },
-        })),
-      },
     ],
+  };
+}
+
+export function buildHomeFaqJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${SITE.siteUrl}/#faq`,
+    mainEntity: FAQS.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
   };
 }

@@ -38,7 +38,7 @@ export function FloatingActions() {
 
       {/* Floating Book Consultation Button */}
       <Link
-        href="/contact/"
+        href="/contact"
         aria-label={t.floating.bookAria}
         className="group hidden sm:grid fixed sm:bottom-24 right-4 sm:right-6 z-40 place-items-center w-14 h-14 rounded-full bg-gradient-to-br from-forest-800 via-forest-900 to-forest-950 text-saffron-300 shadow-[0_18px_38px_-10px_rgba(11,36,25,0.6)] hover:scale-110 transition-transform duration-500 gold-hairline"
       >
@@ -62,7 +62,7 @@ export function FloatingActions() {
 
       <div className="fixed bottom-0 inset-x-0 z-40 sm:hidden px-3 pb-3 pt-8 bg-gradient-to-t from-forest-950/60 to-transparent pointer-events-none">
         <Link
-          href="/contact/"
+          href="/contact"
           className="btn-shine pointer-events-auto flex items-center justify-center gap-2.5 rounded-full bg-forest-950 text-cream-50 font-medium tracking-wide text-[15px] px-6 py-4 shadow-luxe-lg gold-hairline"
         >
           <CalendarCheck className="w-5 h-5 text-saffron-400" /> {t.floating.bookBtn}
