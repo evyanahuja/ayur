@@ -49,7 +49,7 @@ export const REVIEW_DATE = "2026-04-15";
 
 export function canonical(path: string) {
   const p = path.startsWith("/") ? path : `/${path}`;
-  const clean = p === "/" ? "/" : p.endsWith("/") ? p : `${p}/`;
+  const clean = p === "/" ? "/" : p.replace(/\/+$/, "");
   return `${SITE_URL}${clean}`;
 }
 
