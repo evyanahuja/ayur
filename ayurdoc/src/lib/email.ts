@@ -246,7 +246,7 @@ function buildParentHtml(p: InquiryPayload, ref: string | null) {
     <div style="background:#0e2b21;color:#fdf0d3;padding:24px 28px">
       <p style="margin:0;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#f4bc4f">We received your enquiry${ref ? ` &middot; Ref <strong>${refRow}</strong>` : ""}</p>
       <h2 style="margin:8px 0 0;font-size:22px">Thank you, ${parentName} 🌿</h2>
-      <p style="margin:6px 0 0;font-size:14px;color:#d2e2c9">Dr. Priyanka Likhhar &middot; MD Kaumarbhritya</p>
+      <p style="margin:6px 0 0;font-size:14px;color:#d2e2c9">Dr. Priyanka Likhar &middot; MD Kaumarbhritya</p>
     </div>
     <div style="padding:24px 28px;color:#1a2b23;font-size:14px;line-height:1.6">
       <p style="margin:0 0 14px">We&rsquo;ve sent your enquiry to the clinic. Expect a personal call or WhatsApp within 24 hours (usually the same day, Mon&ndash;Sat).</p>
@@ -257,7 +257,7 @@ function buildParentHtml(p: InquiryPayload, ref: string | null) {
         <tr><td style="padding:6px 0;color:#6b7d73">Plan of interest</td><td>${plan}</td></tr>
       </table>
       <p style="margin:18px 0 0">If urgent, please WhatsApp us and <strong>mention this reference</strong> so we can match you to your enquiry instantly.</p>
-      <p style="margin:18px 0 0;font-size:12px;color:#6b7d73">With care, Dr. Priyanka Likhhar &middot; BalChikitsa</p>
+      <p style="margin:18px 0 0;font-size:12px;color:#6b7d73">With care, Dr. Priyanka Likhar &middot; BalChikitsa</p>
     </div>
   </div>`;
 }
@@ -266,7 +266,7 @@ function buildParentText(p: InquiryPayload, ref: string | null) {
   return [
     `Thank you, ${p.parentName}!`,
     "",
-    `We have received your enquiry for ${p.childName} (${p.childAge}) and sent it to Dr. Priyanka Likhhar.`,
+    `We have received your enquiry for ${p.childName} (${p.childAge}) and sent it to Dr. Priyanka Likhar.`,
     "",
     `Reference: ${ref || "(pending)"}`,
     `Plan of interest: ${planLabel(p.planInterest, p.currency) || "-"}`,
