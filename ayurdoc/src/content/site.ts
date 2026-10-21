@@ -79,7 +79,10 @@ export const SEO = {
     { days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], opens: "17:00", closes: "20:00" },
   ],
   sameAs: ["https://www.instagram.com/ayurvedoctor"],
-  verification: { google: "", bing: "" },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || "",
+    bing: process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION || "",
+  },
 };
 
 
