@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Leaf, Menu, X, Phone, CalendarCheck, ChevronDown, MapPin, Mail, Clock, Heart, ShieldCheck } from "lucide-react";
@@ -33,6 +33,7 @@ export function SiteHeader() {
   const scrolled = useScrolled();
   const [open, setOpen] = useState(false);
   const [drop, setDrop] = useState<string | null>(null);
+  const headerRef = useRef<HTMLElement>(null);
   const pathname = usePathname() || "/";
   const { lang, t } = useLanguage();
   const p = usePagesDict(lang);
@@ -49,92 +50,173 @@ export function SiteHeader() {
     };
   }, [open]);
 
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
+        setDrop(null);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setDrop(null);
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
   const isExact = (href: string) =>
     href === "/" ? pathname === "/" : pathname === href || pathname === href.replace(/\/$/, "");
 
   const navClass = (active: boolean) =>
     cn(
-      "px-2.5 xl:px-3.5 py-2 rounded-full text-[13px] xl:text-[13.5px] font-medium tracking-wide transition-colors whitespace-nowrap",
-      active ? "text-forest-950 bg-forest-950/5" : "text-forest-800/75 hover:text-forest-950 hover:bg-forest-950/5"
+      "px-1.5 xl:px-2.5 2xl:px-3.5 py-1.5 xl:py-2 rounded-full text-[11.5px] xl:text-[12.5px] 2xl:text-[13.5px] font-medium tracking-wide transition-colors whitespace-nowrap",
+      active ? "text-forest-950 bg-forest-950/6 font-semibold" : "text-forest-800/80 hover:text-forest-950 hover:bg-forest-950/5"
     );
 
   return (
-    <header className={cn("fixed top-0 left-0 right-0 z-50 transition-all duration-500", scrolled ? "py-2" : "py-4")}>
-      <div className="mx-auto max-w-7xl px-3 sm:px-6">
+    <header
+      ref={headerRef}
+      className={cn("fixed top-0 left-0 right-0 z-50 transition-all duration-500", scrolled ? "py-2" : "py-3 sm:py-4")}
+    >
+      <div className="mx-auto max-w-[1380px] px-2 sm:px-3 xl:px-5">
         <nav
           aria-label={t.nav.primaryNav}
           className={cn(
-            "flex items-center justify-between gap-2 rounded-3xl lg:rounded-full px-3 sm:px-4 transition-all duration-500",
-            scrolled ? "glass gold-hairline shadow-luxe py-2" : "bg-white/75 backdrop-blur-md border border-white/60 py-2.5 shadow-sm"
+            "flex items-center justify-between gap-1.5 xl:gap-2 rounded-3xl lg:rounded-full px-2.5 sm:px-3 xl:px-3.5 transition-all duration-500",
+            scrolled ? "glass gold-hairline shadow-luxe py-2" : "bg-white/80 backdrop-blur-md border border-white/60 py-2 sm:py-2.5 shadow-sm"
           )}
         >
-          <Link href="/" className="flex items-center gap-2.5 shrink-0 group min-w-0" aria-label={`${t.site.doctorName} — ${p.header.homeAria}`}>
-            <span className="relative grid place-items-center w-10 h-10 rounded-xl bg-gradient-to-br from-forest-800 via-forest-900 to-forest-950 text-saffron-300 shadow shrink-0 group-hover:scale-105 transition-transform">
-              <Leaf className="w-[17px] h-[17px]" />
+          {/* Brand — compact width cap at laptop widths so all 7 nav options stay 100% visible */}
+          <Link
+            href="/"
+            className="flex items-center gap-2 xl:gap-2.5 min-w-0 shrink lg:shrink-0 lg:max-w-[156px] xl:max-w-[205px] 2xl:max-w-none group"
+            aria-label={`${t.site.doctorName} — ${p.header.homeAria}`}
+          >
+            <span className="relative grid place-items-center w-9 h-9 xl:w-10 xl:h-10 rounded-xl bg-gradient-to-br from-forest-800 via-forest-900 to-forest-950 text-saffron-300 shadow shrink-0 group-hover:scale-105 transition-transform">
+              <Leaf className="w-4 h-4 xl:w-[17px] xl:h-[17px]" />
             </span>
-            <span className="leading-tight truncate">
-              <span className="block font-display text-[15px] sm:text-[16.5px] text-forest-950 truncate">{t.site.doctorName}</span>
-              <span className="block text-[8.5px] sm:text-[9px] font-semibold tracking-[0.13em] text-saffron-700 uppercase truncate">
+            <span className="leading-tight min-w-0 truncate">
+              <span className="block font-display text-[14.5px] sm:text-[16px] lg:text-[13.5px] xl:text-[15px] 2xl:text-[16.5px] text-forest-950 truncate">
+                {t.site.doctorName}
+              </span>
+              <span className="block text-[8.5px] xl:text-[9px] font-semibold tracking-[0.11em] xl:tracking-[0.13em] text-saffron-700 uppercase truncate">
                 {t.site.shortCreds} • {p.header.indoreTag}
               </span>
             </span>
           </Link>
 
-          <div className="hidden lg:flex min-w-0 items-center gap-0.5">
+          {/* All 7 primary navigation options — always visible on Laptop (lg+) without clipping */}
+          <div className="hidden lg:flex items-center justify-center gap-0 xl:gap-0.5 shrink-0">
             <Link href="/" className={navClass(isExact("/"))}>
               {p.header.home}
             </Link>
             <Link href="/about-doctor" className={navClass(pathname.startsWith("/about-doctor"))}>
               {p.header.doctor}
             </Link>
+
             <div className="relative" onMouseEnter={() => setDrop("cond")} onMouseLeave={() => setDrop(null)}>
               <Link
                 href="/conditions"
-                className={cn(navClass(pathname.startsWith("/conditions")), "flex items-center gap-1")}
+                aria-expanded={drop === "cond"}
+                onClick={(e) => {
+                  if (window.matchMedia("(hover: none)").matches && drop !== "cond") {
+                    e.preventDefault();
+                    setDrop("cond");
+                    return;
+                  }
+                  setDrop(null);
+                }}
+                className={cn(navClass(pathname.startsWith("/conditions")), "inline-flex items-center gap-1")}
               >
-                {p.header.conditions} <ChevronDown className="w-3 h-3" />
+                {p.header.conditions}
+                <ChevronDown className={cn("w-3 h-3 shrink-0 transition-transform duration-200", drop === "cond" && "rotate-180")} />
               </Link>
               {drop === "cond" && (
-                <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 w-[560px]">
-                  <div className="rounded-2xl border border-forest-900/10 bg-white shadow-luxe-lg p-4 grid grid-cols-2 gap-1 max-h-[420px] overflow-auto">
-                    {ALL_CONDITIONS.map((c) => (
+                <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 w-[min(740px,calc(100vw-2rem))] z-[120]">
+                  <div className="rounded-2xl border border-forest-900/10 bg-white shadow-luxe-lg overflow-hidden">
+                    <div className="p-3 grid grid-cols-2 lg:grid-cols-3 gap-1 max-h-[calc(100dvh-140px)] overflow-y-auto overscroll-contain">
+                      {ALL_CONDITIONS.map((c) => (
+                        <Link
+                          key={c.slug}
+                          href={`/conditions/${c.slug}`}
+                          onClick={() => setDrop(null)}
+                          className="rounded-xl px-2.5 py-2 text-[12.5px] text-forest-900/85 hover:bg-forest-50 hover:text-forest-950 transition-colors"
+                        >
+                          <span className="block font-medium leading-snug">{trText(c.title, lang)}</span>
+                          <span className="block text-[10.5px] text-forest-800/50">{p.categories[c.category] ?? c.category}</span>
+                        </Link>
+                      ))}
+                    </div>
+                    <div className="border-t border-forest-900/10 bg-cream-50/90 px-4 py-2.5 flex items-center justify-between">
                       <Link
-                        key={c.slug}
-                        href={`/conditions/${c.slug}`}
-                        className="rounded-xl px-3 py-2 text-[13px] text-forest-900/80 hover:bg-forest-50 hover:text-forest-950"
+                        href="/conditions"
+                        onClick={() => setDrop(null)}
+                        className="text-[12.5px] font-semibold text-saffron-700 hover:text-forest-950 transition-colors"
                       >
-                        <span className="block font-medium">{trText(c.title, lang)}</span>
-                        <span className="block text-[11px] text-forest-800/50">{p.categories[c.category] ?? c.category}</span>
+                        {p.footer.allConditions}
                       </Link>
-                    ))}
+                    </div>
                   </div>
                 </div>
               )}
             </div>
+
             <div className="relative" onMouseEnter={() => setDrop("treat")} onMouseLeave={() => setDrop(null)}>
               <Link
                 href="/treatments"
-                className={cn(navClass(pathname.startsWith("/treatments") || pathname.startsWith("/services")), "flex items-center gap-1")}
+                aria-expanded={drop === "treat"}
+                onClick={(e) => {
+                  if (window.matchMedia("(hover: none)").matches && drop !== "treat") {
+                    e.preventDefault();
+                    setDrop("treat");
+                    return;
+                  }
+                  setDrop(null);
+                }}
+                className={cn(
+                  navClass(pathname.startsWith("/treatments") || pathname.startsWith("/services")),
+                  "inline-flex items-center gap-1"
+                )}
               >
-                {p.header.treatments} <ChevronDown className="w-3 h-3" />
+                {p.header.treatments}
+                <ChevronDown className={cn("w-3 h-3 shrink-0 transition-transform duration-200", drop === "treat" && "rotate-180")} />
               </Link>
               {drop === "treat" && (
-                <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 w-[480px]">
-                  <div className="rounded-2xl border border-forest-900/10 bg-white shadow-luxe-lg p-4 grid grid-cols-2 gap-1 max-h-[420px] overflow-auto">
-                    {TREATMENTS.map((tr) => (
+                <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 w-[min(520px,calc(100vw-2rem))] z-[120]">
+                  <div className="rounded-2xl border border-forest-900/10 bg-white shadow-luxe-lg overflow-hidden">
+                    <div className="p-3 grid grid-cols-2 gap-1 max-h-[calc(100dvh-140px)] overflow-y-auto overscroll-contain">
+                      {TREATMENTS.map((tr) => (
+                        <Link
+                          key={tr.slug}
+                          href={`/${tr.base}/${tr.slug}`}
+                          onClick={() => setDrop(null)}
+                          className="rounded-xl px-3 py-2 text-[12.5px] hover:bg-forest-50 transition-colors"
+                        >
+                          <span className="block font-medium text-forest-950 leading-snug">{trText(tr.title, lang)}</span>
+                          <span className="block text-[10.5px] text-forest-800/50">{p.categories[tr.category] ?? tr.category}</span>
+                        </Link>
+                      ))}
+                    </div>
+                    <div className="border-t border-forest-900/10 bg-cream-50/90 px-4 py-2.5 flex items-center justify-between">
                       <Link
-                        key={tr.slug}
-                        href={`/${tr.base}/${tr.slug}`}
-                        className="rounded-xl px-3 py-2 text-[13px] hover:bg-forest-50"
+                        href="/treatments"
+                        onClick={() => setDrop(null)}
+                        className="text-[12.5px] font-semibold text-saffron-700 hover:text-forest-950 transition-colors"
                       >
-                        <span className="block font-medium text-forest-950">{trText(tr.title, lang)}</span>
-                        <span className="block text-[11px] text-forest-800/50">{p.categories[tr.category] ?? tr.category}</span>
+                        {p.homeHubs.allTreatments}
                       </Link>
-                    ))}
+                    </div>
                   </div>
                 </div>
               )}
             </div>
+
             <Link href="/articles" className={navClass(pathname.startsWith("/articles"))}>
               {p.header.articles}
             </Link>
@@ -146,31 +228,41 @@ export function SiteHeader() {
             </Link>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="hidden md:block">
+          {/* Right actions — Language, compact Call, Book Visit, Mobile menu trigger */}
+          <div className="flex items-center gap-1.5 xl:gap-2 shrink-0">
+            {/* Smaller screens (< lg): portal sheet trigger right in the top bar */}
+            <div className="lg:hidden">
+              <LanguageSwitcher mobile />
+            </div>
+            {/* Laptop & desktop (lg+): viewport-clamped dropdown */}
+            <div className="hidden lg:block">
               <LanguageSwitcher compact />
             </div>
+
+            {/* Call button — visible on all laptops (lg+) and ALWAYS shows concise "Call" label */}
             <a
               href={telLink}
               aria-label={`${p.header.callPrefix} ${SITE.phoneDisplay}`}
-              className="hidden xl:inline-flex items-center gap-2 rounded-full border border-saffron-500/30 bg-cream-100/70 px-3 py-2 text-[12.5px] font-medium text-forest-800 hover:bg-saffron-500 hover:text-white hover:border-saffron-500 transition-all"
+              title={`${p.header.callPrefix} ${SITE.phoneDisplay}`}
+              className="hidden lg:inline-flex items-center gap-1.5 rounded-full border border-saffron-500/30 bg-cream-100/70 px-2.5 xl:px-3 py-2 text-[12px] xl:text-[12.5px] font-medium text-forest-800 hover:bg-saffron-500 hover:text-white hover:border-saffron-500 transition-all whitespace-nowrap"
             >
-              <Phone className="w-3.5 h-3.5" />
-              <span className="hidden 2xl:inline">{SITE.phoneDisplay}</span>
-              <span className="2xl:hidden">{p.header.callShort}</span>
+              <Phone className="w-3.5 h-3.5 shrink-0" />
+              <span>{p.header.callShort}</span>
             </a>
+
             <Link
               href="/contact"
-              className="btn-shine hidden sm:inline-flex items-center gap-2 rounded-full bg-forest-950 text-cream-50 px-3.5 xl:px-4 py-2.5 text-[12.5px] font-medium shadow hover:bg-forest-900 transition-colors whitespace-nowrap"
+              className="btn-shine hidden sm:inline-flex items-center gap-1.5 xl:gap-2 rounded-full bg-forest-950 text-cream-50 px-3 xl:px-4 py-2 xl:py-2.5 text-[11.5px] xl:text-[12.5px] font-medium shadow hover:bg-forest-900 transition-colors whitespace-nowrap"
             >
-              <CalendarCheck className="w-4 h-4 text-saffron-400 shrink-0" /> {p.header.bookVisit}
+              <CalendarCheck className="w-3.5 h-3.5 xl:w-4 xl:h-4 text-saffron-400 shrink-0" /> {p.header.bookVisit}
             </Link>
+
             <button
               type="button"
               onClick={() => setOpen(!open)}
               aria-expanded={open}
               aria-label={open ? p.header.closeMenu : p.header.openMenu}
-              className="lg:hidden grid place-items-center w-10 h-10 rounded-full bg-forest-950 text-saffron-300"
+              className="lg:hidden grid place-items-center w-10 h-10 rounded-full bg-forest-950 text-saffron-300 shrink-0"
             >
               {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -178,33 +270,50 @@ export function SiteHeader() {
         </nav>
       </div>
 
+      {/* Smaller-screen drawer (< lg) */}
       {open && (
-        <div className="lg:hidden fixed inset-0 top-[72px] z-40 bg-forest-950/40 backdrop-blur-sm" onClick={() => setOpen(false)}>
+        <div
+          className="lg:hidden fixed inset-0 top-[68px] sm:top-[76px] z-40 bg-forest-950/45 backdrop-blur-sm"
+          onClick={() => setOpen(false)}
+        >
           <div
-            className="mx-3 mt-2 rounded-3xl bg-cream-50 border border-saffron-500/25 shadow-luxe-lg p-4 max-h-[78vh] overflow-auto"
+            className="mx-3 mt-2 rounded-3xl bg-cream-50 border border-saffron-500/25 shadow-luxe-lg p-4 max-h-[calc(100dvh-92px)] overflow-y-auto overscroll-contain"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="grid gap-1 text-[15px] font-medium text-forest-950">
               {p.header.mobileLinks.map(({ href, label }) => (
-                <Link key={href} href={href} className="rounded-2xl px-4 py-3 hover:bg-forest-50 flex items-center justify-between">
-                  {label} <span aria-hidden>→</span>
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setOpen(false)}
+                  className="rounded-2xl px-4 py-3 hover:bg-forest-50 flex items-center justify-between"
+                >
+                  <span>{label}</span> <span aria-hidden>→</span>
                 </Link>
               ))}
             </div>
-            <div className="mt-3 flex items-center gap-2 px-2">
-              <LanguageSwitcher compact />
+
+            <div className="mt-3 grid grid-cols-2 gap-2.5">
+              {/* Portal language sheet — never clipped by overflow-y-auto or screen edges */}
+              <LanguageSwitcher mobile fullWidth />
+
+              {/* Compact Call button — shows icon + "Call", NOT the full phone number */}
               <a
                 href={telLink}
-                className="flex-1 text-center rounded-full border border-saffron-500/40 px-4 py-3 text-[14px] font-semibold text-forest-900"
+                aria-label={`${p.header.callPrefix} ${SITE.phoneDisplay}`}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-saffron-500/40 bg-white/80 px-4 text-[14px] font-semibold text-forest-900 hover:bg-saffron-500 hover:text-white hover:border-saffron-500 transition-colors whitespace-nowrap"
               >
-                {p.header.callPrefix} {SITE.phoneDisplay}
+                <Phone className="w-4 h-4 text-saffron-600 shrink-0" />
+                <span>{p.header.callShort}</span>
               </a>
             </div>
+
             <Link
               href="/contact"
-              className="btn-shine mt-3 flex items-center justify-center gap-2 rounded-full bg-forest-950 text-cream-50 px-4 py-3.5 font-medium"
+              onClick={() => setOpen(false)}
+              className="btn-shine mt-2.5 flex items-center justify-center gap-2 rounded-full bg-forest-950 text-cream-50 px-4 py-3.5 font-medium"
             >
-              <CalendarCheck className="w-5 h-5 text-saffron-400" /> {p.header.bookChildVisit}
+              <CalendarCheck className="w-5 h-5 text-saffron-400 shrink-0" /> {p.header.bookChildVisit}
             </Link>
           </div>
         </div>
