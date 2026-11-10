@@ -5,7 +5,7 @@ import { Plus, MessageCircleQuestionMark, PhoneCall } from "lucide-react";
 import { Reveal } from "./Reveal";
 import { SectionMandalas } from "./ScrollMandala";
 import { cn } from "@/lib/cn";
-import { SITE, STATS } from "@/content/site";
+import { STATS } from "@/content/site";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 export function FAQ() {

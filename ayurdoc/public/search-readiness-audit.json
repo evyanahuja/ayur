@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-11-10T06:04:56.764735+00:00",
+  "site": "https://ayurveddoctor.netlify.app",
+  "summary": {
+    "sitemapUrls": 75,
+    "uniqueSitemapUrls": 75,
+    "http200": 75,
+    "redirectingUrls": 0,
+    "fetchFailures": [],
+    "issues": {},
+    "duplicateTitles": [],
+    "duplicateDescriptions": [],
+    "noInboundLinksWithinSitemap": [],
+    "unmappedInternalPaths": []
+  },
+  "verification": {
+    "googleFileStatus": 200,
+    "googleMetaConfigured": false,
+    "bingMetaConfigured": false,
+    "bingFileStatus": 404,
+    "indexNowConfigured": false,
+    "indexNowKeyStatus": 404
+  },
+  "limitations": "Public HTTP checks only. Ownership, sitemap submission, indexing, rankings, rich-result eligibility, and Core Web Vitals require separate verification.",
+  "browserObservations": {
+    "checkedAt": "2026-11-10T06:05:46.958433+00:00",
+    "findings": [
+      "Google Fonts requests were blocked by the live Content Security Policy.",
+      "A React hydration error (#418) was recorded on the live mobile page."
+    ]
+  }
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
+import { Link } from "@/lib/router";
 import { ChevronRight, ShieldAlert, UserCheck, CalendarCheck, Phone, MapPin } from "lucide-react";
 import {
   REVIEW_DATE,

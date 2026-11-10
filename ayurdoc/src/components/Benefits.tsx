@@ -1,11 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { HeartHandshake, X, Check, Quote } from "lucide-react";
 import { Reveal } from "./Reveal";
 import { SectionMandalas } from "./ScrollMandala";
 import { BENEFITS } from "@/content/site";
-import { SITE } from "@/content/site";
 import { FEATURED_QUOTE } from "@/content/site";
 import { useLanguage } from "@/i18n/LanguageContext";
 
@@ -86,14 +84,7 @@ export function Benefits() {
                   “{t.testimonials.featured.text}”
                 </blockquote>
                 <figcaption className="relative mt-4 flex items-center gap-3">
-                  <Image
-                    src={FEATURED_QUOTE.img}
-                    alt={t.benefits.parentAlt}
-                    width={44}
-                    height={44}
-                    sizes="44px"
-                    className="w-11 h-11 rounded-full object-cover border-2 border-saffron-300"
-                  />
+                  <img src={FEATURED_QUOTE.img} alt={t.benefits.parentAlt} className="w-11 h-11 rounded-full object-cover border-2 border-saffron-300" />
                   <span>
                     <span className="block text-sm font-bold">{t.testimonials.featured.name}</span>
                     <span className="block text-xs text-white/60">{t.testimonials.featured.detail}</span>

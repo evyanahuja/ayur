@@ -2,7 +2,7 @@
    Pure TypeScript module (safe in both Server Components and Client Components). */
 
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL || "https://ayurveddoctor.netlify.app"
+  globalThis.process?.env?.NEXT_PUBLIC_SITE_URL || "https://ayurveddoctor.netlify.app"
 ).replace(/\/+$/, "");
 export const SITE_NAME = "BalChikitsa Ayurved Clinic";
 export const DOCTOR_NAME = "Dr. Priyanka Likhar";
