@@ -24,7 +24,13 @@ function readInitial(): Language {
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Language>(readInitial);
+  const [lang, setLangState] = useState<Language>(DEFAULT_LANGUAGE);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setLangState(readInitial());
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
     document.documentElement.lang = lang;

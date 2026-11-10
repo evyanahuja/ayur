@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Link } from "@/lib/router";
+import Link from "next/link";
 import { MessageCircle, ArrowUp, CalendarCheck } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { SITE } from "@/content/site";

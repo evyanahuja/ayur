@@ -48,7 +48,7 @@ export const SITE = {
   languages: "Hindi • Marathi • English • Gujarati",
 
   // 🌐 Your live domain (override with NEXT_PUBLIC_SITE_URL on custom domains)
-  siteUrl: (globalThis.process?.env?.NEXT_PUBLIC_SITE_URL || "https://ayurveddoctor.netlify.app").replace(/\/+$/, ""),
+  siteUrl: (process.env.NEXT_PUBLIC_SITE_URL || "https://ayurveddoctor.netlify.app").replace(/\/+$/, ""),
 
   // Social links (leave "" to hide)
   instagram: "https://www.instagram.com/ayurvedoctor",
@@ -81,12 +81,12 @@ export const SEO = {
   sameAs: ["https://www.instagram.com/ayurvedoctor"],
   verification: {
     google:
-      globalThis.process?.env?.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ||
-      globalThis.process?.env?.GOOGLE_SITE_VERIFICATION ||
+      process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ||
+      process.env.GOOGLE_SITE_VERIFICATION ||
       "",
     bing:
-      globalThis.process?.env?.NEXT_PUBLIC_BING_SITE_VERIFICATION ||
-      globalThis.process?.env?.BING_SITE_VERIFICATION ||
+      process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION ||
+      process.env.BING_SITE_VERIFICATION ||
       "",
   },
 };

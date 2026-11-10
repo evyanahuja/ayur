@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Leaf, ArrowRight, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { Reveal } from "./Reveal";
@@ -166,7 +167,14 @@ export function MethodShowcase() {
                 else if (dx - start > 40) go(-1);
               }}
             >
-              <img src={cur.img} alt={cur.name} className="object-cover transition-transform duration-[1.4s] group-hover:scale-105" />
+              <Image
+                key={cur.img}
+                src={cur.img}
+                alt={cur.name}
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover transition-transform duration-[1.4s] group-hover:scale-105"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-forest-950 via-forest-950/35 to-transparent" aria-hidden />
               <div className="absolute top-5 left-5 right-5 flex items-center justify-between">
                 <span className="inline-flex items-center gap-2 rounded-full glass-dark text-white text-xs font-semibold px-4 py-2">

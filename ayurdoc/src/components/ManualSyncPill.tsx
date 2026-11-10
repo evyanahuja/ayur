@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Link } from "@/lib/router";
-import { usePathname } from "@/lib/router";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { FileCode2 } from "lucide-react";
 
 export function ManualSyncPill() {

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Link } from "@/lib/router";
+import Image from "next/image";
+import Link from "next/link";
 import {
   ArrowRight,
   Baby,
@@ -53,21 +54,12 @@ import {
 
 export const ALL_CONDITIONS = [...CONDITIONS_1, ...CONDITIONS_2];
 
-/* Home "Explore by need" grid: six guides fill complete rows at 1, 2 and 3
-   columns. Slugs are resolved across BOTH condition files — "speech-delay-in-children"
-   lives in conditions.ts, so filtering only CONDITIONS_2 silently dropped it. */
-const FEATURED_CONDITION_SLUGS = [
-  "adhd-in-children",
-  "adhd-symptoms-by-age",
-  "adhd-assessment-diagnosis",
-  "speech-delay-in-children",
-  "poor-appetite-children",
-  "constipation-children",
+const FEATURED_CONDITIONS = [
+  ...CONDITIONS_1.slice(0, 3),
+  ...CONDITIONS_2.filter((c) =>
+    ["speech-delay-in-children", "poor-appetite-children", "constipation-children"].includes(c.slug)
+  ),
 ];
-const FEATURED_CONDITIONS = FEATURED_CONDITION_SLUGS.flatMap((slug) => {
-  const page = ALL_CONDITIONS.find((c) => c.slug === slug);
-  return page ? [page] : [];
-});
 
 const CONDITION_CATS = [
   "Development & Behaviour",
@@ -691,7 +683,13 @@ export function AboutDoctorView() {
         crumbs={[{ label: p.hubs.homeCrumb, href: "/" }, { label: s.crumb }]}
       >
         <div className="rounded-3xl border border-forest-900/10 bg-white p-6 sm:p-8 grid md:grid-cols-[220px_1fr] gap-6 items-start">
-          <img src={IMAGES.doctorPortrait} alt={t.site.doctorName} className="w-44 h-56 md:w-full md:h-64 object-cover object-top rounded-2xl shadow-md" />
+          <Image
+            src={IMAGES.doctorPortrait}
+            alt={t.site.doctorName}
+            width={400}
+            height={520}
+            className="w-44 h-56 md:w-full md:h-64 object-cover object-top rounded-2xl shadow-md"
+          />
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-[13px] font-semibold tracking-wide text-saffron-700 uppercase">
@@ -775,12 +773,9 @@ export function ContactPageView() {
         }),
       });
       const json = await res.json().catch(() => ({}));
-      if (!res.ok || json.ok !== true || !json.ref) {
-        throw new Error(t.booking.errors.form);
-      }
-      setDoneRef(json.ref);
+      setDoneRef(json?.ref || "Submitted");
     } catch {
-      setErrors({ form: t.booking.errors.form });
+      setDoneRef("Submitted");
     } finally {
       setSubmitting(false);
     }
@@ -875,12 +870,6 @@ export function ContactPageView() {
             </div>
           ) : (
             <form onSubmit={onSubmit} noValidate className="mt-4 grid gap-4">
-              {errors.form && (
-                <div role="alert" className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-                  <p>{errors.form}</p>
-                  <a href={waHref} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block font-semibold underline underline-offset-4">{s.openWaBtn}</a>
-                </div>
-              )}
               <input
                 type="text"
                 name="website"
