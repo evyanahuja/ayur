@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Link } from "@/lib/router";
+import Link from "next/link";
 import {
   ArrowRight,
   Baby,
@@ -18,7 +18,6 @@ import {
   Phone,
   Mail,
   ExternalLink,
-  CalendarCheck,
   Home,
   ShieldCheck,
 } from "lucide-react";
@@ -35,6 +34,7 @@ import { Testimonials } from "@/components/Testimonials";
 import { Pricing } from "@/components/Pricing";
 import { FAQ } from "@/components/FAQ";
 import { BookingSection } from "@/components/BookingSection";
+import { PatientEnquiryForm } from "@/components/PatientEnquiryForm";
 import { Breadcrumbs, AuthorBox, MedicalDisclaimer, CtaBand, LanguageTitleSync } from "@/components/seo";
 import { CONDITIONS_1, type ConditionPage } from "@/content/conditions";
 import { CONDITIONS_2 } from "@/content/conditions2";
@@ -734,62 +734,6 @@ export function ContactPageView() {
   const p = usePagesDict(lang);
   const s = p.staticPages.contact;
 
-  const [form, setForm] = useState({
-    parentName: "",
-    phone: "",
-    childName: "",
-    childAge: "",
-    mode: "in_clinic",
-    concern: "",
-    website: "",
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [submitting, setSubmitting] = useState(false);
-  const [doneRef, setDoneRef] = useState<string | null>(null);
-
-  const update = (k: keyof typeof form, v: string) => setForm((prev) => ({ ...prev, [k]: v }));
-
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const errs: Record<string, string> = {};
-    if (form.parentName.trim().length < 2) errs.parentName = s.nameErr;
-    if (!/^[+\d][\d\s\-()]{6,18}$/.test(form.phone.trim())) errs.phone = s.phoneErr;
-    if (form.concern.trim().length < 5) errs.concern = s.concernErr;
-    setErrors(errs);
-    if (Object.keys(errs).length > 0) return;
-
-    setSubmitting(true);
-    try {
-      const res = await fetch("/api/inquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          parentName: form.parentName.trim(),
-          phone: form.phone.trim(),
-          childName: form.childName.trim() || "Child",
-          childAge: form.childAge.trim() || "Not specified",
-          concernCategory: "general",
-          symptoms: form.concern.trim(),
-          preferredMode: form.mode === "online" ? "online" : "in_clinic",
-          website: form.website,
-        }),
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || json.ok !== true || !json.ref) {
-        throw new Error(t.booking.errors.form);
-      }
-      setDoneRef(json.ref);
-    } catch {
-      setErrors({ form: t.booking.errors.form });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const waHref = `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(
-    `${t.site.whatsappMessage} (${form.parentName ? `${form.parentName} — ${form.concern}` : ""})`
-  )}`;
-
   return (
     <>
       <LanguageTitleSync title={s.seoTitle} />
@@ -853,157 +797,7 @@ export function ContactPageView() {
           </a>
         </div>
 
-        <section aria-labelledby="form-h" className="rounded-3xl border border-forest-900/10 bg-white p-5 sm:p-6">
-          <h2 id="form-h" className="font-display text-[22px] text-forest-950 flex items-center gap-2">
-            <CalendarCheck className="w-5 h-5 text-saffron-700" /> {s.formHeading}
-          </h2>
-          <p className="mt-1 text-[13px] text-forest-800/65">{s.formSub}</p>
-
-          {doneRef ? (
-            <div className="mt-4 rounded-2xl bg-emerald-50 border border-emerald-200 p-5 space-y-3">
-              <p className="text-[15px] font-medium text-emerald-950">
-                {s.thankYou} {doneRef !== "Submitted" ? `(${doneRef})` : ""}.
-              </p>
-              <a
-                href={waHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-forest-950 text-cream-50 px-5 py-2.5 text-[13.5px] font-medium"
-              >
-                {s.openWaBtn}
-              </a>
-            </div>
-          ) : (
-            <form onSubmit={onSubmit} noValidate className="mt-4 grid gap-4">
-              {errors.form && (
-                <div role="alert" className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-                  <p>{errors.form}</p>
-                  <a href={waHref} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block font-semibold underline underline-offset-4">{s.openWaBtn}</a>
-                </div>
-              )}
-              <input
-                type="text"
-                name="website"
-                value={form.website}
-                onChange={(e) => update("website", e.target.value)}
-                className="hidden"
-                tabIndex={-1}
-                autoComplete="off"
-                aria-hidden
-              />
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="cf-name" className="text-[13px] font-semibold text-forest-900">
-                    {s.nameLabel}
-                  </label>
-                  <input
-                    id="cf-name"
-                    value={form.parentName}
-                    onChange={(e) => update("parentName", e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-forest-900/15 px-3.5 py-2.5 text-[14px] bg-cream-50"
-                    placeholder={s.namePh}
-                    autoComplete="name"
-                  />
-                  {errors.parentName && (
-                    <p className="mt-1 text-[12.5px] text-red-700" role="alert">
-                      {errors.parentName}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label htmlFor="cf-phone" className="text-[13px] font-semibold text-forest-900">
-                    {s.phoneLabel}
-                  </label>
-                  <input
-                    id="cf-phone"
-                    value={form.phone}
-                    onChange={(e) => update("phone", e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-forest-900/15 px-3.5 py-2.5 text-[14px] bg-cream-50"
-                    placeholder={s.phonePh}
-                    inputMode="tel"
-                    autoComplete="tel"
-                  />
-                  {errors.phone && (
-                    <p className="mt-1 text-[12.5px] text-red-700" role="alert">
-                      {errors.phone}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid sm:grid-cols-3 gap-4">
-                <div>
-                  <label htmlFor="cf-cname" className="text-[13px] font-semibold text-forest-900">
-                    {s.childNameLabel}
-                  </label>
-                  <input
-                    id="cf-cname"
-                    value={form.childName}
-                    onChange={(e) => update("childName", e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-forest-900/15 px-3.5 py-2.5 text-[14px] bg-cream-50"
-                    placeholder={s.childNamePh}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="cf-cage" className="text-[13px] font-semibold text-forest-900">
-                    {s.childAgeLabel}
-                  </label>
-                  <input
-                    id="cf-cage"
-                    value={form.childAge}
-                    onChange={(e) => update("childAge", e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-forest-900/15 px-3.5 py-2.5 text-[14px] bg-cream-50"
-                    placeholder={s.childAgePh}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="cf-mode" className="text-[13px] font-semibold text-forest-900">
-                    {s.modeLabel}
-                  </label>
-                  <select
-                    id="cf-mode"
-                    value={form.mode}
-                    onChange={(e) => update("mode", e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-forest-900/15 px-3.5 py-2.5 text-[14px] bg-cream-50"
-                  >
-                    <option value="in_clinic">{s.modes[0]}</option>
-                    <option value="online">{s.modes[1]}</option>
-                    <option value="guidance">{s.modes[2]}</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="cf-concern" className="text-[13px] font-semibold text-forest-900">
-                  {s.concernLabel}
-                </label>
-                <textarea
-                  id="cf-concern"
-                  value={form.concern}
-                  onChange={(e) => update("concern", e.target.value)}
-                  rows={4}
-                  className="mt-1 w-full rounded-xl border border-forest-900/15 px-3.5 py-2.5 text-[14px] bg-cream-50"
-                  placeholder={s.concernPh}
-                />
-                {errors.concern && (
-                  <p className="mt-1 text-[12.5px] text-red-700" role="alert">
-                    {errors.concern}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="btn-shine rounded-full bg-forest-950 text-cream-50 px-6 py-3 text-[14px] font-semibold hover:bg-forest-900 transition-colors disabled:opacity-60"
-                >
-                  {submitting ? s.submittingBtn : s.submitBtn}
-                </button>
-              </div>
-            </form>
-          )}
-        </section>
+        <PatientEnquiryForm />
 
         <MedicalDisclaimer />
       </StaticShell>
