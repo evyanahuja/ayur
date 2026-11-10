@@ -33,13 +33,15 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // Restore the saved language before writing any preference back to storage.
+    if (!hydrated) return;
     document.documentElement.lang = lang;
     try {
       window.localStorage.setItem(STORAGE_KEY, lang);
     } catch {
       /* ignore */
     }
-  }, [lang]);
+  }, [lang, hydrated]);
 
   const setLang = useCallback((l: Language) => {
     setLangState(l);
@@ -48,8 +50,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const t = useMemo(() => getDictionary(lang), [lang]);
   const value = useMemo(() => ({ lang, setLang, t }), [lang, setLang, t]);
 
-  // Render immediately (no flash gate) — default English first, then saved lang.
-  // Suppress hydration warning since lang resolves client-side.
+  // Keep the initial render deterministic, then apply the remembered language.
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }
 
