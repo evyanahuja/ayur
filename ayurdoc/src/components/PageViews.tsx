@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/lib/router";
 import {
   ArrowRight,
   Baby,
@@ -692,13 +691,7 @@ export function AboutDoctorView() {
         crumbs={[{ label: p.hubs.homeCrumb, href: "/" }, { label: s.crumb }]}
       >
         <div className="rounded-3xl border border-forest-900/10 bg-white p-6 sm:p-8 grid md:grid-cols-[220px_1fr] gap-6 items-start">
-          <Image
-            src={IMAGES.doctorPortrait}
-            alt={t.site.doctorName}
-            width={400}
-            height={520}
-            className="w-44 h-56 md:w-full md:h-64 object-cover object-top rounded-2xl shadow-md"
-          />
+          <img src={IMAGES.doctorPortrait} alt={t.site.doctorName} width={400} height={520} loading="eager" className="mx-auto w-44 h-56 md:mx-0 md:w-full md:h-64 object-cover object-top rounded-2xl shadow-md" />
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-[13px] font-semibold tracking-wide text-saffron-700 uppercase">
@@ -782,7 +775,9 @@ export function ContactPageView() {
         }),
       });
       const json = await res.json().catch(() => ({}));
-      if (!res.ok || json.ok !== true || !json.ref) throw new Error(t.booking.errors.form);
+      if (!res.ok || json.ok !== true || !json.ref) {
+        throw new Error(t.booking.errors.form);
+      }
       setDoneRef(json.ref);
     } catch {
       setErrors({ form: t.booking.errors.form });
