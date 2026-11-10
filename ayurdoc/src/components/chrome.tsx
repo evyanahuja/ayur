@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Link } from "@/lib/router";
-import { usePathname } from "@/lib/router";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Leaf, Menu, X, Phone, CalendarCheck, ChevronDown, MapPin, Mail, Clock, Heart, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { SITE, telLink } from "@/content/site";
