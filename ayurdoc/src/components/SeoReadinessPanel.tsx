@@ -54,6 +54,10 @@ export function SeoReadinessPanel({ summary }: { summary: SeoAuditSummary }) {
   }
 
   async function triggerIndexNow() {
+    if (!summary.indexNowConfigured) {
+      setSubmitResult({ ok: false, message: "INDEXNOW_KEY is not configured. No URLs have been submitted." });
+      return;
+    }
     setSubmitting(true);
     setSubmitResult(null);
     try {
@@ -64,7 +68,7 @@ export function SeoReadinessPanel({ summary }: { summary: SeoAuditSummary }) {
       });
       const data = await res.json();
       setSubmitResult({
-        ok: Boolean(data.ok),
+        ok: res.ok && data.ok === true,
         message:
           data.message ||
           data.error ||
@@ -164,7 +168,7 @@ export function SeoReadinessPanel({ summary }: { summary: SeoAuditSummary }) {
             )}
             <span className="font-semibold text-[15px] text-forest-950">
               {summary.bingMetaConfigured
-                ? "Meta + XML Active"
+                ? "Public Token Configured"
                 : "Import from GSC or Set Token"}
             </span>
           </div>
@@ -186,7 +190,7 @@ export function SeoReadinessPanel({ summary }: { summary: SeoAuditSummary }) {
           <p className="mt-1 text-[12.5px] text-forest-800/70">
             {summary.isCustomDomain
               ? "Custom domain active"
-              : "Recommended: set custom .in / .com domain via NEXT_PUBLIC_SITE_URL"}
+              : "Netlify subdomains are indexable; a custom domain is optional."}
           </p>
         </div>
       </div>
@@ -257,7 +261,7 @@ export function SeoReadinessPanel({ summary }: { summary: SeoAuditSummary }) {
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-forest-900" />
               <h2 className="font-display text-[22px] text-forest-950">
-                Bing &amp; Microsoft Copilot Instant Indexing (IndexNow)
+                Search Discovery With IndexNow
               </h2>
             </div>
             <p className="mt-1.5 text-[14px] leading-relaxed text-forest-900/80">
@@ -269,19 +273,19 @@ export function SeoReadinessPanel({ summary }: { summary: SeoAuditSummary }) {
               <code className="font-mono text-[12.5px] bg-white px-1.5 py-0.5 rounded">
                 INDEXNOW_KEY
               </code>{" "}
-              to your environment variables and click below after each deploy.
+              to your production environment variables. Google does not use IndexNow. Receipt of a notification does not guarantee crawling, indexing, ranking or a Copilot citation.
             </p>
           </div>
           <button
             type="button"
-            disabled={submitting}
+            disabled={submitting || !summary.indexNowConfigured}
             onClick={triggerIndexNow}
             className="inline-flex items-center gap-2 rounded-full bg-forest-950 text-cream-50 px-5 py-2.5 text-[13.5px] font-medium hover:bg-forest-900 disabled:opacity-60 transition-colors"
           >
             <Send className="w-4 h-4 text-saffron-300" />
             {submitting
               ? "Submitting URLs..."
-              : `Push All ${summary.totalUrls} URLs via IndexNow`}
+              : summary.indexNowConfigured ? `Notify IndexNow About ${summary.totalUrls} URLs` : "IndexNow Not Configured"}
           </button>
         </div>
 
@@ -301,10 +305,10 @@ export function SeoReadinessPanel({ summary }: { summary: SeoAuditSummary }) {
       {/* Complete Canonical URL Inventory */}
       <section className="rounded-2xl border border-forest-900/10 bg-white p-6">
         <h2 className="font-display text-[22px] text-forest-950">
-          All {summary.totalUrls} Canonical Routes Ready for Indexing
+          Canonical Route Inventory ({summary.totalUrls} URLs)
         </h2>
         <p className="mt-1 text-[13.5px] text-forest-800/70">
-          Every route below serves static/SSR HTML with self-referencing canonical tags, OpenGraph 1200×630 cards, and validated Schema.org JSON-LD (zero 308 redirect chains).
+          These URLs come from the site's content configuration. Validate the deployed HTTP responses, canonical tags, rendered content and structured data separately. This inventory does not confirm search-engine indexing or rich-result eligibility.
         </p>
         <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
           {summary.urls.map((item) => (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Check, ChevronDown, Languages, X } from "lucide-react";
 import { LANGUAGES, type Language } from "@/i18n/config";
@@ -17,6 +17,7 @@ export function LanguageSwitcher({
   fullWidth?: boolean;
 }) {
   const { lang, setLang, t } = useLanguage();
+  const panelId = `language-${useId().replace(/:/g, "")}`;
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -28,7 +29,13 @@ export function LanguageSwitcher({
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (!open) return;
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        setOpen(false);
+        return;
+      }
       if (mobile && e.key === "Tab" && sheetRef.current) {
         const buttons = [...sheetRef.current.querySelectorAll<HTMLButtonElement>("button")];
         if (!buttons.length) return;
@@ -49,7 +56,7 @@ export function LanguageSwitcher({
       document.removeEventListener("mousedown", onClick);
       document.removeEventListener("keydown", onKey);
     };
-  }, [mobile]);
+  }, [mobile, open]);
 
   useEffect(() => {
     if (!mobile || !open) return;
@@ -77,7 +84,7 @@ export function LanguageSwitcher({
         onClick={() => setOpen((v) => !v)}
         aria-haspopup={mobile ? "dialog" : "listbox"}
         aria-expanded={open}
-        aria-controls={mobile ? "mobile-language-sheet" : undefined}
+        aria-controls={panelId}
         aria-label={t.common.selectLanguage}
         title={t.common.selectLanguage}
         className={cn(
@@ -85,7 +92,7 @@ export function LanguageSwitcher({
           fullWidth
             ? "h-12 w-full gap-2 px-4 text-[14px]"
             : mobile
-              ? "h-10 gap-1 px-2.5 text-xs sm:gap-1.5 sm:px-3"
+              ? "h-11 gap-1 px-2.5 text-xs sm:gap-1.5 sm:px-3"
               : compact
                 ? "gap-1.5 px-2.5 py-2 text-xs 2xl:gap-2 2xl:px-3"
                 : "gap-2 px-3.5 py-2.5 text-[13px]"
@@ -118,6 +125,8 @@ export function LanguageSwitcher({
 
       {!mobile && (
         <div
+          id={panelId}
+          hidden={!open}
           role="listbox"
           aria-label={t.common.language}
           className={cn(
@@ -166,12 +175,13 @@ export function LanguageSwitcher({
             onClick={() => setOpen(false)}
           >
             <div
-              id="mobile-language-sheet"
+              id={panelId}
+              data-language-dialog
               ref={sheetRef}
               role="dialog"
               aria-modal="true"
               aria-label={t.common.selectLanguage}
-              className="w-full max-w-sm overflow-hidden rounded-[26px] border border-saffron-500/30 bg-cream-50 p-2.5 shadow-2xl"
+              className="max-h-[calc(100dvh-24px)] w-full max-w-sm overflow-y-auto overscroll-contain rounded-[26px] border border-saffron-500/30 bg-cream-50 p-2.5 shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="mx-auto mt-1 h-1 w-10 rounded-full bg-forest-900/15 sm:hidden" aria-hidden />

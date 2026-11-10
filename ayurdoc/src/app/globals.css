@@ -226,6 +226,12 @@ html[lang="hi"] h1 svg, html[lang="mr"] h1 svg, html[lang="gu"] h1 svg {
 html[lang="hi"] .eyebrow, html[lang="mr"] .eyebrow, html[lang="gu"] .eyebrow {
   text-transform: none;
 }
+/* Single-line truncated labels (e.g. the nav doctor name) use overflow:hidden.
+   A tight line box cuts off Devanagari/Gujarati vowel signs above the headline
+   (ि ी ॉ ं) and conjuncts below it, so these labels get a taller line box. */
+html[lang="hi"] .truncate, html[lang="mr"] .truncate, html[lang="gu"] .truncate {
+  line-height: 1.5;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .reveal, .reveal-scale, .reveal-left, .reveal-right {

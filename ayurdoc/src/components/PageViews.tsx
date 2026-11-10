@@ -54,12 +54,21 @@ import {
 
 export const ALL_CONDITIONS = [...CONDITIONS_1, ...CONDITIONS_2];
 
-const FEATURED_CONDITIONS = [
-  ...CONDITIONS_1.slice(0, 3),
-  ...CONDITIONS_2.filter((c) =>
-    ["speech-delay-in-children", "poor-appetite-children", "constipation-children"].includes(c.slug)
-  ),
+/* Home "Explore by need" grid: six guides fill complete rows at 1, 2 and 3
+   columns. Slugs are resolved across BOTH condition files — "speech-delay-in-children"
+   lives in conditions.ts, so filtering only CONDITIONS_2 silently dropped it. */
+const FEATURED_CONDITION_SLUGS = [
+  "adhd-in-children",
+  "adhd-symptoms-by-age",
+  "adhd-assessment-diagnosis",
+  "speech-delay-in-children",
+  "poor-appetite-children",
+  "constipation-children",
 ];
+const FEATURED_CONDITIONS = FEATURED_CONDITION_SLUGS.flatMap((slug) => {
+  const page = ALL_CONDITIONS.find((c) => c.slug === slug);
+  return page ? [page] : [];
+});
 
 const CONDITION_CATS = [
   "Development & Behaviour",
@@ -773,9 +782,10 @@ export function ContactPageView() {
         }),
       });
       const json = await res.json().catch(() => ({}));
-      setDoneRef(json?.ref || "Submitted");
+      if (!res.ok || json.ok !== true || !json.ref) throw new Error(t.booking.errors.form);
+      setDoneRef(json.ref);
     } catch {
-      setDoneRef("Submitted");
+      setErrors({ form: t.booking.errors.form });
     } finally {
       setSubmitting(false);
     }
@@ -870,6 +880,12 @@ export function ContactPageView() {
             </div>
           ) : (
             <form onSubmit={onSubmit} noValidate className="mt-4 grid gap-4">
+              {errors.form && (
+                <div role="alert" className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+                  <p>{errors.form}</p>
+                  <a href={waHref} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block font-semibold underline underline-offset-4">{s.openWaBtn}</a>
+                </div>
+              )}
               <input
                 type="text"
                 name="website"

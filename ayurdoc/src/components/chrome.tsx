@@ -34,6 +34,8 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [drop, setDrop] = useState<string | null>(null);
   const headerRef = useRef<HTMLElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const [headerBottom, setHeaderBottom] = useState(88);
   const pathname = usePathname() || "/";
   const { lang, t } = useLanguage();
   const p = usePagesDict(lang);
@@ -44,11 +46,30 @@ export function SiteHeader() {
   }, [pathname]);
 
   useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = previousOverflow;
     };
   }, [open]);
+
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+    const measure = () => setHeaderBottom(Math.ceil(header.getBoundingClientRect().bottom));
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 1024px)");
+    const closeOnDesktop = () => { if (query.matches) setOpen(false); };
+    query.addEventListener("change", closeOnDesktop);
+    return () => query.removeEventListener("change", closeOnDesktop);
+  }, []);
 
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
@@ -57,9 +78,10 @@ export function SiteHeader() {
       }
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === "Escape" && !document.querySelector("[data-language-dialog]")) {
         setDrop(null);
         setOpen(false);
+        menuButtonRef.current?.focus();
       }
     };
     document.addEventListener("mousedown", onDocClick);
@@ -88,14 +110,14 @@ export function SiteHeader() {
         <nav
           aria-label={t.nav.primaryNav}
           className={cn(
-            "flex items-center justify-between gap-1.5 xl:gap-2 rounded-3xl lg:rounded-full px-2.5 sm:px-3 xl:px-3.5 transition-all duration-500",
-            scrolled ? "glass gold-hairline shadow-luxe py-2" : "bg-white/80 backdrop-blur-md border border-white/60 py-2 sm:py-2.5 shadow-sm"
+            "relative z-50 flex min-w-0 items-center justify-between gap-1.5 xl:gap-2 rounded-3xl lg:rounded-full border border-saffron-500/15 bg-cream-50/95 px-2.5 sm:px-3 xl:px-3.5 backdrop-blur-xl transition-all duration-500",
+            scrolled ? "shadow-luxe py-2" : "py-2 sm:py-2.5 shadow-sm"
           )}
         >
           {/* Brand — compact width cap at laptop widths so all 7 nav options stay 100% visible */}
           <Link
             href="/"
-            className="flex items-center gap-2 xl:gap-2.5 min-w-0 shrink lg:shrink-0 lg:max-w-[156px] xl:max-w-[205px] 2xl:max-w-none group"
+            className="flex flex-1 items-center gap-2 xl:gap-2.5 min-w-0 lg:flex-none lg:shrink-0 lg:max-w-[156px] xl:max-w-[205px] 2xl:max-w-none group"
             aria-label={`${t.site.doctorName} — ${p.header.homeAria}`}
           >
             <span className="relative grid place-items-center w-9 h-9 xl:w-10 xl:h-10 rounded-xl bg-gradient-to-br from-forest-800 via-forest-900 to-forest-950 text-saffron-300 shadow shrink-0 group-hover:scale-105 transition-transform">
@@ -258,11 +280,13 @@ export function SiteHeader() {
             </Link>
 
             <button
+              ref={menuButtonRef}
               type="button"
               onClick={() => setOpen(!open)}
               aria-expanded={open}
+              aria-controls="mobile-navigation"
               aria-label={open ? p.header.closeMenu : p.header.openMenu}
-              className="lg:hidden grid place-items-center w-10 h-10 rounded-full bg-forest-950 text-saffron-300 shrink-0"
+              className="lg:hidden grid place-items-center w-11 h-11 rounded-full bg-forest-950 text-saffron-300 shrink-0"
             >
               {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -273,14 +297,16 @@ export function SiteHeader() {
       {/* Smaller-screen drawer (< lg) */}
       {open && (
         <div
-          className="lg:hidden fixed inset-0 top-[68px] sm:top-[76px] z-40 bg-forest-950/45 backdrop-blur-sm"
+          className="lg:hidden fixed inset-x-0 bottom-0 z-40 flex flex-col bg-forest-950/45 p-3 pt-1 backdrop-blur-sm"
+          style={{ top: headerBottom }}
           onClick={() => setOpen(false)}
         >
           <div
-            className="mx-3 mt-2 rounded-3xl bg-cream-50 border border-saffron-500/25 shadow-luxe-lg p-4 max-h-[calc(100dvh-92px)] overflow-y-auto overscroll-contain"
+            id="mobile-navigation"
+            className="flex min-h-0 max-h-full flex-col overflow-hidden rounded-3xl bg-cream-50 border border-saffron-500/25 shadow-luxe-lg"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="grid gap-1 text-[15px] font-medium text-forest-950">
+            <div className="grid min-h-0 gap-1 overflow-y-auto overscroll-contain p-3 text-[15px] font-medium text-forest-950">
               {p.header.mobileLinks.map(({ href, label }) => (
                 <Link
                   key={href}
@@ -293,7 +319,8 @@ export function SiteHeader() {
               ))}
             </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-2.5">
+            <div className="shrink-0 border-t border-forest-900/10 bg-cream-50 p-3">
+            <div className="grid grid-cols-2 gap-2.5">
               {/* Portal language sheet — never clipped by overflow-y-auto or screen edges */}
               <LanguageSwitcher mobile fullWidth />
 
@@ -315,6 +342,7 @@ export function SiteHeader() {
             >
               <CalendarCheck className="w-5 h-5 text-saffron-400 shrink-0" /> {p.header.bookChildVisit}
             </Link>
+            </div>
           </div>
         </div>
       )}
