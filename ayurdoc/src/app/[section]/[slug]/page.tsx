@@ -127,12 +127,19 @@ export default async function NestedDetailPage({
                 { name: "Conditions", path: "/conditions" },
                 { name: cond.title, path },
               ]),
-              medicalWebPageJsonLd({
-                path,
-                name: cond.h1,
-                description: cond.seoDescription,
-                about: cond.title,
-              }),
+              /* The MedicalWebPage entity names a reviewer and a review date, so it is
+                 only emitted once a guide has been physician-reviewed and published. */
+              ...(cond.status === "draft"
+                ? []
+                : [
+                    medicalWebPageJsonLd({
+                      path,
+                      name: cond.h1,
+                      description: cond.seoDescription,
+                      about: cond.title,
+                      dateModified: cond.reviewedOn,
+                    }),
+                  ]),
               faqJsonLd(cond.faqs),
             ]}
           />
