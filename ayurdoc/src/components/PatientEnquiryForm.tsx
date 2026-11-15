@@ -7,6 +7,7 @@ import { VopdBookingForm } from "@/components/VopdBookingForm";
 import { PLANS, SITE } from "@/content/site";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useExpansion } from "@/i18n/expansion";
+import { vopdDict } from "@/i18n/vopd";
 import { cn } from "@/lib/cn";
 import { useRegionCurrency } from "@/lib/useRegionCurrency";
 
@@ -41,6 +42,7 @@ function withLivePrice(label: string, price: string) {
 export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel = 2 }: Props) {
   const { t, lang } = useLanguage();
   const f = useExpansion(lang).form;
+  const sel = vopdDict(lang).selector;
   const currency = useRegionCurrency();
   const prefix = `enquiry-${useId().replace(/:/g, "")}`;
   const formRef = useRef<HTMLFormElement>(null);
@@ -195,8 +197,8 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
       </div>
 
       <div className="border-b border-forest-900/10 bg-cream-100/70 px-6 py-5 sm:px-8">
-        <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-forest-800">How would you like to consult Dr. Priyanka?</p>
-        <div className="mt-2 grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Consultation type">
+        <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-forest-800">{sel.question}</p>
+        <div className="mt-2 grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label={sel.question}>
           <button
             type="button"
             role="radio"
@@ -209,8 +211,8 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
           >
             <span className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-xl", consultType === "opd" ? "bg-forest-950 text-saffron-300" : "bg-forest-50 text-forest-700")}><Building2 className="h-4 w-4" /></span>
             <span>
-              <span className="block text-[14px] font-semibold text-forest-950">OPD — In-clinic consultation</span>
-              <span className="block text-[12px] text-forest-800/70">Clinic visit enquiry. No online payment.</span>
+              <span className="block text-[14px] font-semibold text-forest-950">{sel.opdTitle}</span>
+              <span className="block text-[12px] text-forest-800/70">{sel.opdSub}</span>
             </span>
           </button>
           <button
@@ -225,15 +227,15 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
           >
             <span className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-xl", consultType === "vopd" ? "bg-forest-950 text-saffron-300" : "bg-forest-50 text-forest-700")}><Video className="h-4 w-4" /></span>
             <span>
-              <span className="block text-[14px] font-semibold text-forest-950">VOPD — Online video consultation</span>
-              <span className="block text-[12px] text-forest-800/70">30-minute slots, UPI payment, confirmed after verification.</span>
+              <span className="block text-[14px] font-semibold text-forest-950">{sel.vopdTitle}</span>
+              <span className="block text-[12px] text-forest-800/70">{sel.vopdSub}</span>
             </span>
           </button>
         </div>
         <p className="mt-2 text-[12px] text-forest-800/70">
           {consultType === "opd"
-            ? "Your existing clinic appointment enquiry is unchanged — choose a preferred date and time and the clinic will call you."
-            : "Reserve an available video slot, pay by UPI, and the clinic confirms after verifying the payment manually."}
+            ? "{sel.hintOpd}"
+            : "{sel.hintVopd}"}
         </p>
       </div>
 
