@@ -34,7 +34,7 @@ export default function OpenGraphImage() {
           </div>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 26, color: "rgba(254,253,251,0.7)" }}>
-          <span>{`${STATS.patientsTreated.toLocaleString("en-IN")}+ children guided`}</span>
+          <span>{`Individualised Ayurvedic care for every age`}</span>
           <span>{SITE.siteUrl.replace(/^https?:\/\//, "")}</span>
         </div>
       </div>

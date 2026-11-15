@@ -2,7 +2,9 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { SITE, SEO } from "@/content/site";
-import { buildJsonLd } from "@/lib/jsonld";
+/* Site-wide WebSite entity. The legacy buildJsonLd() (src/lib/jsonld.ts) contained unverified
+   experience and rating-style claims, so it is no longer rendered. Page-level schema is added per page. */
+import { websiteJsonLd as buildJsonLd } from "@/seo/config";
 import { SkipLink } from "@/components/SkipLink";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { SiteHeader, SiteFooter } from "@/components/chrome";
