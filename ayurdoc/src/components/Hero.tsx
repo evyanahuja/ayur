@@ -5,24 +5,20 @@ import { useEffect, useState } from "react";
 import { CalendarCheck, Play, Leaf, BadgeCheck, Stethoscope, HeartHandshake, ArrowRight, ShieldCheck } from "lucide-react";
 import { SITE, IMAGES } from "@/content/site";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useExpansion } from "@/i18n/expansion";
 import { LineReveal, CredentialGrid } from "./luxe";
 import { SectionMandalas } from "./ScrollMandala";
 
 /* Homepage hero: all-age positioning with pediatric expertise retained as a differentiator.
-   No counters, star ratings or patient avatars: those figures were not verifiable. */
+   Supports all 4 languages (EN, HI, MR, GU) via useExpansion(lang). */
 export function Hero() {
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
+  const h = useExpansion(lang).hero;
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 90);
     return () => clearTimeout(timer);
   }, []);
-
-  const miniStats = [
-    { k: "BAMS · MD", v: "Ayurvedic qualifications" },
-    { k: "All ages", v: "Children, adults and seniors" },
-    { k: "Online", v: "Video consultations too" },
-  ];
 
   return (
     <section
@@ -46,11 +42,11 @@ export function Hero() {
             <h1 className="mt-5 sm:mt-6 font-display font-light text-[clamp(2.15rem,4.2vw+0.6rem,3.35rem)] leading-[1.05] text-forest-950">
               <LineReveal
                 lines={[
-                  <>Personalised Ayurvedic</>,
+                  <>{h.line1}</>,
                   <>
-                    healthcare for{" "}
+                    {h.line2Pre}{" "}
                     <span className="relative inline-block">
-                      <em className="text-gradient-gold font-normal italic">every stage</em>
+                      <em className="text-gradient-gold font-normal italic">{h.highlight}</em>
                       <svg viewBox="0 0 240 12" className="absolute -bottom-1 left-0 w-full" aria-hidden>
                         <path d="M4 8 C 70 2, 165 2, 236 6" stroke="url(#goldline)" strokeWidth="3" strokeLinecap="round" fill="none" />
                         <defs>
@@ -63,7 +59,7 @@ export function Hero() {
                       </svg>
                     </span>
                   </>,
-                  <>of life</>,
+                  <>{h.line3}</>,
                 ]}
                 delay={180}
                 step={100}
@@ -73,9 +69,8 @@ export function Hero() {
             <p
               className={`mt-4 sm:mt-5 text-[15px] sm:text-[16.5px] lg:text-[16px] leading-[1.7] text-forest-800/70 max-w-xl transition-all duration-1000 delay-[700ms] ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}
             >
-              Individualised Ayurvedic care for children, adults and families. Explore pediatric healthcare, Panchakarma,
-              skin conditions and general health consultations with{" "}
-              <strong className="text-forest-950 font-semibold">{SITE.doctorName}</strong>.
+              {h.subheadingPre} <strong className="text-forest-950 font-semibold">{t.site.doctorName}</strong>
+              {h.subheadingPost}
             </p>
 
             <div
@@ -85,14 +80,14 @@ export function Hero() {
                 <span className="hero-action__icon" aria-hidden="true">
                   <CalendarCheck className="w-[18px] h-[18px]" />
                 </span>
-                <span className="hero-action__label">Book an Appointment</span>
+                <span className="hero-action__label">{h.bookBtn}</span>
                 <ArrowRight className="w-4 h-4" aria-hidden="true" />
               </a>
               <a href="#method" className="hero-action hero-action--secondary gold-hairline group">
                 <span className="hero-action__icon" aria-hidden="true">
                   <Play className="w-3.5 h-3.5 ml-0.5" fill="currentColor" />
                 </span>
-                <span className="hero-action__label">How a consultation works</span>
+                <span className="hero-action__label">{h.methodBtn}</span>
               </a>
             </div>
 
@@ -101,14 +96,14 @@ export function Hero() {
             >
               <div className="flex items-center gap-2.5 text-[13px] font-medium text-forest-800 tracking-wide">
                 <ShieldCheck className="w-[18px] h-[18px] shrink-0 text-forest-600" />
-                BAMS • MD (Kaumarbhritya) • Reg. No. {SITE.registrationNumber}
+                {t.site.qualification}
               </div>
             </div>
 
             <dl
               className={`mt-6 sm:mt-7 grid grid-cols-3 max-w-md rounded-2xl glass gold-hairline p-1.5 transition-all duration-1000 delay-[1060ms] ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}
             >
-              {miniStats.map((s, i) => (
+              {h.miniStats.map((s, i) => (
                 <div
                   key={s.v}
                   className={`text-center px-2 py-3.5 rounded-xl hover:bg-white/70 transition-colors duration-500 ${i < 2 ? "border-r border-saffron-500/15" : ""}`}
@@ -154,10 +149,10 @@ export function Hero() {
                       {t.hero.accepting}
                     </p>
                     <p className="mt-2.5 font-display font-light text-white text-[17px] sm:text-[19px] leading-[1.3]">
-                      Individualised Ayurvedic care for every stage of life.
+                      {h.quote}
                     </p>
                     <p className="mt-1.5 text-[11px] sm:text-[12px] text-white/60 font-medium tracking-[0.14em] uppercase">
-                      — {SITE.doctorName}
+                      — {t.site.doctorName}
                     </p>
                   </div>
                 </div>
@@ -176,15 +171,15 @@ export function Hero() {
                 {
                   id: "approach",
                   icon: <HeartHandshake className="w-[18px] h-[18px]" />,
-                  title: "Individual assessment",
-                  subtitle: "Prakriti, digestion, sleep and routine",
+                  title: h.credApproachTitle,
+                  subtitle: h.credApproachSub,
                   tone: "gold",
                 },
                 {
                   id: "therapies",
                   icon: <Leaf className="w-[18px] h-[18px]" />,
-                  title: "Panchakarma and therapies",
-                  subtitle: "Offered only after assessment",
+                  title: h.credTherapiesTitle,
+                  subtitle: h.credTherapiesSub,
                   tone: "sage",
                 },
               ]}

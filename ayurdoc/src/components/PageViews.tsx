@@ -43,6 +43,7 @@ import { ARTICLES, type Article } from "@/content/articles";
 import { LOCAL_PAGES, type LocalPage } from "@/content/local";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePagesDict } from "@/i18n/pagesDictionary";
+import { useExpansion } from "@/i18n/expansion";
 import {
   trText,
   localizeCondition,
@@ -80,6 +81,9 @@ const CONDITION_CATS = [
   "Respiratory & Immunity",
   "Digestion & Gut",
   "Sleep & Habits",
+  "Skin & Hair",
+  "Women's Health",
+  "Joint & Bone",
 ] as const;
 
 /* ================= SHARED LAYOUT PRIMITIVES ================= */
@@ -441,7 +445,7 @@ export function ConditionsIndexView() {
         <Breadcrumbs items={[{ label: p.hubs.homeCrumb, href: "/" }, { label: p.hubs.conditionsCrumb }]} />
       </div>
       <div className="mx-auto max-w-6xl px-4 sm:px-6 pb-16 space-y-10">
-        {CONDITION_CATS.map((cat) => (
+        {CONDITION_CATS.filter((cat) => ALL_CONDITIONS.some((c) => c.category === cat)).map((cat) => (
           <section key={cat} aria-labelledby={cat}>
             <h2 id={cat} className="font-display text-[24px] text-forest-950 flex items-center gap-2">
               {cat === "Development & Behaviour" ? (
@@ -976,6 +980,7 @@ export function NotFoundView() {
 export function ConditionTemplateView({ page: raw }: { page: ConditionPage }) {
   const { lang } = useLanguage();
   const p = usePagesDict(lang);
+  const ex = useExpansion(lang).conversion;
   const page = localizeCondition(raw, lang);
   const catLabel = p.categories[raw.category] ?? raw.category;
 
@@ -1000,21 +1005,17 @@ export function ConditionTemplateView({ page: raw }: { page: ConditionPage }) {
       <div className="mx-auto max-w-4xl px-4 sm:px-6 pb-16 space-y-12">
         {raw.status === "draft" && <DraftNotice />}
         <AuthorBox date={raw.status === "draft" ? "pending" : raw.reviewedOn} />
-        <AppointmentCta
-          compact
-          title="Think this sounds like your concern?"
-          body="Describe your symptoms and history. Dr. Priyanka Likhar will discuss what may be going on, what should be checked first, and whether an Ayurvedic consultation is suitable."
-        />
+        <AppointmentCta compact title={ex.condIntroCtaTitle} body={ex.condIntroCtaBody} />
         <TableOfContents
           items={[
-            { id: "what-is", label: "What is it?" },
-            { id: "signs", label: "Symptoms" },
-            { id: "causes", label: "Causes and contributing factors" },
-            { id: "assess", label: "When to get assessed" },
-            { id: "ayurveda", label: "The Ayurvedic perspective" },
-            { id: "management", label: "How Ayurveda approaches it" },
-            { id: "red-flags", label: "Warning signs" },
-            { id: "faq", label: "Frequently asked questions" },
+            { id: "what-is", label: ex.tocLabels.whatIs },
+            { id: "signs", label: ex.tocLabels.signs },
+            { id: "causes", label: ex.tocLabels.causes },
+            { id: "assess", label: ex.tocLabels.assess },
+            { id: "ayurveda", label: ex.tocLabels.ayurveda },
+            { id: "management", label: ex.tocLabels.management },
+            { id: "red-flags", label: ex.tocLabels.redFlags },
+            { id: "faq", label: ex.tocLabels.faq },
           ]}
         />
 
@@ -1086,11 +1087,7 @@ export function ConditionTemplateView({ page: raw }: { page: ConditionPage }) {
           </div>
         </Section>
 
-        <AppointmentCta
-          compact
-          title="Want to talk your concern through with a doctor?"
-          body="Book a consultation to discuss your history, medicines and goals. The clinic will tell you honestly whether Ayurvedic care is suitable for you."
-        />
+        <AppointmentCta compact title={ex.condMidCtaTitle} body={ex.condMidCtaBody} />
 
         <section aria-labelledby="faq-h" id="faq" className="scroll-mt-28">
           <p className="eyebrow text-saffron-700">{p.templates.faqEyebrow}</p>

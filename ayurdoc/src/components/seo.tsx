@@ -11,6 +11,7 @@ import {
 } from "@/seo/config";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePagesDict } from "@/i18n/pagesDictionary";
+import { useExpansion } from "@/i18n/expansion";
 
 /* ---------- Sync browser tab <title> dynamically when visitor switches language ---------- */
 export function LanguageTitleSync({ title }: { title: string }) {
@@ -50,6 +51,7 @@ export function Breadcrumbs({ items }: { items: { label: string; href?: string }
 export function AuthorBox({ date = REVIEW_DATE }: { date?: string }) {
   const { lang, t } = useLanguage();
   const p = usePagesDict(lang);
+  const ex = useExpansion(lang);
 
   return (
     <div className="flex items-start gap-3.5 rounded-2xl border border-saffron-500/25 bg-cream-100 p-4 sm:p-5">
@@ -68,7 +70,7 @@ export function AuthorBox({ date = REVIEW_DATE }: { date?: string }) {
         <p className="mt-1 text-forest-800/80 text-[12.5px]">{p.seoBlocks.pgLine}</p>
         <p className="text-forest-800/80 text-[12.5px]">{p.seoBlocks.ugLine}</p>
         <p className="mt-1 text-forest-800/65 text-[12px]">
-          {p.seoBlocks.reviewerRole} • {date === "pending" ? "Medical review pending" : `${p.seoBlocks.reviewedOn}: ${date}`}
+          {p.seoBlocks.reviewerRole} • {date === "pending" ? ex.conversion.pendingReview : `${p.seoBlocks.reviewedOn}: ${date}`}
         </p>
         <p className="mt-1 text-forest-800/60 text-[12px]">{p.seoBlocks.authorNote}</p>
       </div>

@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type FormEvent, type InputHTMLAttributes } from "react";
-import { Baby, CheckCircle2, Loader2, MessageCircle, PartyPopper, Send, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { CheckCircle2, Loader2, MessageCircle, PartyPopper, Send, Sparkles, Stethoscope } from "lucide-react";
 import { PLANS, SITE } from "@/content/site";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useExpansion } from "@/i18n/expansion";
 import { cn } from "@/lib/cn";
 import { useRegionCurrency } from "@/lib/useRegionCurrency";
 
@@ -33,11 +35,11 @@ function withLivePrice(label: string, price: string) {
 }
 
 /** The same form, payload and delivery states on Home and Contact.
- *  Collects only what is needed to arrange a consultation. It asks for consent,
- *  never promises a confirmed appointment, and does not request medical history. */
+ *  All-age labels, consent checkbox, privacy policy link and non-confirmation notice
+ *  in all 4 languages (EN, HI, MR, GU). */
 export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel = 2 }: Props) {
   const { t, lang } = useLanguage();
-  const isEn = lang === "en";
+  const f = useExpansion(lang).form;
   const currency = useRegionCurrency();
   const prefix = `enquiry-${useId().replace(/:/g, "")}`;
   const formRef = useRef<HTMLFormElement>(null);
@@ -51,15 +53,11 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
   const mode = preferredMode ?? form.preferredMode;
   const Heading = headingLevel === 3 ? "h3" : "h2";
 
-  const patientSectionLabel = isEn ? "Patient details" : t.booking.childSection;
-  const patientNameLabel = isEn ? "Patient's name *" : t.booking.childName;
-  const patientNamePlaceholder = isEn ? "e.g. Ramesh or Sunita" : t.booking.childNamePh;
-  const patientAgePlaceholder = isEn ? "e.g. 4 yrs or 45 yrs" : t.booking.childAgePh;
-
   const errorMessage = (name: ErrorField): string => {
-    if (name === "consent") return "Please tick the consent box so we can process your enquiry.";
-    if (name === "childName" && isEn) return "Please enter the patient's name.";
-    if (name === "childAge" && isEn) return "Please enter the patient's age.";
+    if (name === "consent") return f.consentError;
+    if (name === "parentName") return f.contactNameError;
+    if (name === "childName") return f.patientNameError;
+    if (name === "childAge") return f.patientAgeError;
     return t.booking.errors[name];
   };
 
@@ -155,9 +153,18 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
   const input = (name: ErrorField, label: string, placeholder: string, options: InputHTMLAttributes<HTMLInputElement> = {}) => (
     <div className="min-w-0">
       <label htmlFor={id(name)} className={labelCls}>{label}</label>
-      <input {...options} id={id(name)} name={name} value={form[name as keyof typeof initial] as string} onChange={(event) => set(name as keyof typeof initial, event.target.value as never)} placeholder={placeholder}
-        className={inputCls(errors[name])} required={name !== "email"} aria-invalid={errors[name] || undefined}
-        aria-describedby={errors[name] ? id(`${name}-error`) : undefined} />
+      <input
+        {...options}
+        id={id(name)}
+        name={name}
+        value={form[name as keyof typeof initial] as string}
+        onChange={(event) => set(name as keyof typeof initial, event.target.value as never)}
+        placeholder={placeholder}
+        className={inputCls(errors[name])}
+        required={name !== "email"}
+        aria-invalid={errors[name] || undefined}
+        aria-describedby={errors[name] ? id(`${name}-error`) : undefined}
+      />
       {errorText(name)}
     </div>
   );
@@ -174,60 +181,114 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
   return (
     <div data-patient-enquiry className="relative min-w-0 overflow-hidden rounded-[32px] bg-cream-50 shadow-luxe-lg gold-hairline">
       <div className="flex items-center gap-4 bg-gradient-to-r from-saffron-300 via-saffron-400 to-saffron-500 px-6 py-6 sm:px-8">
-        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-forest-950 text-saffron-300 shadow-lg"><Baby className="h-6 w-6" /></span>
+        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-forest-950 text-saffron-300 shadow-lg">
+          <Stethoscope className="h-6 w-6" />
+        </span>
         <div className="min-w-0">
-          <Heading id={id("title")} className="font-display text-[22px] font-normal leading-snug text-forest-950 sm:text-[25px]">{t.booking.formTitle}</Heading>
+          <Heading id={id("title")} className="font-display text-[22px] font-normal leading-snug text-forest-950 sm:text-[25px]">
+            {t.booking.formTitle}
+          </Heading>
           <p className="text-[13px] font-medium text-forest-900/70">{t.booking.formSub}</p>
         </div>
       </div>
 
       {status === "success" && receipt ? (
         <div ref={successRef} tabIndex={-1} className="px-6 py-10 text-center sm:px-8" role="status" aria-live="polite">
-          <span className="mx-auto mb-5 grid h-20 w-20 place-items-center rounded-full bg-emerald-100 text-emerald-600"><PartyPopper className="h-9 w-9" /></span>
+          <span className="mx-auto mb-5 grid h-20 w-20 place-items-center rounded-full bg-emerald-100 text-emerald-600">
+            <PartyPopper className="h-9 w-9" />
+          </span>
           <h3 className="font-display text-[28px] font-light text-forest-950 sm:text-[34px]">{t.booking.successTitle}</h3>
-          {receipt.ref && <p className="mt-3 text-sm font-semibold text-forest-950">{t.booking.referenceLabel}: <strong>{receipt.ref}</strong></p>}
+          {receipt.ref && (
+            <p className="mt-3 text-sm font-semibold text-forest-950">
+              {t.booking.referenceLabel}: <strong>{receipt.ref}</strong>
+            </p>
+          )}
           <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-forest-700">
             {(receipt.emailSent ? t.booking.successEmailMessage : t.booking.successSavedMessage).replace("{doctor}", t.site.doctorName)}
           </p>
-          <p className="mx-auto mt-3 max-w-md text-[13.5px] leading-relaxed text-forest-700/80">
-            This is an enquiry, not a confirmed appointment. The clinic will contact you to confirm a slot.
-          </p>
-          {!receipt.emailSent && <p className="mx-auto mt-4 max-w-md rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] leading-relaxed text-amber-900">{t.booking.successEmailDelayed}</p>}
+          <p className="mx-auto mt-3 max-w-md text-[13.5px] leading-relaxed text-forest-700/80">{f.nonConfirmNote}</p>
+          {!receipt.emailSent && (
+            <p className="mx-auto mt-4 max-w-md rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] leading-relaxed text-amber-900">
+              {t.booking.successEmailDelayed}
+            </p>
+          )}
           <div className="mx-auto mt-6 max-w-md space-y-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-left">
             {t.booking.successTips.filter((tip) => receipt.ref || !tip.includes("{refId}")).map((tip) => (
               <p key={tip} className="flex items-start gap-2 text-[13.5px] text-emerald-900">
                 <CheckCircle2 className="mt-0.5 h-[18px] w-[18px] shrink-0" />
-                <span>{tip.includes("{refId}")
-                  ? <a href={waHref} target="_blank" rel="noopener noreferrer" className="underline decoration-emerald-400 underline-offset-2">{tip.replace(/#?\{refId\}/g, receipt.ref || "").replace(/\s+$/, "")}</a>
-                  : tip}</span>
+                <span>
+                  {tip.includes("{refId}") ? (
+                    <a href={waHref} target="_blank" rel="noopener noreferrer" className="underline decoration-emerald-400 underline-offset-2">
+                      {tip.replace(/#?\{refId\}/g, receipt.ref || "").replace(/\s+$/, "")}
+                    </a>
+                  ) : (
+                    tip
+                  )}
+                </span>
               </p>
             ))}
           </div>
-          <button type="button" onClick={() => { setReceipt(null); setErrors({}); setStatus("idle"); }} className="mt-7 rounded-xl bg-forest-900 px-6 py-3 text-sm font-semibold text-cream-100 transition-colors hover:bg-forest-800">{t.booking.successBtn}</button>
+          <button
+            type="button"
+            onClick={() => { setReceipt(null); setErrors({}); setStatus("idle"); }}
+            className="mt-7 rounded-xl bg-forest-900 px-6 py-3 text-sm font-semibold text-cream-100 transition-colors hover:bg-forest-800"
+          >
+            {t.booking.successBtn}
+          </button>
         </div>
       ) : (
         <form ref={formRef} onSubmit={onSubmit} noValidate aria-labelledby={id("title")} aria-busy={status === "sending"} className="space-y-5 px-6 py-7 sm:px-8">
           <fieldset disabled={status === "sending"} className="min-w-0 space-y-5">
-            <input type="text" name="website" value={form.website} onChange={(event) => set("website", event.target.value)} className="hidden" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+            <input
+              type="text"
+              name="website"
+              value={form.website}
+              onChange={(event) => set("website", event.target.value)}
+              className="hidden"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+            />
             <div className="grid gap-4 sm:grid-cols-2">
-              {input("parentName", t.booking.parentName, t.booking.parentNamePh, { autoComplete: "name" })}
+              {input("parentName", f.contactName, f.contactNamePh, { autoComplete: "name" })}
               {input("phone", t.booking.phone, t.booking.phonePh, { type: "tel", inputMode: "tel", autoComplete: "tel" })}
             </div>
             <div>
-              <label htmlFor={id("email")} className={labelCls}>{t.booking.email} <span className="font-normal text-forest-500">{t.booking.emailHint}</span></label>
-              <input id={id("email")} name="email" type="email" value={form.email} onChange={(event) => set("email", event.target.value)} placeholder={t.booking.emailPh} className={inputCls(errors.email)} autoComplete="email" aria-invalid={errors.email || undefined} aria-describedby={errors.email ? id("email-error") : undefined} />
+              <label htmlFor={id("email")} className={labelCls}>
+                {t.booking.email} <span className="font-normal text-forest-500">{t.booking.emailHint}</span>
+              </label>
+              <input
+                id={id("email")}
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={(event) => set("email", event.target.value)}
+                placeholder={t.booking.emailPh}
+                className={inputCls(errors.email)}
+                autoComplete="email"
+                aria-invalid={errors.email || undefined}
+                aria-describedby={errors.email ? id("email-error") : undefined}
+              />
               {errorText("email")}
             </div>
 
             <div className="space-y-4 rounded-[22px] border border-saffron-500/15 bg-gradient-to-b from-cream-100 to-cream-50 p-5" role="group" aria-labelledby={id("child-section")}>
-              <p id={id("child-section")} className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-wider text-forest-700"><Sparkles className="h-4 w-4 shrink-0 text-saffron-600" />{patientSectionLabel}</p>
+              <p id={id("child-section")} className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-wider text-forest-700">
+                <Sparkles className="h-4 w-4 shrink-0 text-saffron-600" />
+                {f.patientSection}
+              </p>
               <div className="grid gap-4 sm:grid-cols-3">
-                {input("childName", patientNameLabel, patientNamePlaceholder, { autoComplete: "off" })}
-                {input("childAge", t.booking.childAge, patientAgePlaceholder)}
+                {input("childName", f.patientName, f.patientNamePh, { autoComplete: "off" })}
+                {input("childAge", t.booking.childAge, f.patientAgePh)}
                 <div className="min-w-0">
                   <label htmlFor={id("childGender")} className={labelCls}>{t.booking.gender}</label>
                   <select id={id("childGender")} name="childGender" value={form.childGender} onChange={(event) => set("childGender", event.target.value)} className={inputCls()}>
-                    <option value="">{t.booking.genderSelect}</option><option value="Boy">{t.booking.genderBoy}</option><option value="Girl">{t.booking.genderGirl}</option>
+                    <option value="">{f.genderSelect}</option>
+                    <option value="Female">{f.genderFemale}</option>
+                    <option value="Male">{f.genderMale}</option>
+                    <option value="Girl">{f.genderGirl}</option>
+                    <option value="Boy">{f.genderBoy}</option>
+                    <option value="Other">{f.genderPreferNot}</option>
                   </select>
                 </div>
               </div>
@@ -238,8 +299,10 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
                 </select>
               </div>
               <div>
-                <label htmlFor={id("symptoms")} className={labelCls}>{t.booking.symptoms} <span className="font-normal text-forest-500">{t.booking.symptomsHint}</span></label>
-                <textarea id={id("symptoms")} name="symptoms" value={form.symptoms} onChange={(event) => set("symptoms", event.target.value)} rows={3} placeholder={t.booking.symptomsPh} className={cn(inputCls(), "resize-y")} />
+                <label htmlFor={id("symptoms")} className={labelCls}>
+                  {f.symptomsLabel} <span className="font-normal text-forest-500">{f.symptomsHint}</span>
+                </label>
+                <textarea id={id("symptoms")} name="symptoms" value={form.symptoms} onChange={(event) => set("symptoms", event.target.value)} rows={3} placeholder={f.symptomsPh} className={cn(inputCls(), "resize-y")} />
               </div>
             </div>
 
@@ -249,7 +312,15 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
                 <input type="hidden" name="preferredMode" value={mode} />
                 <div className="flex overflow-hidden rounded-xl border-2 border-forest-100">
                   {([["online", t.booking.modeOnline], ["in_clinic", t.booking.modeClinic]] as const).map(([value, label]) => (
-                    <button type="button" key={value} onClick={() => set("preferredMode", value)} aria-pressed={mode === value} className={cn("min-w-0 flex-1 px-1 py-2.5 text-[13px] font-bold transition-colors", mode === value ? "bg-forest-900 text-cream-100" : "bg-white text-forest-700 hover:bg-forest-50")}>{label}</button>
+                    <button
+                      type="button"
+                      key={value}
+                      onClick={() => set("preferredMode", value)}
+                      aria-pressed={mode === value}
+                      className={cn("min-w-0 flex-1 px-1 py-2.5 text-[13px] font-bold transition-colors", mode === value ? "bg-forest-900 text-cream-100" : "bg-white text-forest-700 hover:bg-forest-50")}
+                    >
+                      {label}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -272,7 +343,9 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
               </select>
             </div>
             <div>
-              <label htmlFor={id("message")} className={labelCls}>{t.booking.message} <span className="font-normal text-forest-500">{t.booking.messageHint}</span></label>
+              <label htmlFor={id("message")} className={labelCls}>
+                {t.booking.message} <span className="font-normal text-forest-500">{t.booking.messageHint}</span>
+              </label>
               <textarea id={id("message")} name="message" value={form.message} onChange={(event) => set("message", event.target.value)} rows={2} placeholder={t.booking.messagePh} className={cn(inputCls(), "resize-y")} />
             </div>
 
@@ -288,20 +361,36 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
                   aria-describedby={errors.consent ? id("consent-error") : undefined}
                   className="mt-1 h-4 w-4 shrink-0 accent-forest-900"
                 />
-                <span>I agree that BalChikitsa Ayurved Clinic may contact me about this enquiry. Submitting this form does not by itself confirm an appointment.</span>
+                <span>{f.consentText}</span>
               </label>
               <p className="pl-7 text-[12.5px] leading-relaxed text-forest-700/80">
-                Your details are used only to respond to this enquiry. Read our{" "}
-                <a href="/privacy-policy" className="font-semibold underline underline-offset-2 hover:text-forest-950">privacy policy</a>.
+                {f.privacyPre}{" "}
+                <Link href="/privacy-policy" className="font-semibold underline underline-offset-2 hover:text-forest-950">
+                  {f.privacyLink}
+                </Link>
+                {f.privacyPost}
               </p>
-              {errors.consent && <p id={id("consent-error")} className="pl-7 text-xs font-medium text-red-600" role="alert">{errorMessage("consent")}</p>}
+              {errors.consent && (
+                <p id={id("consent-error")} className="pl-7 text-xs font-medium text-red-600" role="alert">
+                  {errorMessage("consent")}
+                </p>
+              )}
             </div>
 
-            {errors.form && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-relaxed text-red-800">
-              <p>{t.booking.deliveryError}</p>
-              <a href={waHref} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-2 font-semibold underline underline-offset-2"><MessageCircle className="h-4 w-4 shrink-0" />{t.booking.whatsappAction}</a>
-            </div>}
-            <button type="submit" disabled={status === "sending"} className="btn-shine inline-flex min-h-14 w-full items-center justify-center gap-2.5 rounded-full bg-forest-950 px-5 py-[18px] text-center text-[15.5px] font-medium leading-relaxed tracking-wide text-cream-50 shadow-luxe transition-colors hover:bg-forest-900 disabled:opacity-70">
+            {errors.form && (
+              <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-relaxed text-red-800">
+                <p>{t.booking.deliveryError}</p>
+                <a href={waHref} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-2 font-semibold underline underline-offset-2">
+                  <MessageCircle className="h-4 w-4 shrink-0" />
+                  {t.booking.whatsappAction}
+                </a>
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={status === "sending"}
+              className="btn-shine inline-flex min-h-14 w-full items-center justify-center gap-2.5 rounded-full bg-forest-950 px-5 py-[18px] text-center text-[15.5px] font-medium leading-relaxed tracking-wide text-cream-50 shadow-luxe transition-colors hover:bg-forest-900 disabled:opacity-70"
+            >
               {status === "sending" ? <Loader2 className="h-5 w-5 shrink-0 animate-spin" /> : <Send className="h-5 w-5 shrink-0 text-saffron-400" />}
               <span>{status === "sending" ? t.booking.sending : submitLabel}</span>
             </button>

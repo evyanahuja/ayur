@@ -13,6 +13,8 @@ import { CONDITIONS_1 } from "@/content/conditions";
 import { CONDITIONS_2 } from "@/content/conditions2";
 import { TREATMENTS } from "@/content/treatments";
 import { HEALTH_CATEGORIES, NAV_TREATMENT_SLUGS } from "@/content/categories";
+import { localizeCategory } from "@/i18n/categoriesTranslations";
+import { useExpansion } from "@/i18n/expansion";
 
 /* Treatments listed in the header dropdown, in the order defined in categories.ts. */
 const NAV_TREATMENTS = NAV_TREATMENT_SLUGS.flatMap((slug) => TREATMENTS.filter((t) => t.slug === slug));
@@ -44,6 +46,7 @@ export function SiteHeader() {
   const pathname = usePathname() || "/";
   const { lang, t } = useLanguage();
   const p = usePagesDict(lang);
+  const ex = useExpansion(lang);
 
   useEffect(() => {
     setOpen(false);
@@ -134,23 +137,26 @@ export function SiteHeader() {
               {drop === "cond" && (
                 <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 w-[560px]">
                   <div className="rounded-2xl border border-forest-900/10 bg-white shadow-luxe-lg p-4 grid grid-cols-2 gap-1 max-h-[420px] overflow-auto">
-                    {HEALTH_CATEGORIES.map((cat) => (
-                      <Link
-                        key={cat.slug}
-                        href={`/health-concerns/${cat.slug}`}
-                        onClick={() => setDrop(null)}
-                        className="rounded-xl px-3 py-2 text-[13px] text-forest-900/80 hover:bg-forest-50 hover:text-forest-950"
-                      >
-                        <span className="block font-medium">{cat.title}</span>
-                        <span className="block text-[11px] text-forest-800/50">{cat.navHint}</span>
-                      </Link>
-                    ))}
+                    {HEALTH_CATEGORIES.map((rawCat) => {
+                      const cat = localizeCategory(rawCat, lang);
+                      return (
+                        <Link
+                          key={cat.slug}
+                          href={`/health-concerns/${cat.slug}`}
+                          onClick={() => setDrop(null)}
+                          className="rounded-xl px-3 py-2 text-[13px] text-forest-900/80 hover:bg-forest-50 hover:text-forest-950"
+                        >
+                          <span className="block font-medium">{cat.title}</span>
+                          <span className="block text-[11px] text-forest-800/50">{cat.navHint}</span>
+                        </Link>
+                      );
+                    })}
                     <Link
                       href="/conditions"
                       onClick={() => setDrop(null)}
                       className="col-span-2 mt-2 border-t border-forest-900/10 px-3 pt-3 text-[12.5px] font-semibold text-saffron-700 hover:text-forest-950"
                     >
-                      Browse all conditions (A–Z) →
+                      {ex.nav.browseAllConditions}
                     </Link>
                   </div>
                 </div>
@@ -286,6 +292,7 @@ export function SiteFooter() {
   const year = new Date().getFullYear();
   const { lang, t } = useLanguage();
   const p = usePagesDict(lang);
+  const ex = useExpansion(lang);
 
   return (
     <footer id="footer" className="mandala-section relative bg-forest-950 text-cream-100 overflow-hidden" aria-label={t.footer.footerAria}>
@@ -321,6 +328,11 @@ export function SiteFooter() {
                 </Link>
               </li>
             ))}
+            <li>
+              <Link href="/health-concerns" className="text-white/75 hover:text-saffron-300">
+                {ex.nav.healthConcernsLink}
+              </Link>
+            </li>
             <li>
               <Link href="/conditions" className="text-saffron-300 hover:text-white font-medium">
                 {p.footer.allConditions}

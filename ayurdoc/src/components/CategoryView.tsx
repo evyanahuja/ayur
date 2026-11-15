@@ -1,43 +1,56 @@
-/* Health-concern category landing page. Server-rendered for crawlability. */
+"use client";
+
+/* Health-concern category landing page. SSR-rendered for crawlability, switches cleanly
+   between English, Hindi, Marathi and Gujarati via LanguageContext. */
 import Link from "next/link";
 import { Check } from "lucide-react";
-import { AuthorBox, Breadcrumbs, MedicalDisclaimer } from "@/components/seo";
+import { AuthorBox, Breadcrumbs, LanguageTitleSync, MedicalDisclaimer } from "@/components/seo";
 import { AppointmentCta, CATEGORY_ICONS, DoctorHelp } from "@/components/Conversion";
 import { HEALTH_CATEGORIES, type HealthCategory } from "@/content/categories";
 import { PUBLISHED_CONDITIONS } from "@/content/registry";
 import { TREATMENTS } from "@/content/treatments";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { useExpansion } from "@/i18n/expansion";
+import { localizeCategory } from "@/i18n/categoriesTranslations";
+import { localizeCondition, localizeTreatment } from "@/i18n/contentTranslations";
 
-export function CategoryView({ category: c }: { category: HealthCategory }) {
-  const Icon = CATEGORY_ICONS[c.icon];
-  const conditions = c.conditionSlugs.flatMap((slug) => PUBLISHED_CONDITIONS.filter((x) => x.slug === slug));
-  const treatments = c.treatmentSlugs.flatMap((slug) =>
-    TREATMENTS.filter((t) => t.slug === slug && t.base === "treatments")
+export function CategoryView({ category: raw }: { category: HealthCategory }) {
+  const { lang } = useLanguage();
+  const ui = useExpansion(lang).categories;
+  const c = localizeCategory(raw, lang);
+  const Icon = CATEGORY_ICONS[raw.icon];
+
+  const conditions = raw.conditionSlugs.flatMap((slug) =>
+    PUBLISHED_CONDITIONS.filter((x) => x.slug === slug).map((x) => localizeCondition(x, lang))
   );
-  const otherCategories = HEALTH_CATEGORIES.filter((x) => x.slug !== c.slug);
+  const treatments = raw.treatmentSlugs.flatMap((slug) =>
+    TREATMENTS.filter((t) => t.slug === slug && t.base === "treatments").map((t) => localizeTreatment(t, lang))
+  );
+  const otherCategories = HEALTH_CATEGORIES.filter((x) => x.slug !== raw.slug).map((x) => localizeCategory(x, lang));
 
   return (
     <main id="main">
+      <LanguageTitleSync title={c.seoTitle} />
       <div className="relative overflow-hidden bg-forest-950 text-cream-50">
         <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-saffron-500/20 blur-[100px]" aria-hidden />
         <div className="relative mx-auto max-w-4xl px-4 pb-10 pt-28 sm:px-6 sm:pt-32">
           <p className="eyebrow flex items-center gap-2 text-saffron-300">
-            <Icon className="h-4 w-4" aria-hidden /> Health concern
+            <Icon className="h-4 w-4" aria-hidden /> {ui.catEyebrow}
           </p>
           <h1 className="mt-3 font-display text-[clamp(2rem,5vw,3rem)] font-light leading-tight">
-            {c.title}: Individualised Ayurvedic Care
+            {c.title}
+            {ui.catH1Suffix}
           </h1>
           <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-cream-100/80">{c.seoDescription}</p>
-          <p className="mt-3 text-[12.5px] text-saffron-200/75">
-            Dr. Priyanka Likhar • BAMS, MD (Kaumarbhritya) • Indore clinic and online
-          </p>
+          <p className="mt-3 text-[12.5px] text-saffron-200/75">{ui.catMeta}</p>
         </div>
       </div>
 
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
         <Breadcrumbs
           items={[
-            { label: "Home", href: "/" },
-            { label: "Health Concerns", href: "/health-concerns" },
+            { label: ui.homeCrumb, href: "/" },
+            { label: ui.hubCrumb, href: "/health-concerns" },
             { label: c.title },
           ]}
         />
@@ -48,20 +61,16 @@ export function CategoryView({ category: c }: { category: HealthCategory }) {
 
         <section aria-labelledby="intro-h" className="space-y-4">
           <h2 id="intro-h" className="font-display text-[26px] text-forest-950">
-            Understanding {c.title.toLowerCase()}
+            {ui.understandingTitle(c.title)}
           </h2>
           <p className="text-[15px] leading-[1.8] text-forest-900/80">{c.intro}</p>
         </section>
 
-        <AppointmentCta
-          compact
-          title="Not sure which concern fits you?"
-          body="Describe your symptoms and history. Dr. Priyanka Likhar will tell you honestly whether an Ayurvedic consultation can help and what should be checked first."
-        />
+        <AppointmentCta compact title={ui.compactCtaTitle} body={ui.compactCtaBody} />
 
         <section aria-labelledby="approach-h" className="space-y-4">
           <h2 id="approach-h" className="font-display text-[26px] text-forest-950">
-            The Ayurvedic approach
+            {ui.approachTitle}
           </h2>
           <ul className="space-y-3">
             {c.approach.map((item) => (
@@ -75,7 +84,7 @@ export function CategoryView({ category: c }: { category: HealthCategory }) {
 
         <section aria-labelledby="concerns-h" className="space-y-4">
           <h2 id="concerns-h" className="font-display text-[26px] text-forest-950">
-            Common concerns we discuss
+            {ui.concernsTitle}
           </h2>
           <ul className="flex flex-wrap gap-2">
             {c.concerns.map((item) => (
@@ -92,7 +101,7 @@ export function CategoryView({ category: c }: { category: HealthCategory }) {
         {conditions.length > 0 && (
           <section aria-labelledby="guides-h" className="space-y-4">
             <h2 id="guides-h" className="font-display text-[26px] text-forest-950">
-              Condition guides
+              {ui.guidesTitle}
             </h2>
             <div className="grid gap-3 sm:grid-cols-2">
               {conditions.map((cond) => (
@@ -101,7 +110,9 @@ export function CategoryView({ category: c }: { category: HealthCategory }) {
                   href={`/conditions/${cond.slug}`}
                   className="group rounded-2xl border border-forest-900/10 bg-white p-5 transition-all hover:border-saffron-500/50 hover:shadow-luxe"
                 >
-                  <span className="block font-display text-[18px] text-forest-950 group-hover:text-saffron-700">{cond.title}</span>
+                  <span className="block font-display text-[18px] text-forest-950 group-hover:text-saffron-700">
+                    {cond.title}
+                  </span>
                   <span className="mt-1 line-clamp-2 block text-[13.5px] text-forest-800/65">{cond.seoDescription}</span>
                 </Link>
               ))}
@@ -112,7 +123,7 @@ export function CategoryView({ category: c }: { category: HealthCategory }) {
         {treatments.length > 0 && (
           <section aria-labelledby="treat-links-h" className="space-y-4">
             <h2 id="treat-links-h" className="font-display text-[26px] text-forest-950">
-              Related treatments
+              {ui.treatmentsTitle}
             </h2>
             <div className="grid gap-3 sm:grid-cols-2">
               {treatments.map((t) => (
@@ -121,7 +132,9 @@ export function CategoryView({ category: c }: { category: HealthCategory }) {
                   href={`/${t.base}/${t.slug}`}
                   className="group rounded-2xl border border-forest-900/10 bg-cream-100 p-5 transition-all hover:border-saffron-500/50 hover:shadow-luxe"
                 >
-                  <span className="block font-display text-[18px] text-forest-950 group-hover:text-saffron-700">{t.title}</span>
+                  <span className="block font-display text-[18px] text-forest-950 group-hover:text-saffron-700">
+                    {t.title}
+                  </span>
                   <span className="mt-1 line-clamp-2 block text-[13.5px] text-forest-800/65">{t.seoDescription}</span>
                 </Link>
               ))}
@@ -131,7 +144,7 @@ export function CategoryView({ category: c }: { category: HealthCategory }) {
 
         <section aria-labelledby="faq-h" className="space-y-4">
           <h2 id="faq-h" className="font-display text-[26px] text-forest-950">
-            Frequently asked questions
+            {ui.faqTitle}
           </h2>
           <div className="space-y-3">
             {c.faqs.map((f) => (
@@ -149,7 +162,7 @@ export function CategoryView({ category: c }: { category: HealthCategory }) {
 
         <section aria-labelledby="other-h" className="space-y-4">
           <h2 id="other-h" className="font-display text-[22px] text-forest-950">
-            Explore other health concerns
+            {ui.otherTitle}
           </h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {otherCategories.map((o) => (
