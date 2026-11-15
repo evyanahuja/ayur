@@ -2,7 +2,8 @@
 
 import { useEffect, useId, useRef, useState, type FormEvent, type InputHTMLAttributes } from "react";
 import Link from "next/link";
-import { CheckCircle2, Loader2, MessageCircle, PartyPopper, Send, Sparkles, Stethoscope } from "lucide-react";
+import { Building2, CheckCircle2, Loader2, MessageCircle, PartyPopper, Send, Sparkles, Stethoscope, Video } from "lucide-react";
+import { VopdBookingForm } from "@/components/VopdBookingForm";
 import { PLANS, SITE } from "@/content/site";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useExpansion } from "@/i18n/expansion";
@@ -50,6 +51,7 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
   const [errors, setErrors] = useState<Errors>({});
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [today, setToday] = useState("");
+  const [consultType, setConsultType] = useState<"opd" | "vopd">("opd");
   const mode = preferredMode ?? form.preferredMode;
   const Heading = headingLevel === 3 ? "h3" : "h2";
 
@@ -192,7 +194,52 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
         </div>
       </div>
 
-      {status === "success" && receipt ? (
+      <div className="border-b border-forest-900/10 bg-cream-100/70 px-6 py-5 sm:px-8">
+        <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-forest-800">How would you like to consult Dr. Priyanka?</p>
+        <div className="mt-2 grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Consultation type">
+          <button
+            type="button"
+            role="radio"
+            aria-checked={consultType === "opd"}
+            onClick={() => setConsultType("opd")}
+            className={cn(
+              "flex items-start gap-3 rounded-2xl border-2 p-3.5 text-left transition-colors",
+              consultType === "opd" ? "border-forest-900 bg-white shadow-sm" : "border-forest-900/10 bg-white/60 hover:border-saffron-400"
+            )}
+          >
+            <span className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-xl", consultType === "opd" ? "bg-forest-950 text-saffron-300" : "bg-forest-50 text-forest-700")}><Building2 className="h-4 w-4" /></span>
+            <span>
+              <span className="block text-[14px] font-semibold text-forest-950">OPD — In-clinic consultation</span>
+              <span className="block text-[12px] text-forest-800/70">Clinic visit enquiry. No online payment.</span>
+            </span>
+          </button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={consultType === "vopd"}
+            onClick={() => setConsultType("vopd")}
+            className={cn(
+              "flex items-start gap-3 rounded-2xl border-2 p-3.5 text-left transition-colors",
+              consultType === "vopd" ? "border-forest-900 bg-white shadow-sm" : "border-forest-900/10 bg-white/60 hover:border-saffron-400"
+            )}
+          >
+            <span className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-xl", consultType === "vopd" ? "bg-forest-950 text-saffron-300" : "bg-forest-50 text-forest-700")}><Video className="h-4 w-4" /></span>
+            <span>
+              <span className="block text-[14px] font-semibold text-forest-950">VOPD — Online video consultation</span>
+              <span className="block text-[12px] text-forest-800/70">30-minute slots, UPI payment, confirmed after verification.</span>
+            </span>
+          </button>
+        </div>
+        <p className="mt-2 text-[12px] text-forest-800/70">
+          {consultType === "opd"
+            ? "Your existing clinic appointment enquiry is unchanged — choose a preferred date and time and the clinic will call you."
+            : "Reserve an available video slot, pay by UPI, and the clinic confirms after verifying the payment manually."}
+        </p>
+      </div>
+
+      {consultType === "vopd" ? (
+        <VopdBookingForm />
+      ) : status === "success" && receipt ? (
         <div ref={successRef} tabIndex={-1} className="px-6 py-10 text-center sm:px-8" role="status" aria-live="polite">
           <span className="mx-auto mb-5 grid h-20 w-20 place-items-center rounded-full bg-emerald-100 text-emerald-600">
             <PartyPopper className="h-9 w-9" />
