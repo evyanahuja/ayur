@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext } from "@playwright/test";
+import { VOPD_I18N, type VopdLocale } from "@/i18n/vopd";
 
 /* VOPD release tests. They create real booking rows in the sandbox database and are
    cleaned by the documented test-cleanup SQL after the run. Patient emails are not
@@ -258,6 +259,108 @@ test.describe("VOPD domain", () => {
     expect(availability.message).toContain("unavailable");
     const id = (await block.json()).blocked.id;
     await request.delete(`/api/admin/vopd/blocked?id=${id}`);
+  });
+});
+
+test.describe("VOPD multilingual", () => {
+  const languages: { locale: Exclude<VopdLocale, "en">; native: string }[] = [
+    { locale: "hi", native: "हिन्दी" },
+    { locale: "mr", native: "मराठी" },
+    { locale: "gu", native: "ગુજરાતી" },
+  ];
+
+  test("booking API stores the visitor locale", async ({ request }) => {
+    const created = await createBooking(request, { locale: "hi" }, 21);
+    expect(created.status).toBe(201);
+    const reference = created.body.reference as string;
+    const publicView = await (await request.get(`/api/vopd/bookings/${reference}`)).json();
+    expect(publicView.booking.locale).toBe("hi");
+  });
+
+  for (const { locale, native } of languages) {
+    test(`VOPD patient flow renders fully in ${locale}`, async ({ page }) => {
+      test.setTimeout(60_000);
+      const d = VOPD_I18N[locale];
+      await page.goto("/contact");
+      await page.locator('header button[aria-haspopup="listbox"]').click();
+      await page.getByRole("option").filter({ hasText: native }).click();
+      await expect(page.locator("html")).toHaveAttribute("lang", locale);
+
+      const enquiry = page.locator("[data-patient-enquiry]");
+      await expect(enquiry.getByText(d.selector.question)).toBeVisible();
+      await expect(enquiry.getByRole("radio", { name: new RegExp(d.selector.vopdTitle) })).toBeVisible();
+      await enquiry.getByRole("radio", { name: new RegExp(d.selector.vopdTitle) }).click();
+
+      // Step labels, child/adult copy and field labels must be translated.
+      await expect(enquiry.getByText(d.steps[0], { exact: false }).first()).toBeVisible();
+      await expect(enquiry.getByText(d.patient.who)).toBeVisible();
+      await expect(enquiry.getByLabel(d.patient.guardian)).toBeVisible();
+      await expect(enquiry.getByLabel(d.patient.phoneChild)).toBeVisible();
+      await expect(enquiry.getByText(d.patient.childHint)).toBeVisible();
+
+      await enquiry.getByRole("button", { name: d.patient.adult, exact: true }).click();
+      await expect(enquiry.getByText(d.patient.adultHint)).toBeVisible();
+      await expect(enquiry.getByLabel(d.patient.guardian)).toHaveCount(0);
+      await expect(enquiry.getByLabel(d.patient.adultName)).toBeVisible();
+      await expect(enquiry.getByLabel(d.patient.phoneAdult)).toBeVisible();
+
+      // Validation messages are localized.
+      await enquiry.getByRole("button", { name: new RegExp(d.nav.continue) }).first().click();
+      await expect(enquiry.getByText(d.patient.eAdultName)).toBeVisible();
+      await expect(enquiry.getByText(d.patient.ePhone)).toBeVisible();
+
+      // Health-concern step is localized too.
+      await enquiry.getByLabel(d.patient.adultName).fill("Multilingual Test");
+      await enquiry.getByLabel(d.patient.age).fill("1985-04-02");
+      await enquiry.getByLabel(d.patient.phoneAdult).fill("+919999999998");
+      await enquiry.getByRole("button", { name: new RegExp(d.nav.continue) }).first().click();
+      await expect(enquiry.getByLabel(d.concern.category)).toBeVisible();
+      await expect(enquiry.getByLabel(d.concern.symptoms)).toBeVisible();
+      await expect(enquiry.getByText(d.concern.advice)).toBeVisible();
+
+      // Plan step keeps configured prices while explaining them in the local language.
+      await enquiry.getByLabel(d.concern.category).selectOption("skin-hair-conditions");
+      await enquiry.getByLabel(d.concern.symptoms).fill("Multilingual interface verification of symptoms text.");
+      await enquiry.getByRole("button", { name: new RegExp(d.nav.continue) }).first().click();
+      await expect(enquiry.getByText("₹400", { exact: false }).first()).toBeVisible();
+      await expect(enquiry.getByText("₹4,999", { exact: false }).first()).toBeVisible();
+      await expect(enquiry.getByText("₹300", { exact: false }).first()).toBeVisible();
+    });
+  }
+
+  test("VOPD sends the active locale to the booking API", async ({ page, request }) => {
+    test.skip(!ADMIN_READY, "Admin credentials are required to inspect the stored locale.");
+    let sentLocale: string | undefined;
+    await page.route("**/api/vopd/bookings", async (route) => {
+      const payload = route.request().postDataJSON();
+      sentLocale = payload.locale;
+      await route.fulfill({ status: 400, contentType: "application/json", body: JSON.stringify({ ok: false, errors: {} }) });
+    });
+    await page.goto("/contact");
+    await page.locator('header button[aria-haspopup="listbox"]').click();
+    await page.getByRole("option").filter({ hasText: "ગુજરાતી" }).click();
+    const enquiry = page.locator("[data-patient-enquiry]");
+    const gu = VOPD_I18N.gu;
+    await enquiry.getByRole("radio", { name: new RegExp(gu.selector.vopdTitle) }).click();
+    await enquiry.getByRole("button", { name: gu.patient.adult, exact: true }).click();
+    await enquiry.getByLabel(gu.patient.adultName).fill("Locale Test");
+    await enquiry.getByLabel(gu.patient.age).fill("1990-01-01");
+    await enquiry.getByLabel(gu.patient.phoneAdult).fill("+919999999999");
+    await enquiry.getByRole("button", { name: new RegExp(gu.nav.continue) }).first().click();
+    await enquiry.getByLabel(gu.concern.category).selectOption("other");
+    await enquiry.getByLabel(gu.concern.symptoms).fill("કસોટી માટે લક્ષણોનું વર્ણન પૂરતું લાંબું છે.");
+    await enquiry.getByRole("button", { name: new RegExp(gu.nav.continue) }).first().click();
+    await enquiry.getByRole("radio", { name: /Follow-up Care/ }).check();
+    await enquiry.getByRole("button", { name: new RegExp(gu.nav.continue) }).first().click();
+    const dateInput = enquiry.getByLabel(gu.slot.date);
+    await dateInput.fill(clinicDate(22));
+    const slotButtons = enquiry.locator('[aria-pressed="false"]');
+    await expect(slotButtons.first()).toBeVisible({ timeout: 20_000 });
+    await slotButtons.first().click();
+    await enquiry.getByRole("button", { name: new RegExp(gu.nav.continue) }).first().click();
+    await enquiry.locator('input[type="checkbox"]').last().check();
+    await enquiry.getByRole("button", { name: new RegExp(gu.nav.reserve) }).click();
+    await expect.poll(() => sentLocale, { timeout: 20_000 }).toBe("gu");
   });
 });
 
