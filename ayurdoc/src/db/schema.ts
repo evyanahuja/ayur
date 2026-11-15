@@ -70,6 +70,7 @@ export const vopdBookings = pgTable(
     calendarError: text("calendar_error"),
     confirmationEmailSentAt: timestamp("confirmation_email_sent_at", { withTimezone: true }),
     cancellationReason: text("cancellation_reason"),
+    locale: varchar("locale", { length: 5 }).notNull().default("en"),
     consentAt: timestamp("consent_at", { withTimezone: true }).notNull().defaultNow(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
