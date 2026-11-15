@@ -3,6 +3,7 @@
 import { getVopdPlan } from "./config";
 import { clinicWallTimeToUtc, isDateString, isFutureSlot } from "./slots";
 import { isVopdConcernId, type PatientKind } from "@/content/vopd";
+import { isVopdLocale, type VopdLocale } from "@/i18n/vopd";
 
 export type BookingInput = {
   patientKind: PatientKind;
@@ -24,6 +25,7 @@ export type BookingInput = {
   slotStartIso: string;
   consent: boolean;
   website?: string;
+  locale: VopdLocale;
 };
 
 const PHONE = /^[+\d][\d\s\-()]{6,18}$/;
@@ -106,6 +108,7 @@ export function validateBooking(raw: unknown): ValidationResult<BookingInput & {
       slotStartIso,
       consent: true,
       website: trim(body.website, 100) || undefined,
+      locale: isVopdLocale(body.locale) ? body.locale : "en",
       start,
       durationMinutes: plan.bookingMinutes,
       plan,

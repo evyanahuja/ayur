@@ -215,6 +215,7 @@ export async function createBooking(
         status: "PAYMENT_PENDING",
         paymentStatus: input.plan.requiresPayment ? "PENDING" : "NOT_REQUIRED",
         holdExpiresAt,
+        locale: input.locale,
       })
       .returning();
 
@@ -250,6 +251,7 @@ export async function getPublicBooking(reference: string) {
     slotStart: row.slotStart.toISOString(),
     status: row.status,
     paymentStatus: row.paymentStatus,
+    locale: row.locale,
     holdExpiresAt: row.holdExpiresAt?.toISOString() ?? null,
     meetUrl: row.status === "CONFIRMED" ? row.meetUrl : null,
     createdAt: row.createdAt.toISOString(),

@@ -3,6 +3,7 @@ import { sendSystemEmail } from "@/lib/email";
 import { formatClinicDateTime, VOPD_CONCERN_LABELS, type VopdConcernId } from "@/content/vopd";
 import type { VopdBooking } from "@/db/schema";
 import { CLINIC_EMAIL, CLINIC_PHONE } from "./config";
+import { vopdDict } from "@/i18n/vopd";
 
 const BRAND = "#0e2b21";
 const GOLD = "#f4bc4f";
@@ -42,35 +43,33 @@ function feeLabel(booking: VopdBooking): string {
   return `₹${(booking.amountMinor / 100).toLocaleString("en-IN")}`;
 }
 
+function mailLocale(booking: VopdBooking) {
+  return (booking as VopdBooking & { locale?: string }).locale ?? "en";
+}
+
 function baseRows(booking: VopdBooking): [string, string][] {
+  const d = vopdDict(mailLocale(booking));
+  const kind = booking.patientKind === "child" ? d.patient.child : d.patient.adult;
   return [
-    ["Reference", booking.reference],
-    ["Patient", `${booking.patientName}${booking.patientKind === "child" ? " (Child)" : " (Adult)"}`],
-    ...(booking.guardianName ? [["Parent / Guardian", booking.guardianName] as [string, string]] : []),
-    ["Consultation", `${booking.planName} · ${booking.durationMinutes} minutes`],
-    ["Date & time", `${formatClinicDateTime(booking.slotStart.toISOString())} (IST)`],
-    ["Category", concernLabel(booking.concernCategory)],
-    ["Fee", feeLabel(booking)],
+    [d.pay.reference, booking.reference],
+    [d.review.patient, `${booking.patientName} (${kind})`],
+    ...(booking.guardianName ? [[d.review.guardian, booking.guardianName] as [string, string]] : []),
+    [d.review.plan, `${booking.planName} · ${booking.durationMinutes} ${d.review.minutes}`],
+    [d.review.when, `${formatClinicDateTime(booking.slotStart.toISOString())} (IST)`],
+    [d.review.category, concernLabel(booking.concernCategory)],
+    [d.review.fee, feeLabel(booking)],
   ];
 }
 
 export async function sendAcknowledgement(booking: VopdBooking) {
   if (!booking.email) return { sent: false as const, reason: "no_patient_email" };
+  const d = vopdDict(mailLocale(booking));
   const result = await sendSystemEmail({
     to: booking.email,
     replyTo: CLINIC_EMAIL,
-    subject: `VOPD request received — ${booking.reference}`,
-    html: shell(
-      "Your online consultation request has been received",
-      "Video OPD · Awaiting payment verification",
-      baseRows(booking),
-      "Your appointment will be confirmed after payment verification. Please submit your UPI transaction reference if you have not already done so. This email is not a confirmation of the appointment."
-    ),
-    text: [
-      "Your online consultation request has been received.",
-      ...baseRows(booking).map(([key, value]) => `${key}: ${value}`),
-      "Your appointment will be confirmed after payment verification. This email is not a confirmation.",
-    ].join("\n"),
+    subject: `${d.emails.ackTitle} — ${booking.reference}`,
+    html: shell(d.emails.ackTitle, d.emails.ackBadge, baseRows(booking), d.emails.ackNote),
+    text: [d.emails.ackTitle, ...baseRows(booking).map(([key, value]) => `${key}: ${value}`), d.emails.ackNote].join("\n"),
   });
   return result;
 }
@@ -108,41 +107,37 @@ export async function sendPaymentSubmitted(booking: VopdBooking) {
 export async function sendConfirmation(booking: VopdBooking) {
   if (!booking.email) return { sent: false as const, reason: "no_patient_email" };
   const meet = booking.meetUrl;
+  const d = vopdDict(mailLocale(booking));
   const result = await sendSystemEmail({
     to: booking.email,
     replyTo: CLINIC_EMAIL,
-    subject: `Appointment confirmed — ${booking.reference} — ${formatClinicDateTime(booking.slotStart.toISOString())} IST`,
+    subject: `${d.emails.confirmTitle} — ${booking.reference}`,
     html: shell(
-      "Your VOPD appointment is confirmed",
-      "Video OPD · Payment verified",
-      [...baseRows(booking), ["Duration", `${booking.durationMinutes} minutes`], ...(booking.followUpCount ? [["Follow-ups included", `${booking.followUpCount} × ${booking.followUpMinutes} minutes (scheduled separately)`] as [string, string]] : [])],
-      meet
-        ? "Join a few minutes early using the secure Google Meet link below. Please keep reports and a medicine list ready."
-        : "The clinic will share your secure Google Meet link before the appointment. Please keep reports and a medicine list ready.",
-      meet ? { label: "Join Google Meet", url: meet } : undefined
+      d.emails.confirmTitle,
+      d.emails.confirmBadge,
+      [
+        ...baseRows(booking),
+        [d.review.reserved, `${booking.durationMinutes} ${d.review.minutes}`],
+        ...(booking.followUpCount
+          ? [[d.review.plan, `${booking.followUpCount} × ${booking.followUpMinutes} ${d.review.minutes}`] as [string, string]]
+          : []),
+      ],
+      meet ? d.emails.confirmNote : d.emails.confirmNoMeet,
+      meet ? { label: d.emails.meetCta, url: meet } : undefined
     ),
-    text: [
-      "Your VOPD appointment is confirmed.",
-      ...baseRows(booking).map(([key, value]) => `${key}: ${value}`),
-      meet ? `Google Meet link: ${meet}` : "The clinic will share the Meet link before the appointment.",
-    ].join("\n"),
+    text: [d.emails.confirmTitle, ...baseRows(booking).map(([key, value]) => `${key}: ${value}`), meet ? `${d.pay.meeting}: ${meet}` : d.emails.confirmNoMeet].join("\n"),
   });
   return result;
 }
 
 export async function sendMeetLink(booking: VopdBooking) {
   if (!booking.email || !booking.meetUrl) return { sent: false as const, reason: "missing_email_or_link" };
+  const d = vopdDict(mailLocale(booking));
   return sendSystemEmail({
     to: booking.email,
     replyTo: CLINIC_EMAIL,
-    subject: `Your Google Meet link — ${booking.reference}`,
-    html: shell(
-      "Your consultation link is ready",
-      "Video OPD · Confirmed appointment",
-      baseRows(booking),
-      "Join a few minutes before your appointment time. Do not share this private link.",
-      { label: "Join Google Meet", url: booking.meetUrl }
-    ),
-    text: `Your confirmed VOPD ${booking.reference} Meet link: ${booking.meetUrl}`,
+    subject: `${d.emails.meetSubject} — ${booking.reference}`,
+    html: shell(d.emails.meetSubject, d.emails.confirmBadge, baseRows(booking), d.emails.meetNote, { label: d.emails.meetCta, url: booking.meetUrl }),
+    text: `${d.emails.meetSubject} (${booking.reference}): ${booking.meetUrl}`,
   });
 }
