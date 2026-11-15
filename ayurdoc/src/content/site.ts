@@ -62,10 +62,10 @@ export const SITE = {
  * content="..." values from Search Console / Bing Webmaster HTML-tag method.
  * -------------------------------------------------------------------------- */
 export const SEO = {
-  title: "Ayurvedic Child Specialist in Indore | Dr. Priyanka Likhar",
+  title: "Ayurvedic Doctor in Indore for All Ages | Dr. Priyanka Likhar",
   titleTemplate: "%s | Dr. Priyanka Likhar",
   description:
-    "Dr. Priyanka Likhar (BAMS, MD Kaumarbhritya) treats eczema, speech delay, ADHD, asthma, low immunity & poor growth in children with safe Ayurveda. Indore clinic + online.",
+    "Individualised Ayurvedic care in Indore for children, adults and senior citizens: pediatric health, Panchakarma, skin, digestive, women's, men's and joint concerns. Dr. Priyanka Likhar (BAMS, MD Kaumarbhritya).",
   locale: "en_IN",
   street: "Sanchar Nagar Extension, Kanadia Road",
   city: "Indore",

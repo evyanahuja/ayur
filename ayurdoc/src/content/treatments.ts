@@ -330,4 +330,9 @@ export const TREATMENTS: TreatmentPage[] = [
   },
 ];
 
+import { TREATMENTS_EXTRA } from "./treatments-extra";
+
+/* Rasayana and Ayurvedic Diet & Lifestyle are maintained in treatments-extra.ts. */
+TREATMENTS.push(...TREATMENTS_EXTRA);
+
 export const TREATMENT_ROUTES = TREATMENTS.map((t) => `/${t.base}/${t.slug}/`);

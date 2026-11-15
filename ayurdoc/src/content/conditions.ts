@@ -9,7 +9,12 @@ export interface ConditionPage {
   h1: string;
   seoTitle: string;
   seoDescription: string;
-  category: "Development & Behaviour" | "Neurological" | "Growth & Nutrition" | "Respiratory & Immunity" | "Digestion & Gut" | "Sleep & Habits";
+  category: "Development & Behaviour" | "Neurological" | "Growth & Nutrition" | "Respiratory & Immunity" | "Digestion & Gut" | "Sleep & Habits" | "Skin & Hair" | "Women's Health" | "Joint & Bone";
+  primaryKeyword?: string;
+  /* "draft" = built for physician review, noindex, excluded from navigation and sitemap. */
+  status?: "draft" | "published";
+  /* YYYY-MM-DD, set only after a physician has reviewed the medical content. */
+  reviewedOn?: string;
   intro: string;
   whatIs: string[];
   signs: string[];
