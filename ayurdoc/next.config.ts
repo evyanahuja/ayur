@@ -8,6 +8,7 @@ const csp = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: blob: https://images.pexels.com https://*.pexels.com",
   "font-src 'self' data: https://fonts.gstatic.com",
+  "frame-src 'self' https://www.google.com",
   "connect-src 'self'",
   "media-src 'self'",
   "object-src 'none'",
