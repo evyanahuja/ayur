@@ -401,7 +401,7 @@ export const PLANS = [
     usdPrice: "$75",
     usdStrike: "$100",
     period: "45-minute deep dive",
-    desc: "Complete Prakruti & root-cause assessment + starter plan for one child.",
+    desc: "Complete Prakriti, digestion & lifestyle assessment + individual starter plan.",
     features: [
       "45-min video / in-clinic session",
       "Prakruti, Agni & growth analysis",
@@ -500,14 +500,14 @@ export const FAQS = [
  * 11) ENQUIRY FORM OPTIONS
  * -------------------------------------------------------------------------- */
 export const CONCERNS = [
-  { v: "skin", label: "Skin — eczema, psoriasis, rashes" },
-  { v: "neurodevelopmental", label: "Development — speech, focus, behaviour" },
-  { v: "growth", label: "Growth — height, weight, appetite" },
-  { v: "respiratory", label: "Respiratory — asthma, cold, cough" },
-  { v: "allergy_immunity", label: "Allergy & low immunity" },
-  { v: "lifestyle", label: "Lifestyle — obesity, gut, sleep" },
-  { v: "general", label: "General wellness / Suvarnaprashan" },
-  { v: "other", label: "Other concern" },
+  { v: "skin", label: "Skin & Hair — psoriasis, eczema, hair fall, rashes" },
+  { v: "neurodevelopmental", label: "Children's Health — growth, speech, focus, behaviour" },
+  { v: "growth", label: "Digestive Health — acidity, constipation, piles, appetite" },
+  { v: "respiratory", label: "Respiratory — asthma, allergic rhinitis, cold, cough" },
+  { v: "allergy_immunity", label: "Women's & Men's Health — PCOS, cycles, stress, sleep" },
+  { v: "lifestyle", label: "Joints, Senior Care & Lifestyle — knee/back pain, weight" },
+  { v: "general", label: "Panchakarma, Suvarnaprashan & General Consultation" },
+  { v: "other", label: "Other health concern" },
 ];
 
 // NOTE: Booking dropdown labels are built automatically from PLANS prices above
