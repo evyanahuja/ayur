@@ -348,3 +348,77 @@ export async function sendParentConfirmation(
 
   return { sent: false, reason: "no_provider" };
 }
+
+/* --- Generic transactional transport (used by VOPD) --------------------------
+   Reuses the same Resend → SMTP provider selection as the enquiry notifications.
+   Existing OPD functions above are untouched. */
+export type SystemMailInput = {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  replyTo?: string;
+};
+
+export type SystemMailResult =
+  | { sent: true; provider: "resend" | "smtp" }
+  | { sent: false; reason: string; code: "recipient_missing" | "provider_missing" | "provider_rejected" | "provider_error" };
+
+export async function sendSystemEmail(input: SystemMailInput): Promise<SystemMailResult> {
+  const to = input.to?.trim();
+  if (!to) return { sent: false, reason: "No recipient email.", code: "recipient_missing" };
+
+  if (process.env.RESEND_API_KEY?.trim()) {
+    try {
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY.trim()}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: process.env.FROM_EMAIL?.trim() || "BalChikitsa <onboarding@resend.dev>",
+          to: [to],
+          reply_to: input.replyTo || undefined,
+          subject: input.subject,
+          html: input.html,
+          text: input.text,
+        }),
+      });
+      if (!response.ok) {
+        console.error(`Resend rejected system email (${response.status}):`, await response.text());
+        return { sent: false, reason: "Email provider rejected the message.", code: "provider_rejected" };
+      }
+      return { sent: true, provider: "resend" };
+    } catch (error) {
+      console.error("Resend system email failed:", error);
+      return { sent: false, reason: "Email provider could not be reached.", code: "provider_error" };
+    }
+  }
+
+  if (process.env.SMTP_HOST?.trim() && process.env.SMTP_USER?.trim() && process.env.SMTP_PASS?.trim()) {
+    try {
+      const port = Number(process.env.SMTP_PORT || 587);
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST.trim(),
+        port,
+        secure: port === 465,
+        auth: { user: process.env.SMTP_USER.trim(), pass: process.env.SMTP_PASS },
+      });
+      await transporter.sendMail({
+        from: process.env.FROM_EMAIL?.trim() || `"BalChikitsa Website" <${process.env.SMTP_USER.trim()}>`,
+        to,
+        replyTo: input.replyTo || undefined,
+        subject: input.subject,
+        text: input.text,
+        html: input.html,
+      });
+      return { sent: true, provider: "smtp" };
+    } catch (error) {
+      console.error("SMTP system email failed:", error);
+      return { sent: false, reason: "SMTP could not send the message.", code: "provider_error" };
+    }
+  }
+
+  return { sent: false, reason: "No email provider is configured.", code: "provider_missing" };
+}
