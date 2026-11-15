@@ -9,13 +9,15 @@ import {
   ClinicLocation,
   ConcernCards,
   ConsultationSteps,
-  HOME_FAQS,
   HomeFaq,
   PopularGuides,
   TreatmentCards,
   WhyChoose,
 } from "@/components/HomeSections";
+import { EXPANSION } from "@/i18n/expansion";
 import { SEO } from "@/content/site";
+
+const HOME_FAQS = EXPANSION.en.home.faqs;
 import { canonical, localBusinessJsonLd, physicianJsonLd, websiteJsonLd } from "@/seo/config";
 
 export const metadata: Metadata = {
