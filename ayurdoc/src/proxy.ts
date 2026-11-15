@@ -18,7 +18,7 @@ const CSP = [
   "media-src 'self'",
   "object-src 'none'",
   "child-src 'self'",
-  "frame-src 'self'",
+  "frame-src 'self' https://www.google.com",
   "worker-src 'self' blob:",
   "base-uri 'self'",
   "form-action 'self'",
