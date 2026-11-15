@@ -1,0 +1,143 @@
+id,group,topic,action,target_path,batch,scope_note
+1,A,Poor Weight Gain in Children,refresh,/conditions/growth-nutrition-concerns,0,Audit existing growth guide; strengthen faltering growth assessment and referral before adding a competing URL
+2,A,Childhood Malnutrition,specialist-gate,/conditions/childhood-malnutrition,8,Paediatric assessment and urgent malnutrition referral first; no treatment acquisition claim without scope approval
+3,A,Loss of Appetite in Children,refresh,/conditions/poor-appetite-children,0,Preserve existing URL; separate feeding behaviour from illness and growth concerns
+4,A,Constipation in Children,refresh,/conditions/constipation-children,0,Preserve existing URL; evidence based bowel plan and infant red flags
+5,A,Recurrent Stomach Pain in Children,create-draft,/conditions/recurrent-stomach-pain-children,1,New symptom intent; avoid diagnosing pain as weak digestion
+6,A,Recurrent Cold and Cough in Children,refresh,/conditions/frequent-colds-cough-children,0,Preserve existing URL; distinguish viral infection from allergy and asthma
+7,A,Childhood Allergies,create-draft,/conditions/childhood-allergies,1,Anaphylaxis advice and allergy evaluation; no immunity cure claims
+8,A,Childhood Asthma,create-draft,/conditions/childhood-asthma,1,Confirm clinician co-care; inhaler and emergency action plan remain essential
+9,A,Eczema in Children,merge-existing,/conditions/eczema,0,Expand the existing draft with a reviewed paediatric section instead of duplicating eczema intent
+10,A,Childhood Skin Problems,merge-existing,/health-concerns/childrens-health,0,Use child health and skin hub cross-links; avoid a generic thin disease page
+11,A,ADHD,refresh,/conditions/adhd-in-children,0,Core guide plus existing assessment and support pages need differentiation; no replacement of standard ADHD care
+12,A,Autism Spectrum Disorder,refresh,/conditions/autism-signs-assessment,0,Neuroaffirming language and early support; no cure or detox promise
+13,A,Cerebral Palsy,refresh,/conditions/cerebral-palsy,0,Multidisciplinary rehabilitation remains central; no reversal claims
+14,A,Delayed Speech Development,refresh,/conditions/speech-delay-in-children,0,Hearing and developmental assessment first; preserve existing intent
+15,A,Delayed Developmental Milestones,refresh,/conditions/delayed-milestones,0,Age specific referral and developmental regression warnings
+16,A,Learning Difficulties,refresh,/conditions/learning-difficulties,0,Education and developmental support; do not equate learning differences with disease
+17,A,Bedwetting in Children,refresh,/conditions/bedwetting-children,0,Child friendly guidance; assess constipation and urinary red flags
+18,A,Childhood Sleep Problems,refresh,/conditions/sleep-problems-children,0,Age appropriate routine and sleep disordered breathing evaluation
+19,A,Nutritional Deficiencies in Children,create-draft,/conditions/nutritional-deficiencies-children,1,Link existing iron and vitamin D articles; avoid supplement prescriptions
+20,A,Growth and Development Concerns,merge-existing,/conditions/growth-nutrition-concerns,0,Same primary growth assessment intent as target 1
+21,A,Recurrent Infections in Children,create-draft,/conditions/recurrent-infections-children,1,Distinct from ordinary colds; poor growth and unusual infections need paediatric referral
+22,A,Childhood Digestive Problems,merge-existing,/health-concerns/childrens-health,0,Add a digestive subsection linking constipation and recurrent stomach pain; no thin catch-all page
+23,A,Children's Immunity: Evidence and Ayurvedic Perspectives,refresh,/articles/immunity-myths-children,0,Strengthen existing evidence guide; vaccination is not replaced by Suvarnaprashan
+24,A,Customized Suvarnprashan,refresh,/treatments/customized-suvarnaprashan,0,Preserve canonical spelling and URL; safety evidence and quality control review required
+25,B,Psoriasis,review-draft,/conditions/psoriasis,0,Already drafted in four languages; dermatologist co-care and arthritis red flags
+26,B,Eczema,review-draft,/conditions/eczema,0,Already drafted; preserve moisturisers and prescribed flare treatment
+27,B,Vitiligo / White Patches,create-draft,/conditions/vitiligo-white-patches,2,Dermatology diagnosis; no guaranteed repigmentation
+28,B,Acne and Pimples,create-draft,/conditions/acne-pimples,2,Scarring and hormonal symptoms guide review; no substitute for indicated dermatology treatment
+29,B,Urticaria / Hives,create-draft,/conditions/urticaria-hives,2,Airway swelling and anaphylaxis require emergency care
+30,B,Recurrent Skin Rashes,merge-existing,/health-concerns/skin-hair-conditions,0,Use a symptom navigation section with links to eczema and hives rather than a vague diagnosis
+31,B,Persistent Skin Itching,create-draft,/conditions/persistent-skin-itching,2,Distinct symptom intent; include systemic causes and itch without a rash
+32,B,Fungal Skin Infections,create-draft,/conditions/fungal-skin-infections,2,Assessment and antifungal care; warn against unlabelled steroid combinations
+33,B,Hair Fall,review-draft,/conditions/hair-fall,0,Already drafted; cause specific evaluation before oils and supplements
+34,B,Premature Greying,create-draft,/conditions/premature-greying,2,No promise of colour reversal; review evidence and nutritional indications
+35,B,Dandruff,create-draft,/conditions/dandruff,2,Separate seborrhoeic dermatitis from scalp psoriasis and infection
+36,B,Scalp Psoriasis,merge-existing,/conditions/psoriasis,0,Add a focused scalp section before considering an independently justified page
+37,B,Dry Skin,create-draft,/conditions/dry-skin,2,Practical skin barrier advice; distinguish eczema and systemic symptoms
+38,B,Chronic Skin Problems,merge-existing,/health-concerns/skin-hair-conditions,0,Already served by a category hub; avoid generic duplicate acquisition page
+39,C,Acidity and GERD,review-draft,/conditions/acidity-gerd,0,Already drafted; cardiac chest pain and swallowing red flags require review
+40,C,Gastritis,create-draft,/conditions/gastritis,3,Distinct diagnosed stomach inflammation intent; H pylori and NSAID assessment
+41,C,Constipation,review-draft,/conditions/constipation-adults,0,Existing adult draft is separate from child constipation
+42,C,Chronic Constipation,merge-existing,/conditions/constipation-adults,0,Expand chronic and refractory section of the adult guide
+43,C,Gas and Bloating,create-draft,/conditions/gas-bloating,3,Symptom driven guide; no automatic IBS or food intolerance diagnosis
+44,C,Indigestion,create-draft,/conditions/indigestion-dyspepsia,3,Dyspepsia is a symptom pattern; differentiate GERD and diagnosed gastritis
+45,C,Irritable Bowel Syndrome,create-draft,/conditions/irritable-bowel-syndrome,3,Diagnosis and alarm symptoms; avoid unnecessary restrictive diets
+46,C,Piles / Hemorrhoids,review-draft,/conditions/piles-hemorrhoids,0,Rectal bleeding needs evaluation; no unverified procedure availability claims
+47,C,Anal Fissure,create-draft,/conditions/anal-fissure,3,Separate painful fissure intent from piles and other bleeding causes
+48,C,Loss of Appetite,create-draft,/conditions/loss-appetite-adults,3,Adult intent separate from child feeding; weight loss and drug review first
+49,C,Digestive Weakness,merge-planned,/conditions/indigestion-dyspepsia,3,Patient wording handled within dyspepsia; no separate vague diagnosis page
+50,C,Recurrent Abdominal Pain,create-draft,/conditions/recurrent-abdominal-pain,3,Adult symptom evaluation; acute abdomen and bleeding referral
+51,D,Allergic Rhinitis,create-draft,/conditions/allergic-rhinitis,5,Sneezing and blocked nose cluster; confirm allergy not recurrent infection
+52,D,Recurrent Sneezing,merge-planned,/conditions/allergic-rhinitis,5,Sneezing intent handled in rhinitis guide unless later search data justify separation
+53,D,Chronic Cough,create-draft,/conditions/chronic-cough,5,Persistent cough requires medical assessment including TB where relevant
+54,D,Asthma,create-draft,/conditions/asthma,5,Adult co-care only after scope confirmation; no replacement of inhalers
+55,D,Sinusitis,create-draft,/conditions/sinusitis,5,Distinguish acute and chronic disease; eye symptoms and severe illness referral
+56,D,Nasal Congestion,merge-planned,/conditions/allergic-rhinitis,5,Cover congestion causes and unilateral warning signs without assuming allergy
+57,D,Recurrent Respiratory Problems,merge-existing,/health-concerns/respiratory-conditions,0,Category navigation already exists; route readers to cough and asthma guidance
+58,E,Migraine,review-draft,/conditions/migraine,0,Already drafted; thunderclap and neurological deficit emergency advice
+59,E,Frequent Headaches,create-draft,/conditions/frequent-headaches,5,Distinct undiagnosed symptom intent; do not label all headaches migraine
+60,E,Stress-Related Health Problems,create-draft,/conditions/stress-related-health-problems,5,Mental health and self harm escalation; do not blame all disease on stress
+61,E,Insomnia,review-draft,/conditions/insomnia,0,Already drafted; CBT-I and sleep apnoea assessment remain central
+62,E,Disturbed Sleep,merge-existing,/conditions/insomnia,0,Same sleep disturbance intent; add clear differential and links to child sleep
+63,E,Peripheral Neuropathy,specialist-gate,/conditions/peripheral-neuropathy,8,Neurology and metabolic investigation first; adjunctive discussion only if clinician approved
+64,E,Facial Palsy,specialist-gate,/conditions/facial-palsy,8,New facial weakness is an emergency stroke assessment until evaluated
+65,E,Parkinson's Disease,specialist-gate,/conditions/parkinsons-disease,8,Neurologist led care and mobility support; no dopaminergic medicine reduction claims
+66,E,Memory and Cognitive Concerns,specialist-gate,/conditions/memory-cognitive-concerns,8,Distinguish progressive memory concerns from acute delirium; specialist evaluation
+67,F,Knee Pain,review-draft,/conditions/knee-pain,0,Already drafted; exercise and physiotherapy plus joint infection warnings
+68,F,Osteoarthritis,refresh,/articles/joint-pain-osteoarthritis-ayurveda,0,Expand existing osteoarthritis article rather than create a competing guide
+69,F,Rheumatoid Arthritis,specialist-gate,/conditions/rheumatoid-arthritis,8,Early rheumatology and DMARDs remain essential; no cure or withdrawal messaging
+70,F,Back Pain,create-draft,/conditions/back-pain,4,Red flags for neurological compression and systemic disease
+71,F,Neck Pain,create-draft,/conditions/neck-pain,4,Trauma and neurological symptoms first; distinguish neck pain from imaging findings
+72,F,Cervical Spondylosis,create-draft,/conditions/cervical-spondylosis,6,Separate confirmed degenerative diagnosis from general neck pain
+73,F,Lumbar Spondylosis,create-draft,/conditions/lumbar-spondylosis,6,Explain common imaging findings without implying all pain comes from degeneration
+74,F,Sciatica,create-draft,/conditions/sciatica,4,Cauda equina and progressive weakness require urgent referral
+75,F,Frozen Shoulder,create-draft,/conditions/frozen-shoulder,6,Functional assessment and physiotherapy; diabetic shoulder considerations
+76,F,Joint Stiffness,merge-existing,/health-concerns/joint-bone-disorders,0,Add symptom pathways into joint hub; prolonged morning stiffness merits assessment
+77,F,Osteoporosis,create-draft,/conditions/osteoporosis,6,Fracture prevention and evidence based bone care; no herbal replacement claims
+78,F,Muscle Weakness,create-draft,/conditions/muscle-weakness,7,New focal or progressive weakness needs medical evaluation; include sarcopenia subsection
+79,G,PCOS / PCOD,review-draft,/conditions/pcos-pcod,0,Already drafted; update against current international guideline and adolescent criteria
+80,G,Irregular Periods,create-draft,/conditions/irregular-periods,4,Do not assume PCOS; pregnancy and thyroid assessment
+81,G,Painful Menstruation,create-draft,/conditions/painful-menstruation,4,Secondary causes such as endometriosis need gynaecology review
+82,G,Heavy Menstrual Bleeding,create-draft,/conditions/heavy-menstrual-bleeding,6,Acute bleeding safety; anaemia and gynaecological investigation first
+83,G,Premenstrual Syndrome,create-draft,/conditions/premenstrual-syndrome,6,Distinguish PMS from PMDD and mental health crisis
+84,G,Female Infertility,specialist-gate,/conditions/female-infertility,8,No fertility success claims; age sensitive referral and gynaecology led assessment
+85,G,Endometriosis,specialist-gate,/conditions/endometriosis,8,Specialist diagnosis and pain care; no lesion removal or fertility guarantee
+86,G,Menopause,create-draft,/conditions/menopause,6,Discuss symptoms and evidence based options; postmenopausal bleeding must be checked
+87,G,Menopausal Symptoms,merge-planned,/conditions/menopause,6,One menopause guide covers this intent; avoid duplicate symptom page
+88,G,Vaginal Health Concerns,specialist-gate,/conditions/vaginal-health-concerns,8,Diagnosis and testing first; avoid douching or unverified intravaginal products
+89,G,Recurrent Urinary Tract Infections,create-draft,/conditions/recurrent-urinary-tract-infections,7,Culture and indicated antibiotics must not be delayed; pregnancy and fever precautions
+90,G,Postpartum Health and Recovery,create-draft,/conditions/postpartum-health-recovery,7,Obstetric red flags and breastfeeding safety; no detox or weight loss pressure
+91,G,Women's Nutritional Health,create-draft,/articles/womens-nutritional-health,7,Life stage nutrition and deficiency evaluation; avoid unnecessary supplement regimes
+92,H,Male Infertility,specialist-gate,/conditions/male-infertility,8,Andrology led assessment; no sperm count or conception guarantee
+93,H,Erectile Dysfunction,specialist-gate,/conditions/erectile-dysfunction,8,Cardiometabolic assessment and medication review; confidential consultation only
+94,H,Premature Ejaculation,specialist-gate,/conditions/premature-ejaculation,8,Confirm clinical scope; no unregulated sexual enhancement products
+95,H,Hair Loss in Men,merge-existing,/conditions/hair-fall,0,Strengthen male pattern section in existing draft before adding a competing URL
+96,H,Prostate Enlargement,specialist-gate,/conditions/prostate-enlargement,8,Urology evaluation and retention red flags; no claim to shrink the prostate
+97,H,Urinary Problems in Men,specialist-gate,/conditions/urinary-problems-men,8,Distinct symptom triage; do not attribute all urinary symptoms to prostate enlargement
+98,H,Male Hormonal Health,specialist-gate,/conditions/male-hormonal-health,8,Endocrine evaluation before any hormone or supplement advice
+99,H,General Sexual Health,merge-existing,/health-concerns/mens-health,0,Use confidential hub navigation; clinician confirms service scope first
+100,I,Type 2 Diabetes,specialist-gate,/conditions/type-2-diabetes,8,Physician led monitoring; no insulin withdrawal or remission guarantee
+101,I,Prediabetes,create-draft,/conditions/prediabetes,7,Testing and lifestyle prevention; no guaranteed reversal
+102,I,Obesity,merge-planned,/conditions/weight-management,7,Same primary weight management intent; include clinical obesity assessment
+103,I,Weight Management,create-draft,/conditions/weight-management,7,Sustainable nutrition and activity; no rapid loss programmes
+104,I,Thyroid Disorders,merge-planned,/conditions/hypothyroidism,7,Use clearly labelled thyroid differential section and referrals; do not label hyperthyroidism as hypothyroidism
+105,I,Hypothyroidism,create-draft,/conditions/hypothyroidism,7,Thyroid monitoring and prescribed replacement therapy remain essential
+106,I,Hypertension,specialist-gate,/conditions/hypertension,8,Primary care monitoring and emergency symptoms; no withdrawal of antihypertensives
+107,I,High Cholesterol,create-draft,/conditions/high-cholesterol,7,Cardiovascular risk assessment and prescribed lipid therapy continue
+108,I,Fatty Liver,create-draft,/conditions/fatty-liver,7,Liver investigations and alcohol assessment; no detox or unverified hepatoprotective claims
+109,I,Metabolic Syndrome,merge-existing,/health-concerns/metabolic-lifestyle-disorders,0,Expand current metabolic hub with a distinct overview rather than a thin duplicate
+110,I,Anemia,create-draft,/conditions/anemia,7,Find the cause before supplementation; link existing child iron deficiency article
+111,I,Chronic Fatigue,create-draft,/conditions/chronic-fatigue,7,Medical differential and investigations; distinguish fatigue from diagnosed ME/CFS
+112,J,Knee Pain in Elderly People,merge-existing,/conditions/knee-pain,0,Existing draft gets an older adult subsection and falls precautions
+113,J,Osteoporosis in Elderly People,merge-planned,/conditions/osteoporosis,6,Include older adult fracture and medication review in one osteoporosis guide
+114,J,Memory Loss,merge-planned,/conditions/memory-cognitive-concerns,8,One cognitive concerns guide; acute confusion is an emergency
+115,J,Dementia,specialist-gate,/conditions/dementia,8,Specialist diagnosis and carer support; no memory restoration promises
+116,J,Parkinson's Disease,merge-planned,/conditions/parkinsons-disease,8,Exact duplicate of target 65; retain one canonical guide if approved
+117,J,Sleep Disorders in Elderly People,merge-existing,/conditions/insomnia,0,Expand existing sleep draft with older adult sleep apnoea and medication cautions
+118,J,Chronic Constipation in Elderly People,merge-existing,/conditions/constipation-adults,0,Older adult section already included; review dehydration and medicines
+119,J,Mobility Problems,merge-planned,/articles/balance-fall-prevention,6,One functional mobility and falls article; no vague parallel disease page
+120,J,Balance Problems and Fall Prevention,create-draft,/articles/balance-fall-prevention,6,Exercise and home safety with physiotherapy; acute imbalance needs evaluation
+121,J,Age-Related Muscle Weakness,merge-planned,/conditions/muscle-weakness,7,Sarcopenia and nutrition section; no separate generic senior page
+122,K,What is Ayurveda?,create-draft,/articles/what-is-ayurveda,F,Explain traditional concepts and evidence limits without replacing medical care
+123,K,Understanding Vata Pitta and Kapha,create-draft,/articles/vata-pitta-kapha,F,Traditional model not a validated disease mechanism or online diagnostic test
+124,K,Understanding Prakriti,create-draft,/articles/prakriti-vikriti,F,Explain constitution and current state in one guide
+125,K,Understanding Vikriti,merge-planned,/articles/prakriti-vikriti,F,Paired with Prakriti to avoid two near identical short pages
+126,K,What is Agni in Ayurveda?,create-draft,/articles/agni-ama,F,Explain digestive concept and distinguish from biomedical measurements
+127,K,What is Ama?,merge-planned,/articles/agni-ama,F,Traditional concept not a scientifically measured toxin; no detox promise
+128,K,Ayurvedic Approach to Digestive Health,merge-existing,/health-concerns/digestive-disorders,0,Category landing already serves overview intent; improve references and internal links
+129,K,Ayurvedic Approach to Skin Health,merge-existing,/health-concerns/skin-hair-conditions,0,Category landing already serves overview intent; improve evidence and safety
+130,K,Panchakarma: Complete Guide,refresh,/treatments/panchakarma,0,Strengthen existing page with physician verified suitability and availability
+131,K,Panchakarma Benefits and Precautions,merge-existing,/treatments/panchakarma,0,Expand benefits evidence and contraindications on same canonical guide
+132,K,Abhyanga,refresh,/treatments/abhyanga,0,Review indications contraindications and all four language versions
+133,K,Shirodhara,refresh,/treatments/shirodhara,0,Evidence and safety review; no treatment guarantee
+134,K,Basti Therapy,refresh,/treatments/basti-therapy,0,Practitioner supervised only; remove any general procedural dosing
+135,K,Nasya Therapy,refresh,/treatments/nasya,0,Safety review and clinic availability; no self administration instructions
+136,K,Rasayana Therapy,refresh,/treatments/rasayana,0,Newly added but indexable without per-page approval; review before expansion
+137,K,Customized Suvarnprashan,merge-existing,/treatments/customized-suvarnaprashan,0,Duplicate of target 24; retain existing Suvarnaprashan URL
+138,K,Ayurvedic Daily Routine (Dinacharya),create-draft,/articles/dinacharya,F,General age appropriate routine not a disease prescription
+139,K,Ayurvedic Seasonal Routine (Ritucharya),create-draft,/articles/ritucharya,F,Practical seasonal advice; no universal restriction or climate claims
+140,K,Ayurvedic Diet and Lifestyle,refresh,/treatments/ayurvedic-diet-lifestyle,0,Review newly added indexable treatment and all translations
+141,K,Ayurvedic Approach to Stress Management,merge-planned,/conditions/stress-related-health-problems,5,Use one stress guide with clear mental health referral boundaries
+142,K,Ayurvedic Approach to Healthy Ageing,create-draft,/articles/healthy-ageing,F,Supportive routine and nutrition; link senior hub and falls prevention
