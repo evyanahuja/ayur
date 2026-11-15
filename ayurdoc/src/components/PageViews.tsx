@@ -999,7 +999,7 @@ export function ConditionTemplateView({ page: raw }: { page: ConditionPage }) {
       </div>
       <div className="mx-auto max-w-4xl px-4 sm:px-6 pb-16 space-y-12">
         {raw.status === "draft" && <DraftNotice />}
-        <AuthorBox date={raw.status === "draft" ? "pending" : undefined} />
+        <AuthorBox date={raw.status === "draft" ? "pending" : raw.reviewedOn} />
         <AppointmentCta
           compact
           title="Think this sounds like your concern?"
