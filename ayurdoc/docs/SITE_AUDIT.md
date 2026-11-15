@@ -98,8 +98,10 @@ advice is accurate for each condition; pregnancy and paediatric precautions are 
 
 1. **Deployment:** these changes exist in this project. They must be pushed to `evyanahuja/ayur` (`ayurdoc/`) for Netlify to
    build and deploy them. Netlify deployment was not verified from this environment.
-2. **Translations:** new and revised text is English-only. Hindi, Marathi and Gujarati dictionaries still contain older
-   pediatric-only copy (including some claims that were removed in English). Translate after physician review.
+2. **Translations (EN, HI, MR, GU):** all new content — homepage hero and sections, 10 health-concern category pages,
+   2 new treatment pages, 10 new draft condition guides, conversion blocks, header/mobile nav, About Doctor, Pricing,
+   Booking, and enquiry form consent/labels — now supports English, Hindi, Marathi and Gujarati. All four language
+   versions of medical copy require physician review by Dr. Priyanka Likhar before publishing drafts.
 3. **Images:** `doctor.webp` and `clinic-care.webp` / `cliniccare.webp` are AI-generated placeholders. Replace them with
    real photographs of Dr. Priyanka Likhar and the clinic. Do not use generated images of the doctor or the facility.
 4. **Brand naming:** the site uses "BalChikitsa Ayurved Clinic" for the clinic and "AyurvedDoctor" for the domain.
