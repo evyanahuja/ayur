@@ -117,6 +117,38 @@ export function medicalWebPageJsonLd(opts: { path: string; name: string; descrip
   };
 }
 
+/* Website + Physician entities. The clinic (MedicalClinic) is described by localBusinessJsonLd below. */
+export function websiteJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${SITE_URL}/#website`,
+    url: SITE_URL,
+    name: SITE_NAME,
+    inLanguage: "en-IN",
+    publisher: { "@id": `${SITE_URL}/#clinic` },
+  };
+}
+
+export function physicianJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Physician",
+    "@id": `${SITE_URL}/about-doctor#physician`,
+    name: DOCTOR_NAME,
+    url: `${SITE_URL}/about-doctor`,
+    medicalSpecialty: "Pediatric",
+    identifier: DOCTOR_REG_NO,
+    description: DOCTOR_CREDS,
+    alumniOf: [
+      { "@type": "EducationalOrganization", name: DOCTOR_PG_COLLEGE },
+      { "@type": "EducationalOrganization", name: DOCTOR_UG_COLLEGE },
+    ],
+    worksFor: { "@id": `${SITE_URL}/#clinic` },
+    telephone: CLINIC_PHONE_HREF,
+  };
+}
+
 export function localBusinessJsonLd() {
   return {
     "@context": "https://schema.org",
