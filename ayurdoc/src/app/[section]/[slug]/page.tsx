@@ -5,8 +5,7 @@ import {
   TreatmentTemplateView,
   ArticleTemplateView,
 } from "@/components/PageViews";
-import { CONDITIONS_1 } from "@/content/conditions";
-import { CONDITIONS_2 } from "@/content/conditions2";
+import { ALL_CONDITIONS } from "@/content/registry";
 import { TREATMENTS } from "@/content/treatments";
 import { ARTICLES } from "@/content/articles";
 import {
@@ -16,7 +15,8 @@ import {
   medicalWebPageJsonLd,
 } from "@/seo/config";
 
-const ALL_CONDITIONS = [...CONDITIONS_1, ...CONDITIONS_2];
+/* ALL_CONDITIONS (published and draft guides) comes from @/content/registry.
+   Draft guides render for physician review but are sent with noindex. */
 
 const NESTED_REDIRECTS: Record<string, string> = {
   "conditions/speech-delay": "/conditions/speech-delay-in-children",
@@ -40,12 +40,13 @@ export function generateStaticParams(): { section: string; slug: string }[] {
   ];
 }
 
-function buildArticleMeta(title: string, description: string, path: string): Metadata {
+function buildArticleMeta(title: string, description: string, path: string, noindex = false): Metadata {
   const url = canonical(path);
   return {
     title: { absolute: title },
     description,
     alternates: { canonical: url },
+    ...(noindex ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       title,
       description,
@@ -73,7 +74,14 @@ export async function generateMetadata({
 
   if (sec === "conditions") {
     const cond = ALL_CONDITIONS.find((c) => c.slug === sl);
-    if (cond) return buildArticleMeta(cond.seoTitle, cond.seoDescription, `/conditions/${cond.slug}`);
+    if (cond) {
+      return buildArticleMeta(
+        cond.seoTitle,
+        cond.seoDescription,
+        `/conditions/${cond.slug}`,
+        cond.status === "draft"
+      );
+    }
   }
 
   if (sec === "treatments" || sec === "services") {
