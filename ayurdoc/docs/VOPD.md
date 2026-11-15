@@ -66,7 +66,7 @@ VOPD adds:
 
 | Table | Purpose |
 |---|---|
-| `vopd_bookings` | booking, patient, plan snapshot, server fee, slot, statuses, hold, UTR/payer, verification, Calendar/Meet fields |
+| `vopd_bookings` | booking, patient, `locale` (en/hi/mr/gu), plan snapshot, server fee, slot, statuses, hold, UTR/payer, verification, Calendar/Meet fields |
 | `vopd_audit_log` | immutable action history: creation, payment submitted, verified, rejected, cancelled, rescheduled, calendar created/failed, manual Meet, blocked dates |
 | `vopd_blocked_slots` | full-day clinic blocks |
 | `vopd_payment_screenshots` | optional screenshot bytes (separate table so list queries never load images) |
@@ -145,7 +145,16 @@ Environment: local PostgreSQL, production build served locally, Playwright Chrom
 
 Run with admin credentials exported (never commit them): `VOPD_ADMIN_PASSWORD=… VOPD_ADMIN_SESSION_SECRET=… npx playwright test tests/vopd.spec.ts`.
 
-`npx playwright test tests/vopd.spec.ts` — **9/9 passed**:
+`npx playwright test tests/vopd.spec.ts` — **14/14 passed** (9 domain/API + 5 multilingual/UI):
+
+**Multilingual additions (v2)**
+- `src/i18n/vopd.ts` holds the full patient-flow dictionary for EN/HI/MR/GU (labels, errors, statuses, payment copy, emails).
+- The visitor's language is sent to `/api/vopd/bookings` as `locale`, validated server-side, stored in
+  `vopd_bookings.locale`, and used to localize the acknowledgement, confirmation and Meet-link emails.
+- Browser tests verify fully translated VOPD journeys in Hindi, Marathi and Gujarati (selector, steps, child/adult copy,
+  validation messages, concern fields) and that `locale` reaches the API.
+
+**Original suite**
 1. OPD remains the default consultation type with existing fields.
 2. VOPD reveals child fields incl. required guardian; Adult hides guardian fields.
 3. Config returns ₹400 / ₹4,999 / ₹300 and enquiry-only Suvarnaprashan with no amount.
@@ -170,8 +179,9 @@ the VOPD flow. Type generation, `tsc --noEmit`, production build and platform he
 - Real Google OAuth, Calendar event and Meet link creation.
 - Real UPI transfer, QR correctness, bank reconciliation.
 - Production DB migration (schema applied to the sandbox DB only).
-- VOPD copy is currently **English only**; the rest of the site supports HI/MR/GU. Translating and language-reviewing the
-  new clinical/consent copy remains outstanding.
+- VOPD **patient flow and patient emails support all four site languages** (English, Hindi, Marathi, Gujarati). The
+  **admin console remains English-only** by design (single internal clinic operator tool). Clinical/consent wording in
+  HI/MR/GU still needs physician and native-speaker review before launch.
 - Automated browser tests used the sandbox admin credentials in a temporary `.env.local`; that file was removed. Production
   credentials must be set in Netlify.
 
