@@ -6,6 +6,55 @@ import type { TreatmentPage } from "@/content/treatments";
 import type { Article } from "@/content/articles";
 import type { LocalPage } from "@/content/local";
 import { HI_CONTENT_OVERRIDES } from "./hiContentOverrides";
+import { NEW_CONDITIONS_HI } from "./newConditionsHi";
+import { NEW_CONDITIONS_MR } from "./newConditionsMr";
+import { NEW_CONDITIONS_GU } from "./newConditionsGu";
+import { NEW_TREATMENT_TRANSLATIONS, NEW_TREATMENT_TITLES } from "./newTreatmentsTranslations";
+
+const NEW_CONDITIONS_BY_LANG = {
+  hi: NEW_CONDITIONS_HI,
+  mr: NEW_CONDITIONS_MR,
+  gu: NEW_CONDITIONS_GU,
+};
+
+const NEW_CONDITION_TITLES: Record<"hi" | "mr" | "gu", Record<string, string>> = {
+  hi: {
+    "Acidity & GERD": NEW_CONDITIONS_HI["acidity-gerd"].title,
+    "Piles (Haemorrhoids)": NEW_CONDITIONS_HI["piles-hemorrhoids"].title,
+    "Constipation in Adults": NEW_CONDITIONS_HI["constipation-adults"].title,
+    Psoriasis: NEW_CONDITIONS_HI.psoriasis.title,
+    "Eczema (Atopic Dermatitis)": NEW_CONDITIONS_HI.eczema.title,
+    "Hair Fall": NEW_CONDITIONS_HI["hair-fall"].title,
+    "PCOS / PCOD": NEW_CONDITIONS_HI["pcos-pcod"].title,
+    "Knee Pain": NEW_CONDITIONS_HI["knee-pain"].title,
+    Migraine: NEW_CONDITIONS_HI.migraine.title,
+    "Insomnia & Disturbed Sleep": NEW_CONDITIONS_HI.insomnia.title,
+  },
+  mr: {
+    "Acidity & GERD": NEW_CONDITIONS_MR["acidity-gerd"].title,
+    "Piles (Haemorrhoids)": NEW_CONDITIONS_MR["piles-hemorrhoids"].title,
+    "Constipation in Adults": NEW_CONDITIONS_MR["constipation-adults"].title,
+    Psoriasis: NEW_CONDITIONS_MR.psoriasis.title,
+    "Eczema (Atopic Dermatitis)": NEW_CONDITIONS_MR.eczema.title,
+    "Hair Fall": NEW_CONDITIONS_MR["hair-fall"].title,
+    "PCOS / PCOD": NEW_CONDITIONS_MR["pcos-pcod"].title,
+    "Knee Pain": NEW_CONDITIONS_MR["knee-pain"].title,
+    Migraine: NEW_CONDITIONS_MR.migraine.title,
+    "Insomnia & Disturbed Sleep": NEW_CONDITIONS_MR.insomnia.title,
+  },
+  gu: {
+    "Acidity & GERD": NEW_CONDITIONS_GU["acidity-gerd"].title,
+    "Piles (Haemorrhoids)": NEW_CONDITIONS_GU["piles-hemorrhoids"].title,
+    "Constipation in Adults": NEW_CONDITIONS_GU["constipation-adults"].title,
+    Psoriasis: NEW_CONDITIONS_GU.psoriasis.title,
+    "Eczema (Atopic Dermatitis)": NEW_CONDITIONS_GU.eczema.title,
+    "Hair Fall": NEW_CONDITIONS_GU["hair-fall"].title,
+    "PCOS / PCOD": NEW_CONDITIONS_GU["pcos-pcod"].title,
+    "Knee Pain": NEW_CONDITIONS_GU["knee-pain"].title,
+    Migraine: NEW_CONDITIONS_GU.migraine.title,
+    "Insomnia & Disturbed Sleep": NEW_CONDITIONS_GU.insomnia.title,
+  },
+};
 
 export const CONTENT_TRANSLATIONS: Record<"hi" | "mr" | "gu", Record<string, string>> = {
   "hi": {
@@ -4779,6 +4828,8 @@ export const CONTENT_TRANSLATIONS: Record<"hi" | "mr" | "gu", Record<string, str
 
 export function trText(text: string, lang: Language): string {
   if (!text || lang === "en") return text;
+  if (NEW_TREATMENT_TITLES[lang]?.[text]) return NEW_TREATMENT_TITLES[lang][text];
+  if (NEW_CONDITION_TITLES[lang]?.[text]) return NEW_CONDITION_TITLES[lang][text];
   if (lang === "hi" && HI_CONTENT_OVERRIDES[text]) return HI_CONTENT_OVERRIDES[text];
   return CONTENT_TRANSLATIONS[lang]?.[text] ?? text;
 }
@@ -4791,6 +4842,15 @@ export function trArr(arr: string[] | undefined, lang: Language): string[] {
 
 export function localizeCondition(page: ConditionPage, lang: Language): ConditionPage {
   if (lang === "en") return page;
+  const structured = NEW_CONDITIONS_BY_LANG[lang]?.[page.slug];
+  if (structured) {
+    return {
+      ...page,
+      ...structured,
+      hinglish: page.hinglish,
+      references: page.references,
+    };
+  }
   return {
     ...page,
     title: trText(page.title, lang),
@@ -4820,6 +4880,14 @@ export function localizeCondition(page: ConditionPage, lang: Language): Conditio
 
 export function localizeTreatment(page: TreatmentPage, lang: Language): TreatmentPage {
   if (lang === "en") return page;
+  const structured = NEW_TREATMENT_TRANSLATIONS[lang]?.[page.slug];
+  if (structured) {
+    return {
+      ...page,
+      ...structured,
+      hinglish: page.hinglish,
+    };
+  }
   return {
     ...page,
     title: trText(page.title, lang),
