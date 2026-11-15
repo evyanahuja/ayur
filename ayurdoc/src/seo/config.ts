@@ -85,7 +85,14 @@ export function faqJsonLd(faqs: { q: string; a: string }[]) {
   };
 }
 
-export function medicalWebPageJsonLd(opts: { path: string; name: string; description: string; about?: string }) {
+export function medicalWebPageJsonLd(opts: {
+  path: string;
+  name: string;
+  description: string;
+  about?: string;
+  /* Per-page physician review date (YYYY-MM-DD). Falls back to the site-wide REVIEW_DATE. */
+  dateModified?: string;
+}) {
   return {
     "@context": "https://schema.org",
     "@type": ["MedicalWebPage", "Article"],
@@ -95,7 +102,7 @@ export function medicalWebPageJsonLd(opts: { path: string; name: string; descrip
     headline: opts.name,
     description: opts.description,
     inLanguage: ["en-IN", "hi-IN", "mr-IN", "gu-IN"],
-    dateModified: REVIEW_DATE,
+    dateModified: opts.dateModified ?? REVIEW_DATE,
     author: {
       "@type": "Physician",
       name: MEDICAL_REVIEWER.name,
