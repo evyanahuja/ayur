@@ -1,19 +1,5 @@
-// Patient inquiry schema for Dr. Priyanka Likhar landing page
-import { pgTable, serial, varchar, text, timestamp, pgEnum } from "drizzle-orm/pg-core";
-
-export const concernEnum = pgEnum("concern_category", [
-  "skin",
-  "neurodevelopmental",
-  "growth",
-  "respiratory",
-  "allergy_immunity",
-  "lifestyle",
-  "general",
-  "other",
-]);
-
-export const modeEnum = pgEnum("consult_mode", ["online", "in_clinic"]);
-export const statusEnum = pgEnum("inquiry_status", ["new", "contacted", "booked", "closed"]);
+// Patient inquiry schema for Dr. Priyanka Likhar landing page, plus VOPD (video OPD) tables.
+import { pgTable, serial, varchar, text, timestamp, integer, date, customType, index, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const patientInquiries = pgTable("patient_inquiries", {
   id: serial("id").primaryKey(),
@@ -36,3 +22,106 @@ export const patientInquiries = pgTable("patient_inquiries", {
 
 export type PatientInquiry = typeof patientInquiries.$inferSelect;
 export type NewPatientInquiry = typeof patientInquiries.$inferInsert;
+
+/* ============================ VOPD ============================ */
+
+export const vopdBookings = pgTable(
+  "vopd_bookings",
+  {
+    id: serial("id").primaryKey(),
+    reference: varchar("reference", { length: 24 }).notNull(),
+    mode: varchar("mode", { length: 8 }).notNull().default("vopd"),
+    patientKind: varchar("patient_kind", { length: 8 }).notNull(),
+    patientName: varchar("patient_name", { length: 120 }).notNull(),
+    guardianName: varchar("guardian_name", { length: 120 }),
+    ageOrDob: varchar("age_or_dob", { length: 40 }).notNull(),
+    gender: varchar("gender", { length: 20 }),
+    phone: varchar("phone", { length: 20 }).notNull(),
+    email: varchar("email", { length: 160 }),
+    city: varchar("city", { length: 80 }),
+    state: varchar("state", { length: 80 }),
+    concernCategory: varchar("concern_category", { length: 40 }).notNull(),
+    symptoms: text("symptoms").notNull(),
+    duration: varchar("duration", { length: 120 }),
+    previousDiagnosis: text("previous_diagnosis"),
+    currentTreatment: text("current_treatment"),
+    message: text("message"),
+    planId: varchar("plan_id", { length: 20 }).notNull(),
+    planName: varchar("plan_name", { length: 80 }).notNull(),
+    amountMinor: integer("amount_minor"),
+    currency: varchar("currency", { length: 3 }).notNull().default("INR"),
+    durationMinutes: integer("duration_minutes").notNull(),
+    followUpCount: integer("follow_up_count").notNull().default(0),
+    followUpMinutes: integer("follow_up_minutes").notNull().default(0),
+    slotStart: timestamp("slot_start", { withTimezone: true }).notNull(),
+    slotEnd: timestamp("slot_end", { withTimezone: true }).notNull(),
+    status: varchar("status", { length: 40 }).notNull().default("SLOT_RESERVED"),
+    paymentStatus: varchar("payment_status", { length: 24 }).notNull().default("PENDING"),
+    holdExpiresAt: timestamp("hold_expires_at", { withTimezone: true }),
+    payerName: varchar("payer_name", { length: 120 }),
+    upiReference: varchar("upi_reference", { length: 80 }),
+    paymentSubmittedAt: timestamp("payment_submitted_at", { withTimezone: true }),
+    verifiedAt: timestamp("verified_at", { withTimezone: true }),
+    verifiedBy: varchar("verified_by", { length: 120 }),
+    rejectionReason: text("rejection_reason"),
+    meetUrl: text("meet_url"),
+    calendarEventId: varchar("calendar_event_id", { length: 200 }),
+    calendarStatus: varchar("calendar_status", { length: 24 }).notNull().default("NOT_ATTEMPTED"),
+    calendarError: text("calendar_error"),
+    confirmationEmailSentAt: timestamp("confirmation_email_sent_at", { withTimezone: true }),
+    cancellationReason: text("cancellation_reason"),
+    consentAt: timestamp("consent_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("vopd_bookings_reference_key").on(table.reference),
+    index("vopd_bookings_slot_idx").on(table.slotStart),
+    index("vopd_bookings_status_idx").on(table.status),
+  ]
+);
+
+export type VopdBooking = typeof vopdBookings.$inferSelect;
+export type NewVopdBooking = typeof vopdBookings.$inferInsert;
+
+export const vopdAuditLog = pgTable(
+  "vopd_audit_log",
+  {
+    id: serial("id").primaryKey(),
+    reference: varchar("reference", { length: 24 }).notNull(),
+    action: varchar("action", { length: 60 }).notNull(),
+    fromStatus: varchar("from_status", { length: 40 }),
+    toStatus: varchar("to_status", { length: 40 }),
+    actor: varchar("actor", { length: 120 }).notNull(),
+    note: text("note"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("vopd_audit_reference_idx").on(table.reference)]
+);
+
+export const vopdBlockedSlots = pgTable(
+  "vopd_blocked_slots",
+  {
+    id: serial("id").primaryKey(),
+    blockedDate: date("blocked_date").notNull(),
+    slotStart: timestamp("slot_start", { withTimezone: true }),
+    reason: varchar("reason", { length: 200 }),
+    createdBy: varchar("created_by", { length: 120 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("vopd_blocked_date_idx").on(table.blockedDate)]
+);
+
+// Binary column for optional payment screenshots. Kept in a separate table so
+// booking list queries never load image bytes.
+const bytea = customType<{ data: Buffer; notNull: false; default: false }>({
+  dataType: () => "bytea",
+});
+
+export const vopdPaymentScreenshots = pgTable("vopd_payment_screenshots", {
+  reference: varchar("reference", { length: 24 }).primaryKey(),
+  mimeType: varchar("mime_type", { length: 80 }).notNull(),
+  sizeBytes: integer("size_bytes").notNull(),
+  data: bytea("data").notNull(),
+  uploadedAt: timestamp("uploaded_at", { withTimezone: true }).notNull().defaultNow(),
+});
