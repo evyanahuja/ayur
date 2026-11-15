@@ -51,7 +51,11 @@ import {
   localizeLocalPage,
 } from "@/i18n/contentTranslations";
 
-export const ALL_CONDITIONS = [...CONDITIONS_1, ...CONDITIONS_2];
+import { PUBLISHED_CONDITIONS as ALL_CONDITIONS } from "@/content/registry";
+import { AppointmentCta, DoctorHelp, TableOfContents, DraftNotice } from "@/components/Conversion";
+
+/* Only published guides appear in navigation, related links and listings. */
+export { ALL_CONDITIONS };
 
 /* Home "Explore by need" grid: six guides fill complete rows at 1, 2 and 3
    columns. Slugs are resolved across BOTH condition files — "speech-delay-in-children"
@@ -994,7 +998,25 @@ export function ConditionTemplateView({ page: raw }: { page: ConditionPage }) {
         />
       </div>
       <div className="mx-auto max-w-4xl px-4 sm:px-6 pb-16 space-y-12">
-        <AuthorBox />
+        {raw.status === "draft" && <DraftNotice />}
+        <AuthorBox date={raw.status === "draft" ? "pending" : undefined} />
+        <AppointmentCta
+          compact
+          title="Think this sounds like your concern?"
+          body="Describe your symptoms and history. Dr. Priyanka Likhar will discuss what may be going on, what should be checked first, and whether an Ayurvedic consultation is suitable."
+        />
+        <TableOfContents
+          items={[
+            { id: "what-is", label: "What is it?" },
+            { id: "signs", label: "Symptoms" },
+            { id: "causes", label: "Causes and contributing factors" },
+            { id: "assess", label: "When to get assessed" },
+            { id: "ayurveda", label: "The Ayurvedic perspective" },
+            { id: "management", label: "How Ayurveda approaches it" },
+            { id: "red-flags", label: "Warning signs" },
+            { id: "faq", label: "Frequently asked questions" },
+          ]}
+        />
 
         <Section id="what-is" eyebrow={p.templates.overviewEyebrow} title={p.templates.whatIsTitle}>
           {page.whatIs.map((para) => (
@@ -1064,6 +1086,12 @@ export function ConditionTemplateView({ page: raw }: { page: ConditionPage }) {
           </div>
         </Section>
 
+        <AppointmentCta
+          compact
+          title="Want to talk your concern through with a doctor?"
+          body="Book a consultation to discuss your history, medicines and goals. The clinic will tell you honestly whether Ayurvedic care is suitable for you."
+        />
+
         <section aria-labelledby="faq-h" id="faq" className="scroll-mt-28">
           <p className="eyebrow text-saffron-700">{p.templates.faqEyebrow}</p>
           <h2 id="faq-h" className="mt-2 font-display text-[26px] text-forest-950">
@@ -1093,7 +1121,8 @@ export function ConditionTemplateView({ page: raw }: { page: ConditionPage }) {
           articles={raw.relatedArticles}
         />
         <MedicalDisclaimer />
-        <CtaBand whatsappMsg={`${p.templates.condWhatsappPrefix} ${page.title}.`} />
+        <DoctorHelp />
+        <AppointmentCta />
       </div>
     </main>
   );

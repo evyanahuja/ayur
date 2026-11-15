@@ -12,6 +12,10 @@ import { SectionMandalas } from "./ScrollMandala";
 import { CONDITIONS_1 } from "@/content/conditions";
 import { CONDITIONS_2 } from "@/content/conditions2";
 import { TREATMENTS } from "@/content/treatments";
+import { HEALTH_CATEGORIES, NAV_TREATMENT_SLUGS } from "@/content/categories";
+
+/* Treatments listed in the header dropdown, in the order defined in categories.ts. */
+const NAV_TREATMENTS = NAV_TREATMENT_SLUGS.flatMap((slug) => TREATMENTS.filter((t) => t.slug === slug));
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePagesDict } from "@/i18n/pagesDictionary";
 import { trText } from "@/i18n/contentTranslations";
@@ -130,16 +134,24 @@ export function SiteHeader() {
               {drop === "cond" && (
                 <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 w-[560px]">
                   <div className="rounded-2xl border border-forest-900/10 bg-white shadow-luxe-lg p-4 grid grid-cols-2 gap-1 max-h-[420px] overflow-auto">
-                    {ALL_CONDITIONS.map((c) => (
+                    {HEALTH_CATEGORIES.map((cat) => (
                       <Link
-                        key={c.slug}
-                        href={`/conditions/${c.slug}`}
+                        key={cat.slug}
+                        href={`/health-concerns/${cat.slug}`}
+                        onClick={() => setDrop(null)}
                         className="rounded-xl px-3 py-2 text-[13px] text-forest-900/80 hover:bg-forest-50 hover:text-forest-950"
                       >
-                        <span className="block font-medium">{trText(c.title, lang)}</span>
-                        <span className="block text-[11px] text-forest-800/50">{p.categories[c.category] ?? c.category}</span>
+                        <span className="block font-medium">{cat.title}</span>
+                        <span className="block text-[11px] text-forest-800/50">{cat.navHint}</span>
                       </Link>
                     ))}
+                    <Link
+                      href="/conditions"
+                      onClick={() => setDrop(null)}
+                      className="col-span-2 mt-2 border-t border-forest-900/10 px-3 pt-3 text-[12.5px] font-semibold text-saffron-700 hover:text-forest-950"
+                    >
+                      Browse all conditions (A–Z) →
+                    </Link>
                   </div>
                 </div>
               )}
@@ -154,7 +166,7 @@ export function SiteHeader() {
               {drop === "treat" && (
                 <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 w-[480px]">
                   <div className="rounded-2xl border border-forest-900/10 bg-white shadow-luxe-lg p-4 grid grid-cols-2 gap-1 max-h-[420px] overflow-auto">
-                    {TREATMENTS.map((tr) => (
+                    {NAV_TREATMENTS.map((tr) => (
                       <Link
                         key={tr.slug}
                         href={`/${tr.base}/${tr.slug}`}

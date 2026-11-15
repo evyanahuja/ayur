@@ -68,7 +68,7 @@ export function AuthorBox({ date = REVIEW_DATE }: { date?: string }) {
         <p className="mt-1 text-forest-800/80 text-[12.5px]">{p.seoBlocks.pgLine}</p>
         <p className="text-forest-800/80 text-[12.5px]">{p.seoBlocks.ugLine}</p>
         <p className="mt-1 text-forest-800/65 text-[12px]">
-          {p.seoBlocks.reviewerRole} • {p.seoBlocks.reviewedOn}: {date}
+          {p.seoBlocks.reviewerRole} • {date === "pending" ? "Medical review pending" : `${p.seoBlocks.reviewedOn}: ${date}`}
         </p>
         <p className="mt-1 text-forest-800/60 text-[12px]">{p.seoBlocks.authorNote}</p>
       </div>

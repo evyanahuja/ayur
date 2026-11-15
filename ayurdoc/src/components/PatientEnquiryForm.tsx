@@ -13,11 +13,12 @@ const initial = {
   parentName: "", phone: "", email: "", childName: "", childAge: "", childGender: "",
   concernCategory: "general", symptoms: "", preferredMode: "online" as ConsultationMode,
   preferredDate: "", preferredTime: "", planInterest: "unsure", message: "", website: "",
+  consent: false,
 };
 const CONCERNS = ["skin", "neurodevelopmental", "growth", "respiratory", "allergy_immunity", "lifestyle", "general", "other"];
 const PLANS_KEYS = ["first", "wellness", "followup", "suvarna", "unsure"];
 const REQUIRED = ["parentName", "phone", "childName", "childAge"] as const;
-type ErrorField = typeof REQUIRED[number] | "email";
+type ErrorField = typeof REQUIRED[number] | "email" | "consent";
 type Errors = Partial<Record<ErrorField | "form", boolean>>;
 type Receipt = { ref: string | null; emailSent: boolean; childName: string };
 type Props = {
@@ -31,9 +32,12 @@ function withLivePrice(label: string, price: string) {
   return suffix.test(label) ? label.replace(suffix, `\u2014 ${price}`) : `${label} \u2014 ${price}`;
 }
 
-/** The same form, payload and delivery states on Home and Contact. */
+/** The same form, payload and delivery states on Home and Contact.
+ *  Collects only what is needed to arrange a consultation. It asks for consent,
+ *  never promises a confirmed appointment, and does not request medical history. */
 export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel = 2 }: Props) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const isEn = lang === "en";
   const currency = useRegionCurrency();
   const prefix = `enquiry-${useId().replace(/:/g, "")}`;
   const formRef = useRef<HTMLFormElement>(null);
@@ -46,6 +50,18 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
   const [today, setToday] = useState("");
   const mode = preferredMode ?? form.preferredMode;
   const Heading = headingLevel === 3 ? "h3" : "h2";
+
+  const patientSectionLabel = isEn ? "Patient details" : t.booking.childSection;
+  const patientNameLabel = isEn ? "Patient's name *" : t.booking.childName;
+  const patientNamePlaceholder = isEn ? "e.g. Ramesh or Sunita" : t.booking.childNamePh;
+  const patientAgePlaceholder = isEn ? "e.g. 4 yrs or 45 yrs" : t.booking.childAgePh;
+
+  const errorMessage = (name: ErrorField): string => {
+    if (name === "consent") return "Please tick the consent box so we can process your enquiry.";
+    if (name === "childName" && isEn) return "Please enter the patient's name.";
+    if (name === "childAge" && isEn) return "Please enter the patient's age.";
+    return t.booking.errors[name];
+  };
 
   useEffect(() => {
     // Compute browser-local date after hydration, not during server rendering.
@@ -78,13 +94,16 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending.current) return;
-    const fields = Object.fromEntries(Object.entries(form).map(([key, value]) => [key, value.trim()])) as typeof initial;
+    const fields = Object.fromEntries(
+      Object.entries(form).map(([key, value]) => [key, typeof value === "string" ? value.trim() : value])
+    ) as typeof initial;
     const invalid: Errors = {};
     if (fields.parentName.length < 2) invalid.parentName = true;
     if (!/^[+\d][\d\s\-()]{6,18}$/.test(fields.phone)) invalid.phone = true;
     if (fields.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email)) invalid.email = true;
     if (fields.childName.length < 2) invalid.childName = true;
     if (!fields.childAge) invalid.childAge = true;
+    if (!fields.consent) invalid.consent = true;
     setErrors(invalid);
     if (Object.keys(invalid).length) { focusError(); return; }
 
@@ -101,7 +120,7 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
       const data = await response.json();
       if (!response.ok || data.ok !== true || (data.dbSaved !== true && data.emailSent !== true)) {
         const mapped: Errors = {};
-        for (const key of [...REQUIRED, "email"] as ErrorField[]) {
+        for (const key of [...REQUIRED, "email", "consent"] as ErrorField[]) {
           if (data.errors?.[key]) mapped[key] = true;
         }
         setErrors(Object.keys(mapped).length ? mapped : { form: true });
@@ -131,12 +150,12 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
   const labelCls = "mb-2 block text-[10.5px] font-semibold uppercase tracking-[0.14em] text-forest-800";
   const id = (name: string) => `${prefix}-${name}`;
   const errorText = (name: ErrorField) => errors[name] && (
-    <p id={id(`${name}-error`)} className="mt-1 text-xs font-medium text-red-600" role="alert">{t.booking.errors[name]}</p>
+    <p id={id(`${name}-error`)} className="mt-1 text-xs font-medium text-red-600" role="alert">{errorMessage(name)}</p>
   );
   const input = (name: ErrorField, label: string, placeholder: string, options: InputHTMLAttributes<HTMLInputElement> = {}) => (
     <div className="min-w-0">
       <label htmlFor={id(name)} className={labelCls}>{label}</label>
-      <input {...options} id={id(name)} name={name} value={form[name]} onChange={(event) => set(name, event.target.value)} placeholder={placeholder}
+      <input {...options} id={id(name)} name={name} value={form[name as keyof typeof initial] as string} onChange={(event) => set(name as keyof typeof initial, event.target.value as never)} placeholder={placeholder}
         className={inputCls(errors[name])} required={name !== "email"} aria-invalid={errors[name] || undefined}
         aria-describedby={errors[name] ? id(`${name}-error`) : undefined} />
       {errorText(name)}
@@ -170,6 +189,9 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
           <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-forest-700">
             {(receipt.emailSent ? t.booking.successEmailMessage : t.booking.successSavedMessage).replace("{doctor}", t.site.doctorName)}
           </p>
+          <p className="mx-auto mt-3 max-w-md text-[13.5px] leading-relaxed text-forest-700/80">
+            This is an enquiry, not a confirmed appointment. The clinic will contact you to confirm a slot.
+          </p>
           {!receipt.emailSent && <p className="mx-auto mt-4 max-w-md rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] leading-relaxed text-amber-900">{t.booking.successEmailDelayed}</p>}
           <div className="mx-auto mt-6 max-w-md space-y-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-left">
             {t.booking.successTips.filter((tip) => receipt.ref || !tip.includes("{refId}")).map((tip) => (
@@ -198,10 +220,10 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
             </div>
 
             <div className="space-y-4 rounded-[22px] border border-saffron-500/15 bg-gradient-to-b from-cream-100 to-cream-50 p-5" role="group" aria-labelledby={id("child-section")}>
-              <p id={id("child-section")} className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-wider text-forest-700"><Sparkles className="h-4 w-4 shrink-0 text-saffron-600" />{t.booking.childSection}</p>
+              <p id={id("child-section")} className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-wider text-forest-700"><Sparkles className="h-4 w-4 shrink-0 text-saffron-600" />{patientSectionLabel}</p>
               <div className="grid gap-4 sm:grid-cols-3">
-                {input("childName", t.booking.childName, t.booking.childNamePh, { autoComplete: "off" })}
-                {input("childAge", t.booking.childAge, t.booking.childAgePh)}
+                {input("childName", patientNameLabel, patientNamePlaceholder, { autoComplete: "off" })}
+                {input("childAge", t.booking.childAge, patientAgePlaceholder)}
                 <div className="min-w-0">
                   <label htmlFor={id("childGender")} className={labelCls}>{t.booking.gender}</label>
                   <select id={id("childGender")} name="childGender" value={form.childGender} onChange={(event) => set("childGender", event.target.value)} className={inputCls()}>
@@ -253,6 +275,28 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
               <label htmlFor={id("message")} className={labelCls}>{t.booking.message} <span className="font-normal text-forest-500">{t.booking.messageHint}</span></label>
               <textarea id={id("message")} name="message" value={form.message} onChange={(event) => set("message", event.target.value)} rows={2} placeholder={t.booking.messagePh} className={cn(inputCls(), "resize-y")} />
             </div>
+
+            <div className="space-y-2">
+              <label className="flex items-start gap-3 text-[13.5px] leading-relaxed text-forest-900/85">
+                <input
+                  type="checkbox"
+                  name="consent"
+                  checked={form.consent}
+                  onChange={(event) => set("consent", event.target.checked)}
+                  required
+                  aria-invalid={errors.consent || undefined}
+                  aria-describedby={errors.consent ? id("consent-error") : undefined}
+                  className="mt-1 h-4 w-4 shrink-0 accent-forest-900"
+                />
+                <span>I agree that BalChikitsa Ayurved Clinic may contact me about this enquiry. Submitting this form does not by itself confirm an appointment.</span>
+              </label>
+              <p className="pl-7 text-[12.5px] leading-relaxed text-forest-700/80">
+                Your details are used only to respond to this enquiry. Read our{" "}
+                <a href="/privacy-policy" className="font-semibold underline underline-offset-2 hover:text-forest-950">privacy policy</a>.
+              </p>
+              {errors.consent && <p id={id("consent-error")} className="pl-7 text-xs font-medium text-red-600" role="alert">{errorMessage("consent")}</p>}
+            </div>
+
             {errors.form && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-relaxed text-red-800">
               <p>{t.booking.deliveryError}</p>
               <a href={waHref} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-2 font-semibold underline underline-offset-2"><MessageCircle className="h-4 w-4 shrink-0" />{t.booking.whatsappAction}</a>
