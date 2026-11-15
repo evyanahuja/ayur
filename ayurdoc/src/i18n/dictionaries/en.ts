@@ -79,8 +79,8 @@ export const en = {
     ],
     promises: [
       "45-minute deep first consultation — I listen to the full story, not just symptoms",
-      "Root-cause plan: Prakruti, Agni (digestion), sleep, diet & daily routine mapped",
-      "Steroid-conscious approach for skin, allergy & respiratory issues",
+      "Individual plan: Prakriti, Agni (digestion), sleep, diet and daily routine reviewed",
+      "Supportive care for skin, allergy and respiratory concerns, alongside medical treatment",
       "Parent coaching on diet, dinacharya & home care in Hindi, Marathi, English & Gujarati",
       "WhatsApp follow-up support between visits so you never feel alone",
     ],
