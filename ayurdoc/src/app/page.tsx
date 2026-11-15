@@ -1,16 +1,84 @@
-import { HomeContent } from "@/components/PageViews";
-import { buildHomeFaqJsonLd } from "@/lib/jsonld";
+import type { Metadata } from "next";
+import { Hero } from "@/components/Hero";
+import { DoctorIntro } from "@/components/DoctorIntro";
+import { Pricing } from "@/components/Pricing";
+import { BookingSection } from "@/components/BookingSection";
+import { AuthorBox, CtaBand } from "@/components/seo";
+import {
+  ArticlePreview,
+  ClinicLocation,
+  ConcernCards,
+  ConsultationSteps,
+  HOME_FAQS,
+  HomeFaq,
+  PopularGuides,
+  TreatmentCards,
+  WhyChoose,
+} from "@/components/HomeSections";
+import { SEO } from "@/content/site";
+import { canonical, localBusinessJsonLd, physicianJsonLd, websiteJsonLd } from "@/seo/config";
+
+export const metadata: Metadata = {
+  title: { absolute: SEO.title },
+  description: SEO.description,
+  alternates: { canonical: canonical("/") },
+  openGraph: {
+    title: SEO.title,
+    description: SEO.description,
+    url: canonical("/"),
+    type: "website",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: SEO.title }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SEO.title,
+    description: SEO.description,
+    images: ["/opengraph-image"],
+  },
+};
 
 export default function HomePage() {
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: HOME_FAQS.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(buildHomeFaqJsonLd()).replace(/</g, "\\u003c"),
+          __html: JSON.stringify([websiteJsonLd(), localBusinessJsonLd(), physicianJsonLd(), faqJsonLd]).replace(
+            /</g,
+            "\\u003c"
+          ),
         }}
       />
-      <HomeContent />
+      <main id="main" className="relative bg-white">
+        <Hero />
+        <ConcernCards />
+        <DoctorIntro />
+        <TreatmentCards />
+        <ConsultationSteps />
+        <WhyChoose />
+        <PopularGuides />
+        <ArticlePreview />
+        <Pricing />
+        <HomeFaq />
+        <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+          <AuthorBox date="pending" />
+        </div>
+        <ClinicLocation />
+        <BookingSection />
+        <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+          <CtaBand />
+        </div>
+      </main>
     </>
   );
 }
