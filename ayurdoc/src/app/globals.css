@@ -218,6 +218,10 @@ html[lang="hi"] .line-mask, html[lang="mr"] .line-mask, html[lang="gu"] .line-ma
   padding: 0.14em 0 0.22em;
   margin: -0.14em 0 -0.22em;
 }
+/* Indic scripts are wider per glyph; keep their three authored lines intact too. */
+html[lang="hi"] .hero-headline, html[lang="mr"] .hero-headline, html[lang="gu"] .hero-headline {
+  font-size: clamp(1.55rem, 7cqw, 2.4rem);
+}
 /* Drop the gold underline below Devanagari/Gujarati descenders */
 html[lang="hi"] h1 svg, html[lang="mr"] h1 svg, html[lang="gu"] h1 svg {
   bottom: -0.32em;
@@ -553,7 +557,7 @@ html[lang="hi"] .truncate, html[lang="mr"] .truncate, html[lang="gu"] .truncate 
     z-index: 1;
     min-width: 0;
     container: hero-copy / inline-size;
-    padding: clamp(1.35rem, 2.8vw, 2.25rem);
+    padding: clamp(1.25rem, 2.6vw, 2rem) clamp(1.15rem, 2.4vw, 1.9rem);
     border-radius: 30px;
     background: linear-gradient(
       145deg,
@@ -568,6 +572,15 @@ html[lang="hi"] .truncate, html[lang="mr"] .truncate, html[lang="gu"] .truncate 
       0 24px 60px -28px rgba(11, 36, 25, 0.16),
       inset 0 1px 0 rgba(255, 255, 255, 0.88),
       inset 0 -1px 0 rgba(212, 162, 76, 0.14);
+  }
+
+  /* Headline sized against the frosted panel's own width (container units) so the
+     three authored lines — "Personalised Ayurvedic / healthcare for every stage /
+     of life" — stay on three lines inside the glass, exactly as before the panel
+     was introduced. The vw-based clamp is the fallback for older browsers. */
+  .hero-headline {
+    font-size: clamp(2.15rem, 4.2vw + 0.6rem, 3.35rem);
+    font-size: clamp(1.55rem, 8.2cqw, 3.2rem);
   }
 
   /* Matching dark frosted-glass hero text panel for inner pages over night-palette mandalas */
