@@ -23,7 +23,7 @@ export function Hero() {
   return (
     <section
       id="top"
-      className="mandala-section bg-white relative overflow-hidden pt-[96px] sm:pt-[112px] lg:pt-[104px] pb-10 sm:pb-14 lg:pb-16"
+      className="mandala-section bg-gradient-to-b from-[#fffdf8] via-white to-cream-50/50 relative overflow-hidden pt-[96px] sm:pt-[112px] lg:pt-[108px] pb-10 sm:pb-14 lg:pb-16"
     >
       <SectionMandalas id="hero" hero />
 
@@ -67,7 +67,7 @@ export function Hero() {
             </h1>
 
             <p
-              className={`mt-4 sm:mt-5 text-[15px] sm:text-[16.5px] lg:text-[16px] leading-[1.7] text-forest-800/70 max-w-xl transition-all duration-1000 delay-[700ms] ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}
+              className={`mt-4 sm:mt-5 text-[15px] sm:text-[16.5px] lg:text-[16px] leading-[1.7] text-forest-900/82 max-w-xl transition-all duration-1000 delay-[700ms] ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}
             >
               {h.subheadingPre} <strong className="text-forest-950 font-semibold">{t.site.doctorName}</strong>
               {h.subheadingPost}

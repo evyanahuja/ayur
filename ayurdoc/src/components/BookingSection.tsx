@@ -15,7 +15,7 @@ export function BookingSection() {
 
   return (
     <section id="book" className="mandala-section relative py-12 sm:py-16 scroll-mt-24 overflow-hidden">
-      <SectionMandalas id="book" palette="lotus" side="right" dark />
+      <SectionMandalas id="book" palette="lotus" side="left" dark />
       <div className="absolute inset-0 -z-10" aria-hidden>
         <div className="absolute inset-0 bg-gradient-to-b from-forest-950 via-[#0f3527] to-forest-950" />
         <div className="absolute top-0 left-1/4 w-[440px] h-[440px] rounded-full bg-saffron-500/20 blur-[110px] animate-blob" />

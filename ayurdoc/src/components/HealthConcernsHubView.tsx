@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Breadcrumbs, LanguageTitleSync, MedicalDisclaimer } from "@/components/seo";
 import { AppointmentCta, CATEGORY_ICONS } from "@/components/Conversion";
+import { PageMandalas, SectionMandalas } from "@/components/ScrollMandala";
 import { HEALTH_CATEGORIES } from "@/content/categories";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useExpansion } from "@/i18n/expansion";
@@ -16,20 +17,25 @@ export function HealthConcernsHubView() {
   return (
     <main id="main">
       <LanguageTitleSync title={ui.hubSeoTitle} />
-      <div className="relative overflow-hidden bg-forest-950 text-cream-50">
-        <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-saffron-500/20 blur-[100px]" aria-hidden />
+      <div className="mandala-section relative overflow-hidden bg-forest-950 text-cream-50">
+        <SectionMandalas id="hc-hub-hero" palette="marigold" side="left" dark innerHero />
+        <div className="absolute -top-24 -right-24 -z-10 h-96 w-96 rounded-full bg-saffron-500/20 blur-[100px]" aria-hidden />
         <div className="relative mx-auto max-w-4xl px-4 pb-10 pt-28 text-center sm:px-6 sm:pt-32">
-          <p className="eyebrow text-saffron-300">{ui.hubEyebrow}</p>
-          <h1 className="mt-3 font-display text-[clamp(2rem,5vw,3rem)] font-light leading-tight">{ui.hubH1}</h1>
-          <p className="mx-auto mt-3 max-w-3xl text-[15px] leading-relaxed text-cream-100/80">{ui.hubIntro}</p>
+          <div className="page-hero-glass">
+            <p className="eyebrow text-saffron-300">{ui.hubEyebrow}</p>
+            <h1 className="mt-3 font-display text-[clamp(2rem,5vw,3rem)] font-light leading-tight">{ui.hubH1}</h1>
+            <p className="mx-auto mt-3 max-w-3xl text-[15px] leading-relaxed text-cream-100/85">{ui.hubIntro}</p>
+          </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-        <Breadcrumbs items={[{ label: ui.homeCrumb, href: "/" }, { label: ui.hubCrumb }]} />
-      </div>
+      <div className="mandala-section relative overflow-hidden">
+        <PageMandalas id="hc-hub-body" tall />
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+          <Breadcrumbs items={[{ label: ui.homeCrumb, href: "/" }, { label: ui.hubCrumb }]} />
+        </div>
 
-      <div className="mx-auto max-w-6xl space-y-12 px-4 pb-16 sm:px-6">
+        <div className="mx-auto max-w-6xl space-y-12 px-4 pb-16 sm:px-6">
         <section aria-labelledby="cats-h" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <h2 id="cats-h" className="sr-only">
             {ui.hubSrHeading}
@@ -59,6 +65,7 @@ export function HealthConcernsHubView() {
 
         <AppointmentCta />
         <MedicalDisclaimer />
+        </div>
       </div>
     </main>
   );

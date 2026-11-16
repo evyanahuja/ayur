@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Sparkles, Video, Building2, Crown, ArrowRight } from "lucide-react";
 import { Reveal } from "./Reveal";
 import { SectionMandalas } from "./ScrollMandala";
 import { cn } from "@/lib/cn";
 import { PLANS } from "@/content/site";
+import type { VopdPlan } from "@/content/vopd";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useRegionCurrency } from "@/lib/useRegionCurrency";
 
@@ -13,25 +14,68 @@ export function Pricing() {
   const { t } = useLanguage();
   const currency = useRegionCurrency();
   const [mode, setMode] = useState<"online" | "clinic">("online");
-  const plans = PLANS.map((p, i) => ({
-    ...p,
-    displayPrice: currency === "USD" ? p.usdPrice : p.price,
-    displayStrike: currency === "USD" ? p.usdStrike : p.strike,
-    name: t.pricing.plans[i].name,
-    hindi: t.pricing.plans[i].sub,
-    period: t.pricing.plans[i].period,
-    desc: t.pricing.plans[i].desc,
-    features: t.pricing.plans[i].features,
-    cta: t.pricing.plans[i].cta,
+  const [customPlans, setCustomPlans] = useState<VopdPlan[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/vopd/config", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled || !data?.ok || !Array.isArray(data.plans)) return;
+        setCustomPlans(
+          (data.plans as VopdPlan[]).filter((p) => p.isCustom && p.active !== false && p.showOnPricing !== false)
+        );
+      })
+      .catch(() => { /* keep static plans */ });
+    return () => { cancelled = true; };
+  }, []);
+
+  const builtinCards = PLANS.map((p, i) => {
+    const localized = t.pricing.plans[i];
+    return {
+      id: p.id,
+      displayPrice: currency === "USD" ? p.usdPrice : p.price,
+      displayStrike: currency === "USD" ? p.usdStrike : p.strike,
+      name: localized?.name ?? p.name,
+      hindi: localized?.sub ?? p.hindi,
+      period: localized?.period ?? p.period,
+      desc: localized?.desc ?? p.desc,
+      features: localized?.features ?? p.features,
+      cta: localized?.cta ?? p.cta,
+      icon: p.icon,
+      featured: p.featured,
+    };
+  });
+
+  const dynamicCards = customPlans.map((cp) => ({
+    id: cp.id,
+    displayPrice: currency === "USD" && cp.usdPrice ? cp.usdPrice : cp.priceLabel,
+    displayStrike: currency === "USD" ? cp.usdStrike : cp.strikeLabel,
+    name: cp.name,
+    hindi: cp.subtitle || `${cp.bookingMinutes} mins`,
+    period: cp.period || `${cp.bookingMinutes} mins consultation`,
+    desc: cp.description,
+    features: cp.inclusions.length
+      ? cp.inclusions
+      : [
+          `${cp.bookingMinutes} mins video / in-clinic session`,
+          ...(cp.followUpCount > 0 ? [`${cp.followUpCount} follow-up visits (${cp.followUpMinutes} mins each)`] : []),
+          "Personalised Ayurvedic prescription & diet guidance",
+        ],
+    cta: t.pricing.plans[0]?.cta ?? "Book consultation",
+    icon: cp.featured ? Crown : Sparkles,
+    featured: Boolean(cp.featured),
   }));
+
+  const plans = [...builtinCards, ...dynamicCards];
   const modes = [
     { id: "online" as const, label: t.pricing.online, icon: Video },
     { id: "clinic" as const, label: t.pricing.clinic, icon: Building2 },
   ];
 
   return (
-    <section id="plans" className="mandala-section relative py-12 sm:py-16 scroll-mt-24">
-      <SectionMandalas id="plans" palette="marigold" side="right" />
+    <section id="plans" className="mandala-section relative overflow-hidden py-12 sm:py-16 scroll-mt-24">
+      <SectionMandalas id="plans" palette="marigold" side="left" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-forest-50/70 to-transparent" aria-hidden />
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <Reveal className="text-center max-w-3xl mx-auto">
@@ -66,14 +110,19 @@ export function Pricing() {
           </div>
         </Reveal>
 
-        <div className="mt-9 grid md:grid-cols-3 gap-5 items-stretch max-w-6xl mx-auto">
+        <div
+          className={cn(
+            "mt-9 grid gap-6 items-stretch mx-auto",
+            plans.length <= 2 ? "md:grid-cols-2 max-w-4xl" : "md:grid-cols-3 max-w-6xl"
+          )}
+        >
           {plans.map((p, i) => (
             <Reveal key={p.id} delay={i * 110} variant="scale" className="h-full">
               <article
                 className={cn(
-                  "relative h-full rounded-[32px] p-8 sm:p-9 flex flex-col overflow-hidden transition-all duration-700 hover:-translate-y-2.5 gold-hairline",
+                  "relative h-full rounded-[32px] p-8 sm:p-9 flex flex-col overflow-hidden transition-all duration-700 hover:-translate-y-2 gold-hairline",
                   p.featured
-                    ? "bg-gradient-to-b from-forest-900 to-forest-950 text-white shadow-luxe-lg lg:scale-[1.04]"
+                    ? "bg-gradient-to-b from-forest-900 to-forest-950 text-white shadow-luxe-lg"
                     : "bg-white shadow-luxe hover:shadow-luxe-lg"
                 )}
               >
@@ -90,15 +139,15 @@ export function Pricing() {
                 </span>
                 <h3 className={cn("font-display font-normal text-[25px] leading-tight", p.featured ? "text-white" : "text-forest-950")}>{p.name}</h3>
                 <p className={cn("text-[10px] font-semibold tracking-[0.2em] uppercase mt-2", p.featured ? "text-saffron-300" : "text-saffron-700")}>{p.hindi}</p>
-                <p className={cn("mt-4 text-[13.5px] leading-[1.7]", p.featured ? "text-white/60" : "text-forest-700/65")}>{p.desc}</p>
+                <p className={cn("mt-4 text-[13.5px] leading-[1.7]", p.featured ? "text-white/65" : "text-forest-700/70")}>{p.desc}</p>
 
                 <div className="mt-6 flex items-end gap-3">
-                  <span className={cn("font-display font-light text-[46px] leading-none tracking-tight", p.featured ? "text-gradient-gold" : "text-forest-950")}>{p.displayPrice}</span>
+                  <span className={cn("font-display font-light text-[44px] leading-none tracking-tight", p.featured ? "text-gradient-gold" : "text-forest-950")}>{p.displayPrice}</span>
                   {p.displayStrike ? (
                     <span className={cn("text-[13px] line-through mb-1.5", p.featured ? "text-white/35" : "text-slate-400")}>{p.displayStrike}</span>
                   ) : null}
                 </div>
-                <p className={cn("mt-1 text-[13px] font-semibold", p.featured ? "text-saffron-300" : "text-forest-600")}>
+                <p className={cn("mt-1.5 text-[13px] font-semibold", p.featured ? "text-saffron-300" : "text-forest-600")}>
                   {p.period} • {mode === "online" ? t.booking.modeOnline : t.booking.modeClinic}
                 </p>
 
@@ -119,7 +168,7 @@ export function Pricing() {
                   onClick={(e) => {
                     e.preventDefault();
                     document.getElementById("book")?.scrollIntoView({ behavior: "smooth" });
-                    window.dispatchEvent(new CustomEvent("select-plan", { detail: p.id }));
+                    window.dispatchEvent(new CustomEvent("select-plan", { detail: { planId: p.id, mode } }));
                   }}
                   className={cn(
                     "btn-shine group mt-8 inline-flex items-center justify-center gap-2.5 rounded-full font-medium text-[14.5px] tracking-wide px-6 py-4 transition-all duration-700",
@@ -136,8 +185,8 @@ export function Pricing() {
         </div>
 
         <Reveal delay={150} className="mt-8 max-w-3xl mx-auto text-center">
-          <p className="rounded-[22px] bg-white gold-hairline px-7 py-5 text-[13.5px] text-forest-700 leading-[1.75] shadow-luxe">
-            💛 <strong>{t.pricing.footerStrong}</strong> {t.pricing.footerText}
+          <p className="rounded-[22px] bg-white/90 backdrop-blur gold-hairline px-7 py-5 text-[13.5px] text-forest-700 leading-[1.75] shadow-luxe">
+            <strong>{t.pricing.footerStrong}</strong> {t.pricing.footerText}
           </p>
         </Reveal>
       </div>

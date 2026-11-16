@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { AuthorBox, Breadcrumbs, LanguageTitleSync, MedicalDisclaimer } from "@/components/seo";
 import { AppointmentCta, CATEGORY_ICONS, DoctorHelp } from "@/components/Conversion";
+import { PageMandalas, SectionMandalas } from "@/components/ScrollMandala";
 import { HEALTH_CATEGORIES, type HealthCategory } from "@/content/categories";
 import { PUBLISHED_CONDITIONS } from "@/content/registry";
 import { TREATMENTS } from "@/content/treatments";
@@ -31,33 +32,38 @@ export function CategoryView({ category: raw }: { category: HealthCategory }) {
   return (
     <main id="main">
       <LanguageTitleSync title={c.seoTitle} />
-      <div className="relative overflow-hidden bg-forest-950 text-cream-50">
-        <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-saffron-500/20 blur-[100px]" aria-hidden />
+      <div className="mandala-section relative overflow-hidden bg-forest-950 text-cream-50">
+        <SectionMandalas id={`cat-hero-${raw.slug}`} palette="lotus" side="left" dark innerHero />
+        <div className="absolute -top-24 -right-24 -z-10 h-96 w-96 rounded-full bg-saffron-500/20 blur-[100px]" aria-hidden />
         <div className="relative mx-auto max-w-4xl px-4 pb-10 pt-28 sm:px-6 sm:pt-32">
-          <p className="eyebrow flex items-center gap-2 text-saffron-300">
-            <Icon className="h-4 w-4" aria-hidden /> {ui.catEyebrow}
-          </p>
-          <h1 className="mt-3 font-display text-[clamp(2rem,5vw,3rem)] font-light leading-tight">
-            {c.title}
-            {ui.catH1Suffix}
-          </h1>
-          <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-cream-100/80">{c.seoDescription}</p>
-          <p className="mt-3 text-[12.5px] text-saffron-200/75">{ui.catMeta}</p>
+          <div className="page-hero-glass">
+            <p className="eyebrow flex items-center gap-2 text-saffron-300">
+              <Icon className="h-4 w-4" aria-hidden /> {ui.catEyebrow}
+            </p>
+            <h1 className="mt-3 font-display text-[clamp(2rem,5vw,3rem)] font-light leading-tight">
+              {c.title}
+              {ui.catH1Suffix}
+            </h1>
+            <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-cream-100/85">{c.seoDescription}</p>
+            <p className="mt-3 text-[12.5px] text-saffron-200/80">{ui.catMeta}</p>
+          </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
-        <Breadcrumbs
-          items={[
-            { label: ui.homeCrumb, href: "/" },
-            { label: ui.hubCrumb, href: "/health-concerns" },
-            { label: c.title },
-          ]}
-        />
-      </div>
+      <div className="mandala-section relative overflow-hidden">
+        <PageMandalas id={`cat-body-${raw.slug}`} tall />
+        <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
+          <Breadcrumbs
+            items={[
+              { label: ui.homeCrumb, href: "/" },
+              { label: ui.hubCrumb, href: "/health-concerns" },
+              { label: c.title },
+            ]}
+          />
+        </div>
 
-      <div className="mx-auto max-w-4xl space-y-12 px-4 pb-16 sm:px-6">
-        <AuthorBox date="pending" />
+        <div className="mx-auto max-w-4xl space-y-12 px-4 pb-16 sm:px-6">
+          <AuthorBox />
 
         <section aria-labelledby="intro-h" className="space-y-4">
           <h2 id="intro-h" className="font-display text-[26px] text-forest-950">
@@ -177,6 +183,7 @@ export function CategoryView({ category: raw }: { category: HealthCategory }) {
             ))}
           </div>
         </section>
+        </div>
       </div>
     </main>
   );

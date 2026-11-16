@@ -35,6 +35,7 @@ import { Pricing } from "@/components/Pricing";
 import { FAQ } from "@/components/FAQ";
 import { BookingSection } from "@/components/BookingSection";
 import { PatientEnquiryForm } from "@/components/PatientEnquiryForm";
+import { PageMandalas, SectionMandalas } from "@/components/ScrollMandala";
 import { Breadcrumbs, AuthorBox, MedicalDisclaimer, CtaBand, LanguageTitleSync } from "@/components/seo";
 import { CONDITIONS_1, type ConditionPage } from "@/content/conditions";
 import { CONDITIONS_2 } from "@/content/conditions2";
@@ -101,26 +102,38 @@ function PageHero({
   centered?: boolean;
 }) {
   return (
-    <div className="relative overflow-hidden bg-forest-950 text-cream-50">
-      <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-saffron-500/20 blur-[100px]" aria-hidden />
+    <div className="mandala-section relative overflow-hidden bg-forest-950 text-cream-50">
+      <SectionMandalas id="page-hero" palette="marigold" side="left" dark innerHero />
+      <div className="absolute -top-24 -right-24 -z-10 w-96 h-96 rounded-full bg-saffron-500/20 blur-[100px]" aria-hidden />
       <div
         className={cn(
           "relative mx-auto px-4 sm:px-6 pt-28 sm:pt-32 pb-10",
           centered ? "max-w-5xl text-center" : "max-w-4xl"
         )}
       >
-        <p className="eyebrow text-saffron-300">{eyebrow}</p>
-        <h1 className="mt-3 font-display font-light text-[clamp(2rem,5vw,3rem)] leading-tight">{h1}</h1>
-        <p
-          className={cn(
-            "mt-3 text-[15px] text-cream-100/80 leading-relaxed",
-            centered ? "max-w-3xl mx-auto" : "max-w-3xl"
-          )}
-        >
-          {intro}
-        </p>
-        {meta && <p className="mt-3 text-[12.5px] text-saffron-200/75">{meta}</p>}
+        <div className="page-hero-glass">
+          <p className="eyebrow text-saffron-300">{eyebrow}</p>
+          <h1 className="mt-3 font-display font-light text-[clamp(2rem,5vw,3rem)] leading-tight">{h1}</h1>
+          <p
+            className={cn(
+              "mt-3 text-[15px] text-cream-100/85 leading-relaxed",
+              centered ? "max-w-3xl mx-auto" : "max-w-3xl"
+            )}
+          >
+            {intro}
+          </p>
+          {meta && <p className="mt-3 text-[12.5px] text-saffron-200/80">{meta}</p>}
+        </div>
       </div>
+    </div>
+  );
+}
+
+function PageBody({ id, tall = false, children }: { id: string; tall?: boolean; children: ReactNode }) {
+  return (
+    <div className="mandala-section relative overflow-hidden">
+      <PageMandalas id={id} tall={tall} />
+      {children}
     </div>
   );
 }
@@ -272,10 +285,12 @@ function StaticShell({
   return (
     <main id="main">
       <PageHero eyebrow={eyebrow} h1={h1} intro={intro} />
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6">
-        <Breadcrumbs items={crumbs} />
-      </div>
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 pb-16 space-y-10">{children}</div>
+      <PageBody id="static-page" tall>
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6">
+          <Breadcrumbs items={crumbs} />
+        </div>
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 pb-16 space-y-10">{children}</div>
+      </PageBody>
     </main>
   );
 }
@@ -441,6 +456,7 @@ export function ConditionsIndexView() {
         intro={p.hubs.conditionsIntro}
         centered
       />
+      <PageBody id="conditions-hub" tall>
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6">
         <Breadcrumbs items={[{ label: p.hubs.homeCrumb, href: "/" }, { label: p.hubs.conditionsCrumb }]} />
       </div>
@@ -485,6 +501,7 @@ export function ConditionsIndexView() {
         <MedicalDisclaimer />
         <CtaBand />
       </div>
+      </PageBody>
     </main>
   );
 }
@@ -517,6 +534,7 @@ export function TreatmentsIndexView() {
         intro={p.hubs.treatmentsIntro}
         centered
       />
+      <PageBody id="treatments-hub" tall>
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6">
         <Breadcrumbs items={[{ label: p.hubs.homeCrumb, href: "/" }, { label: p.hubs.treatmentsCrumb }]} />
       </div>
@@ -557,6 +575,7 @@ export function TreatmentsIndexView() {
         <MedicalDisclaimer />
         <CtaBand />
       </div>
+      </PageBody>
     </main>
   );
 }
@@ -574,6 +593,7 @@ export function ArticlesIndexView() {
         intro={p.hubs.articlesIntro}
         centered
       />
+      <PageBody id="articles-hub" tall>
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6">
         <Breadcrumbs items={[{ label: p.hubs.homeCrumb, href: "/" }, { label: p.hubs.articlesCrumb }]} />
       </div>
@@ -601,6 +621,7 @@ export function ArticlesIndexView() {
         <AuthorBox />
         <CtaBand title={p.hubs.articlesCtaTitle} body={p.hubs.articlesCtaBody} />
       </div>
+      </PageBody>
     </main>
   );
 }
@@ -619,6 +640,7 @@ export function ChildHealthHubView() {
         intro={p.hubs.childHealthIntro}
         centered
       />
+      <PageBody id="child-health-hub" tall>
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6">
         <Breadcrumbs items={[{ label: p.hubs.homeCrumb, href: "/" }, { label: p.hubs.childHealthCrumb }]} />
       </div>
@@ -650,6 +672,7 @@ export function ChildHealthHubView() {
         <AuthorBox />
         <CtaBand />
       </div>
+      </PageBody>
     </main>
   );
 }
@@ -662,6 +685,7 @@ export function FaqHubView() {
     <main id="main">
       <LanguageTitleSync title={`${p.hubs.faqH1} | ${SITE.doctorName}`} />
       <PageHero eyebrow={p.hubs.faqEyebrow} h1={p.hubs.faqH1} intro={p.hubs.faqIntro} centered />
+      <PageBody id="faq-hub" tall>
       <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6">
         <Breadcrumbs items={[{ label: p.hubs.homeCrumb, href: "/" }, { label: p.hubs.faqCrumb }]} />
       </div>
@@ -679,6 +703,7 @@ export function FaqHubView() {
         <MedicalDisclaimer />
         <CtaBand />
       </div>
+      </PageBody>
     </main>
   );
 }
@@ -950,27 +975,30 @@ export function NotFoundView() {
   const s = p.staticPages.notFound;
 
   return (
-    <main id="main" className="mx-auto max-w-2xl px-4 py-28 text-center">
+    <main id="main" className="mandala-section relative overflow-hidden py-32 text-center">
+      <SectionMandalas id="not-found" palette="peacock" side="left" />
       <LanguageTitleSync title={s.seoTitle} />
-      <p className="eyebrow text-saffron-700">404</p>
-      <h1 className="mt-2 font-display text-4xl text-forest-950">{s.h1}</h1>
-      <p className="mt-3 text-forest-800/70">{s.desc}</p>
-      <div className="mt-6 flex flex-wrap justify-center gap-3">
-        <Link href="/" className="rounded-full bg-forest-950 text-cream-50 px-6 py-3 text-[14px] font-medium">
-          {s.homeBtn}
-        </Link>
-        <Link
-          href="/conditions"
-          className="rounded-full border border-forest-900/15 px-6 py-3 text-[14px] font-medium text-forest-950"
-        >
-          {s.condBtn}
-        </Link>
-        <Link
-          href="/contact"
-          className="rounded-full border border-forest-900/15 px-6 py-3 text-[14px] font-medium text-forest-950"
-        >
-          {s.contactBtn}
-        </Link>
+      <div className="mx-auto max-w-2xl px-4">
+        <p className="eyebrow text-saffron-700">404</p>
+        <h1 className="mt-2 font-display text-4xl text-forest-950">{s.h1}</h1>
+        <p className="mt-3 text-forest-800/75">{s.desc}</p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Link href="/" className="rounded-full bg-forest-950 text-cream-50 px-6 py-3 text-[14px] font-medium">
+            {s.homeBtn}
+          </Link>
+          <Link
+            href="/conditions"
+            className="rounded-full border border-forest-900/15 bg-white px-6 py-3 text-[14px] font-medium text-forest-950"
+          >
+            {s.condBtn}
+          </Link>
+          <Link
+            href="/contact"
+            className="rounded-full border border-forest-900/15 bg-white px-6 py-3 text-[14px] font-medium text-forest-950"
+          >
+            {s.contactBtn}
+          </Link>
+        </div>
       </div>
     </main>
   );
@@ -993,6 +1021,7 @@ export function ConditionTemplateView({ page: raw }: { page: ConditionPage }) {
         intro={page.intro}
         meta={page.hinglish.length ? `${p.templates.alsoSearched}: ${page.hinglish.join(" • ")}` : undefined}
       />
+      <PageBody id={`cond-${raw.slug}`} tall>
       <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6">
         <Breadcrumbs
           items={[
@@ -1121,6 +1150,7 @@ export function ConditionTemplateView({ page: raw }: { page: ConditionPage }) {
         <DoctorHelp />
         <AppointmentCta />
       </div>
+      </PageBody>
     </main>
   );
 }
@@ -1141,6 +1171,7 @@ export function TreatmentTemplateView({ page: raw }: { page: TreatmentPage }) {
         intro={page.intro}
         meta={page.hinglish.length ? `${p.templates.alsoSearched}: ${page.hinglish.join(" • ")}` : undefined}
       />
+      <PageBody id={`treat-${raw.slug}`} tall>
       <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6">
         <Breadcrumbs
           items={[
@@ -1210,6 +1241,7 @@ export function TreatmentTemplateView({ page: raw }: { page: TreatmentPage }) {
           whatsappMsg={`${p.templates.treatWhatsappPrefix} ${page.title}.`}
         />
       </div>
+      </PageBody>
     </main>
   );
 }
@@ -1229,6 +1261,7 @@ export function ArticleTemplateView({ page: raw }: { page: Article }) {
         intro={page.intro}
         meta={page.hinglish.length ? `${p.templates.alsoSearched}: ${page.hinglish.join(" • ")}` : undefined}
       />
+      <PageBody id={`art-${raw.slug}`} tall>
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-6">
         <Breadcrumbs
           items={[
@@ -1273,6 +1306,7 @@ export function ArticleTemplateView({ page: raw }: { page: Article }) {
           whatsappMsg={`${p.templates.artWhatsappPrefix} ${page.title}.`}
         />
       </div>
+      </PageBody>
     </main>
   );
 }
@@ -1291,6 +1325,7 @@ export function LocalTemplateView({ page: raw }: { page: LocalPage }) {
         intro={page.intro}
         meta={page.hinglish.length ? `${p.templates.alsoSearched}: ${page.hinglish.join(" • ")}` : undefined}
       />
+      <PageBody id={`local-${raw.slug}`} tall>
       <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6">
         <Breadcrumbs items={[{ label: p.hubs.homeCrumb, href: "/" }, { label: page.title }]} />
       </div>
@@ -1360,6 +1395,7 @@ export function LocalTemplateView({ page: raw }: { page: LocalPage }) {
         <MedicalDisclaimer />
         <CtaBand />
       </div>
+      </PageBody>
     </main>
   );
 }
