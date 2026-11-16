@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, reference: null }, { status: 201 });
   }
 
-  const parsed = validateBooking(body);
+  const parsed = await validateBooking(body);
   if (!parsed.ok) return NextResponse.json({ ok: false, errors: parsed.errors }, { status: 400 });
 
   try {

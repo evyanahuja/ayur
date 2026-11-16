@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { db, isDatabaseConfigured } from "@/db";
 import { patientInquiries } from "@/db/schema";
 import { planLabel, sendDoctorNotification, sendParentConfirmation } from "@/lib/email";
+import { getResolvedVopdPlan } from "@/lib/vopd/config";
+import { ensureVopdSchema } from "@/lib/vopd/store";
+import { computeAgeFromDob, isValidDobString } from "@/content/vopd";
+import { todayInClinic } from "@/lib/vopd/slots";
 import { desc, count } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -51,7 +55,10 @@ export async function POST(req: Request) {
     const phone = sanitize(body.phone, 20);
     const email = sanitize(body.email, 160);
     const childName = sanitize(body.childName, 120);
-    const childAge = sanitize(body.childAge, 20);
+    const rawChildAge = sanitize(body.childAge, 40);
+    const isoDob = rawChildAge.slice(0, 10);
+    const dobAge = isValidDobString(isoDob, todayInClinic()) ? computeAgeFromDob(isoDob, todayInClinic()) : null;
+    const childAge = dobAge ? `${isoDob} (${dobAge.short})` : rawChildAge;
     const childGender = sanitize(body.childGender, 20);
     const concernCategory = sanitize(body.concernCategory, 40) || "general";
     const symptoms = sanitize(body.symptoms, 2000);
@@ -68,7 +75,7 @@ export async function POST(req: Request) {
     if (!/^[+\d][\d\s\-()]{6,18}$/.test(phone)) errors.phone = "Please enter a valid phone number";
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Please enter a valid email";
     if (childName.length < 2) errors.childName = "Please enter the patient's name";
-    if (!childAge) errors.childAge = "Please enter the patient's age";
+    if (!rawChildAge || !isValidDobString(isoDob, todayInClinic())) errors.childAge = "Please select a valid date of birth";
     if (!concernCategory) errors.concernCategory = "Please choose a concern";
     if (body.consent !== true) errors.consent = "Please confirm consent so we can process your enquiry.";
 
@@ -84,8 +91,14 @@ export async function POST(req: Request) {
     let id: number | null = null;
     let dbSaved = false;
 
+    const customResolved = planInterest ? await getResolvedVopdPlan(planInterest) : undefined;
+    const resolvedPlanText = customResolved?.isCustom
+      ? `${customResolved.name}${customResolved.priceLabel ? ` — ${currency === "USD" && customResolved.usdPrice ? customResolved.usdPrice : customResolved.priceLabel}` : ""}`
+      : planLabel(planInterest, currency);
+
     if (isDatabaseConfigured()) {
       try {
+        await ensureVopdSchema();
         const inserted = await db
           .insert(patientInquiries)
           .values({
@@ -100,7 +113,7 @@ export async function POST(req: Request) {
             preferredMode,
             preferredDate: preferredDate || null,
             preferredTime: preferredTime || null,
-            planInterest: planLabel(planInterest, currency).slice(0, 60) || null,
+            planInterest: resolvedPlanText.slice(0, 60) || null,
             message: message || null,
             status: "new",
           })
