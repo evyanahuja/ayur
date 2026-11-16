@@ -261,8 +261,8 @@ export const SPECIALTIES = [
  * -------------------------------------------------------------------------- */
 export const METHOD_STEPS = [
   {
-    icon: ClipboardList, n: "01", title: "Deep Prakruti Assessment", time: "Day 1 • 45 min",
-    desc: "45-min first visit: birth history, feeding, sleep, digestion, immunity timeline, growth charts & prior reports — nothing rushed.",
+    icon: ClipboardList, n: "01", title: "Deep Prakruti Assessment", time: "Day 1 • 30 mins",
+    desc: "30 mins first visit: birth history, feeding, sleep, digestion, immunity timeline, growth charts & prior reports — nothing rushed.",
   },
   {
     icon: SearchCheck, n: "02", title: "Root-Cause Mapping", time: "Day 1–2",
@@ -318,7 +318,7 @@ export const COMPARE = [
   { label: "Skin / allergy", quick: "Steroid cream every flare", ayur: "Gut-skin repair, fewer flares" },
   { label: "Cold / cough", quick: "Antibiotic each month", ayur: "Immunity so colds reduce" },
   { label: "Appetite", quick: "Force / supplements", ayur: "Kindle Agni, natural hunger" },
-  { label: "Follow-up", quick: "5-min refill", ayur: "45-min deep review + coaching" },
+  { label: "Follow-up", quick: "5-min refill", ayur: "30 mins deep review + coaching" },
 ];
 
 /* -----------------------------------------------------------------------------
@@ -400,10 +400,10 @@ export const PLANS = [
     strike: "₹500",
     usdPrice: "$75",
     usdStrike: "$100",
-    period: "45-minute deep dive",
+    period: "30 mins consultation",
     desc: "Complete Prakriti, digestion & lifestyle assessment + individual starter plan.",
     features: [
-      "45-min video / in-clinic session",
+      "30 mins video / in-clinic session",
       "Prakruti, Agni & growth analysis",
       "Personalised herb + diet chart",
       "7-day WhatsApp doubt support",
@@ -411,28 +411,6 @@ export const PLANS = [
     ],
     cta: "Book first visit",
     icon: Video,
-    featured: false,
-  },
-  {
-    id: "wellness",
-    name: "Bal Wellness Program",
-    hindi: "3-Month Transformation",
-    price: "₹4,999",
-    strike: "₹8,500",
-    usdPrice: "$300",
-    usdStrike: "$500",
-    period: "Most chosen • 3 months",
-    desc: "For skin, growth, immunity & developmental concerns needing steady hand-holding.",
-    features: [
-      "Everything in First Consultation",
-      "6 follow-ups (every 2 weeks)",
-      "Suvarnaprashan guidance included",
-      "Monthly growth & symptom tracking",
-      "Priority WhatsApp support",
-      "Parent coaching: diet, sleep, routine",
-    ],
-    cta: "Start transformation",
-    icon: Crown,
     featured: true,
   },
   {
@@ -515,7 +493,6 @@ export const CONCERNS = [
 // `price` / `usdPrice` in PLANS — no need to touch anything below.
 export const PLAN_OPTIONS: Record<string, string> = {
   first: "First Consultation — ₹400",
-  wellness: "Bal Wellness Program (3 months) — ₹4,999",
   followup: "Follow-up Care — ₹300",
   suvarna: "Suvarnaprashan Only",
   unsure: "Not sure — need guidance",
@@ -523,7 +500,6 @@ export const PLAN_OPTIONS: Record<string, string> = {
 
 export const PLAN_OPTIONS_USD: Record<string, string> = {
   first: "First Consultation — $75",
-  wellness: "Bal Wellness Program (3 months) — $300",
   followup: "Follow-up Care — $50",
   suvarna: "Suvarnaprashan Only",
   unsure: "Not sure — need guidance",

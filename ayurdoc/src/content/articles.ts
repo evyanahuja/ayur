@@ -34,7 +34,7 @@ export const ARTICLES: Article[] = [
       { h: "Ayurvedic Nidra support", p: ["Warm foot/head massage, early light dinner, and calm Vata-pacifying evenings complement the behavioural core — especially for restless, light-sleeping children."] },
     ],
     faqs: [
-      { q: "Bachcha 11 baje sota hai — kaise jaldi sulayein?", a: "Pehle subah ka time fix karein (roz same), din me dhoop+khel, shaam ko screen band. Bedtime khud 30–45 min pehle khisakne lagta hai 5–7 din me." },
+      { q: "Bachcha 11 baje sota hai — kaise jaldi sulayein?", a: "Pehle subah ka time fix karein (roz same), din me dhoop+khel, shaam ko screen band. Bedtime khud 30 mins pehle khisakne lagta hai 5–7 din me." },
       { q: "Raat me doodh maangta hai — dein?", a: "1 saal ke baad raat ke doodh ki aadat neend todti hai. Din ka doodh/poshan badhayein, raat me paani + pyaar se mana karein, 3–5 raat me aadat toot-ti hai." },
     ],
     hinglish: ["Bachche ko jaldi sulane ka tarika", "neend ka routine"],
@@ -386,7 +386,7 @@ export const ARTICLES: Article[] = [
     seoDescription: "What to carry, 3-day diet/sleep/stool diary format, growth records, and the 8 questions to ask any Ayurvedic doctor. Printable logic.",
     category: "General Ayurveda",
     readMins: 5,
-    intro: "A prepared family gets double the value from 45 minutes. This checklist covers reports, the 3-day diary format doctors actually read, and eight questions that reveal any clinic's quality.",
+    intro: "A prepared family gets double the value from 30 mins. This checklist covers reports, the 3-day diary format doctors actually read, and eight questions that reveal any clinic's quality.",
     sections: [
       { h: "Carry", p: [], list: ["All prior reports + prescriptions (chronological)", "Vaccination card + growth record", "Current medicine box (not just names)", "3-day diary: meals/timings, stools, sleep, symptoms", "Skin photos in different lights (for skin concerns)"] },
       { h: "Ask", p: [], list: ["What is the diagnosis in plain words?", "What is each medicine for, and for how long?", "What diet/routine changes matter most?", "What improvement timeline is realistic?", "What are the red flags to return early for?", "When is the review, and how do I reach you between visits?", "Are there interactions with current medicines?", "What will we taper first as things improve?"] },
