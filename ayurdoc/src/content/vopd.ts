@@ -105,7 +105,16 @@ export type VopdConfig = {
   advanceBookingDays: number;
   contactPhone: string;
   whatsappNumber: string;
-  upi: { configured: boolean; beneficiaryName: string; upiId: string; qrImagePath: string; instructions: string[] };
+  upi: {
+    configured: boolean;
+    beneficiaryName: string;
+    upiId: string;
+    /** Optional static QR override. Empty string means "generate the QR server-side". */
+    qrImagePath: string;
+    /** True only when VOPD_UPI_DEMO=true (sandbox testing). Never enable in production. */
+    demo: boolean;
+    instructions: string[];
+  };
   google: { configured: boolean };
 };
 
