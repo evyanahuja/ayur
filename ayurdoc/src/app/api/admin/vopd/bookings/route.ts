@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { isDatabaseConfigured } from "@/db";
 import { requireAdmin } from "@/lib/vopd/admin";
-import { expireStaleHolds, listBookings, listBlockedDates } from "@/lib/vopd/store";
+import { expireStaleHolds, listBookings, listBlockedDates, listCustomPlans } from "@/lib/vopd/store";
 import { calendarHealth } from "@/lib/vopd/google";
-import { isUpiConfigured } from "@/lib/vopd/config";
+import { getVopdPlans, isUpiConfigured } from "@/lib/vopd/config";
 
 export const dynamic = "force-dynamic";
 
@@ -14,9 +14,10 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   await expireStaleHolds();
-  const [bookings, blocked, calendar] = await Promise.all([
+  const [bookings, blocked, customPlans, calendar] = await Promise.all([
     listBookings({ status: url.searchParams.get("status") ?? undefined, query: url.searchParams.get("q")?.trim() || undefined }),
     listBlockedDates(),
+    listCustomPlans(),
     calendarHealth(),
   ]);
   return NextResponse.json({
@@ -24,6 +25,8 @@ export async function GET(request: Request) {
     admin,
     bookings,
     blocked,
+    builtinPlans: getVopdPlans(),
+    customPlans,
     calendar,
     upiConfigured: isUpiConfigured(),
   });
