@@ -8,12 +8,26 @@ import { sendPaymentSubmitted } from "@/lib/vopd/mailer";
 export const dynamic = "force-dynamic";
 
 const MAX_BYTES = 2 * 1024 * 1024;
+const MAX_BODY_BYTES = MAX_BYTES + 64 * 1024; // screenshot + small form fields
 const ALLOWED = new Set(["image/png", "image/jpeg", "image/webp"]);
+
+/** Detect the real image format from magic bytes — never trust the supplied MIME type. */
+function sniffImageType(buf: Buffer): "image/png" | "image/jpeg" | "image/webp" | null {
+  if (buf.length >= 8 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47 && buf[4] === 0x0d && buf[5] === 0x0a && buf[6] === 0x1a && buf[7] === 0x0a) return "image/png";
+  if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return "image/jpeg";
+  if (buf.length >= 12 && buf.toString("ascii", 0, 4) === "RIFF" && buf.toString("ascii", 8, 12) === "WEBP") return "image/webp";
+  return null;
+}
 
 export async function POST(request: Request, { params }: { params: Promise<{ reference: string }> }) {
   if (!isDatabaseConfigured()) return NextResponse.json({ ok: false, error: "Booking is temporarily unavailable." }, { status: 503 });
   const { reference } = await params;
   if (!isBookingReference(reference)) return NextResponse.json({ ok: false, error: "Invalid booking reference." }, { status: 400 });
+
+  const declaredLength = Number(request.headers.get("content-length") || 0);
+  if (declaredLength > MAX_BODY_BYTES) {
+    return NextResponse.json({ ok: false, error: "Upload too large. Keep the screenshot under 2 MB." }, { status: 413 });
+  }
 
   const form = await request.formData().catch(() => null);
   if (!form) return NextResponse.json({ ok: false, error: "Invalid submission." }, { status: 400 });
@@ -30,7 +44,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ ref
     if (file.size > MAX_BYTES) {
       return NextResponse.json({ ok: false, errors: { screenshot: "Screenshot must be smaller than 2 MB." } }, { status: 400 });
     }
-    screenshot = { mimeType: file.type, sizeBytes: file.size, data: Buffer.from(await file.arrayBuffer()) };
+    const data = Buffer.from(await file.arrayBuffer());
+    const sniffed = sniffImageType(data);
+    if (!sniffed) {
+      return NextResponse.json({ ok: false, errors: { screenshot: "The file is not a valid PNG, JPG or WebP image." } }, { status: 400 });
+    }
+    screenshot = { mimeType: sniffed, sizeBytes: file.size, data };
   }
 
   const existing = await getBooking(reference);
