@@ -64,7 +64,8 @@ for (const lang of ["en", "hi", "gu", "mr"] as const) {
     await page.locator('input[name="parentName"]').fill("Release Test");
     await page.locator('input[name="phone"]').fill("+919999999999");
     await page.locator('input[name="childName"]').fill("Test Patient");
-    await page.locator('input[name="childAge"]').fill("30");
+    // The age field is now a date-of-birth picker (ISO date required by the UI).
+    await page.locator('input[name="childAge"]').fill("1995-06-15");
     await page.locator('button[type="submit"]').click();
     await expect(page.locator('[data-patient-enquiry]')).toContainText(ui.form.consentError);
 
