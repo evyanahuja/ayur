@@ -39,7 +39,6 @@ const CONCERN_LABELS: Record<string, string> = {
 
 const PLAN_NAMES: Record<string, string> = {
   first: "First Consultation",
-  wellness: "Bal Wellness Program (3 months)",
   followup: "Follow-up Care",
   suvarna: "Suvarnaprashan Only",
   unsure: "Not sure — needs guidance",
