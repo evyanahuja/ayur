@@ -655,19 +655,23 @@ export async function recordCalendarFailure(reference: string, admin: string, me
 
 export async function setManualMeetUrl(reference: string, meetUrl: string, admin: string) {
   await ensureVopdSchema();
+  const existing = await getBooking(reference);
+  // Manual fallback: when Google Calendar/Meet is unavailable the booking stays
+  // PAYMENT_VERIFIED after verification. Attaching a verified Meet link then
+  // confirms it (CONFIRMED is only reachable after PAYMENT_VERIFIED).
   const [updated] = await db
     .update(vopdBookings)
-    .set({ meetUrl, calendarStatus: "MANUAL_LINK", updatedAt: new Date() })
-    .where(and(eq(vopdBookings.reference, reference), eq(vopdBookings.status, "CONFIRMED")))
+    .set({ meetUrl, calendarStatus: "MANUAL_LINK", status: "CONFIRMED", updatedAt: new Date() })
+    .where(and(eq(vopdBookings.reference, reference), inArray(vopdBookings.status, ["PAYMENT_VERIFIED", "CONFIRMED"])))
     .returning();
-  if (!updated) throw new VopdConflictError("Add a Meet link only after the appointment is confirmed.", "NOT_CONFIRMED");
+  if (!updated) throw new VopdConflictError("Add a Meet link only after the payment has been verified.", "NOT_VERIFIED");
   await db.insert(vopdAuditLog).values({
     reference,
     action: "MEET_LINK_SET_MANUALLY",
-    fromStatus: "CONFIRMED",
+    fromStatus: existing?.status ?? "PAYMENT_VERIFIED",
     toStatus: "CONFIRMED",
     actor: admin,
-    note: "Administrator attached a manually generated Meet link.",
+    note: "Administrator attached a manually generated Meet link and confirmed the appointment.",
   });
   return updated;
 }
