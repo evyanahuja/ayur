@@ -253,8 +253,8 @@ export const HI_CONTENT_OVERRIDES: Record<string, string> = {
     "हर क्लिनिक का पृष्ठ स्वयं को 'सर्वश्रेष्ठ' बताता है — जिससे यह शब्द अर्थहीन हो जाता है। हम अपने बारे में ऐसा दावा नहीं करेंगे। इसके बजाय यह वह जाँच सूची है जो हर माता-पिता को उपयोग करनी चाहिए, और हमारा क्लिनिक हर बिंदु पर क्या उत्तर देता है ताकि आप स्वयं निर्णय ले सकें।",
   "2. Child focus: children are not small adults — ask what share of practice is paediatric":
     "2. बच्चों पर केंद्रित: बच्चे छोटे वयस्क नहीं होते — पूछें कि अभ्यास का कितना हिस्सा बाल-चिकित्सा का है",
-  "3. Time: a real first assessment takes 30–45 minutes, not 5":
-    "3. समय: पहला वास्तविक मूल्यांकन 30–45 मिनट लेता है, 5 मिनट नहीं",
+  "3. Time: a real first assessment takes 30 mins, not 5":
+    "3. समय: पहला वास्तविक मूल्यांकन 30 मिनट लेता है, 5 मिनट नहीं",
   "4. Written plan: prescription + diet + review date, in language you understand":
     "4. लिखित योजना: पर्चा, आहार और समीक्षा की तारीख — आपकी समझ में आने वाली भाषा में",
   "5. Red-flag honesty: a good doctor says when Ayurveda is NOT the answer and refers onward":
@@ -297,8 +297,8 @@ export const HI_CONTENT_OVERRIDES: Record<string, string> = {
     "पाचन और नींद: कब्ज़, बिस्तर गीला करने में सहायता, नींद की दिनचर्या",
   "Development: speech, attention and milestone support alongside therapy":
     "विकास: भाषण, ध्यान और विकास-पड़ाव में सहायता, साथ में आवश्यक थेरेपी",
-  "First visit 45 min • Mon–Sat 10–2 & 5–8 IST":
-    "पहली विज़िट 45 मिनट • सोम–शनि 10–2 और 5–8 बजे IST",
+  "First visit 30 mins • Mon–Sat 10–2 & 5–8 IST":
+    "पहली विज़िट 30 मिनट • सोम–शनि 10–2 और 5–8 बजे IST",
   "Carry: growth record, reports, medicine list, diet note":
     "साथ लाएँ: विकास रिकॉर्ड, रिपोर्ट, दवाओं की सूची और आहार का विवरण",
   "Phone/WhatsApp: +91 98607 75010":
@@ -357,8 +357,8 @@ export const HI_CONTENT_OVERRIDES: Record<string, string> = {
     "हर माता-पिता जो कहीं भी सुवर्णप्राशन पर विचार कर रहे हैं — इसे अपनी जाँच का आधार बनाएँ",
   "1. Verified qualification: BAMS is mandatory; MD specialization should match your need (ours: Reg. No. 63934, MD — Pediatrician / Kaumarbhritya from ITRA, BAMS from Dr. Vandanatai J. Dhone Gramin Ayurved College, Patur)":
     "1. सत्यापित योग्यता: BAMS अनिवार्य है; MD विशेषज्ञता आपकी आवश्यकता से मेल खानी चाहिए (हमारी: पंजीकरण संख्या 63934, MD — बाल-चिकित्सक / कौमारभृत्य, ITRA से; BAMS, डॉ. वंदनाताई जे. ढोने ग्रामीण आयुर्वेद कॉलेज, पातुर से)",
-  "Our answers: MD Kaumarbhritya, child-focused, 45-min first visit, written plans, Hindi/Marathi/English/Gujarati, WhatsApp follow-up window.":
-    "हमारे उत्तर: MD कौमारभृत्य, बच्चों पर केंद्रित, पहली विज़िट 45 मिनट, लिखित योजना, हिंदी/मराठी/अंग्रेज़ी/गुजराती, व्हाट्सऐप पर फ़ॉलो-अप का निश्चित समय।",
+  "Our answers: MD Kaumarbhritya, child-focused, 30 mins first visit, written plans, Hindi/Marathi/English/Gujarati, WhatsApp follow-up window.":
+    "हमारे उत्तर: MD कौमारभृत्य, बच्चों पर केंद्रित, पहली विज़िट 30 मिनट, लिखित योजना, हिंदी/मराठी/अंग्रेज़ी/गुजराती, व्हाट्सऐप पर फ़ॉलो-अप का निश्चित समय।",
   "Bachchon ke doctor in Indore dhoondh rahe hain? BalChikitsa Ayurved Clinic focuses on children's health through Ayurveda's child specialty (Kaumarbhritya/Balarog): growth and appetite, skin, recurrent infections, digestion, sleep and developmental support — coordinated with your paediatrician, never competing with them.":
     "इंदौर में बच्चों के डॉक्टर खोज रहे हैं? बालचिकित्सा आयुर्वेद क्लिनिक आयुर्वेद की बाल-चिकित्सा विशेषज्ञता (कौमारभृत्य/बालरोग) के माध्यम से बच्चों के स्वास्थ्य पर केंद्रित है: विकास और भूख, त्वचा, बार-बार संक्रमण, पाचन, नींद और विकासात्मक सहायता — आपके बाल-चिकित्सक के साथ समन्वय में, उनसे प्रतिस्पर्धा नहीं।",
   "Bilkul nahi. Routine vaccination schedule par hi hoga — Suvarnaprashan sahayak parampara hai, vikalp nahi.":

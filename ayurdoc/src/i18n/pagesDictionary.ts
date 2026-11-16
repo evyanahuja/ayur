@@ -365,7 +365,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
       treatGroups: [
         { title: "Customized Suvarnaprashan cluster", desc: "Main guide plus safety, age suitability, ingredients and classical background." },
         { title: "Panchakarma & classical therapies", desc: "Assessment-first gentle Ayurvedic therapies tailored individually." },
-        { title: "Consultations", desc: "Structured 45-minute in-clinic (Indore) and worldwide online consultations." },
+        { title: "Consultations", desc: "Structured 30 mins in-clinic (Indore) and worldwide online consultations." },
       ],
       articlesEyebrow: "Health education library",
       articlesH1: "Health Articles for Parents & Families",
@@ -399,7 +399,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         {
           h: "Online consultation",
           faqs: [
-            { q: "How does an online consultation work?", a: "During a 45-minute video consultation, Dr. Priyanka reviews your child's history, reports, photos and growth chart, then shares a written prescription and home-food diet plan via WhatsApp/email. Medicines can be couriered or sourced locally." },
+            { q: "How does an online consultation work?", a: "During a 30 mins video consultation, Dr. Priyanka reviews your child's history, reports, photos and growth chart, then shares a written prescription and home-food diet plan via WhatsApp/email. Medicines can be couriered or sourced locally." },
             { q: "When is an in-person examination required instead of online?", a: "Physical therapies (such as Abhyanga or Panchakarma sessions), newborn acute evaluations, and any medical emergencies require in-person clinical or paediatric hospital care." },
           ],
         },
@@ -486,7 +486,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         ],
         scopeHeading: "Clinical Scope & Ethical Approach",
         scopeItems: [
-          "• 45-minute structured first consultation: detailed health history, Prakriti–Agni–Ojas assessment, reports review, diet, sleep and daily routine — with a clear written plan.",
+          "• 30 mins structured first consultation: detailed health history, Prakriti–Agni–Ojas assessment, reports review, diet, sleep and daily routine — with a clear written plan.",
           "• Evidence-aware Ayurvedic support that coordinates respectfully alongside your treating doctors and never asks you to stop prescribed medicines abruptly.",
           "• Strict referral safety: acute emergencies, surgical conditions, immunizations and hospital care remain under modern paediatric care.",
           "• Transparent communication: age- and weight-specific dosing, home-kitchen nutrition charts, and realistic timelines without exaggerated promises.",
@@ -708,7 +708,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
       treatGroups: [
         { title: "व्यक्तिगत सुवर्णप्राशन श्रृंखला", desc: "मुख्य गाइड के साथ सुरक्षा, उपयुक्त आयु, घटक और शास्त्रीय आधार।" },
         { title: "पंचकर्म व शास्त्रीय आयुर्वेदिक उपचार", desc: "बच्चे की प्रकृति के अनुसार सौम्य, मूल्यांकन-आधारित उपचार।" },
-        { title: "परामर्श सेवाएँ", desc: "इंदौर क्लिनिक एवं विश्वभर में 45-मिनट का गहन ऑनलाइन वीडियो परामर्श।" },
+        { title: "परामर्श सेवाएँ", desc: "इंदौर क्लिनिक एवं विश्वभर में 30-मिनट का गहन ऑनलाइन वीडियो परामर्श।" },
       ],
       articlesEyebrow: "स्वास्थ्य शिक्षा लाइब्रेरी",
       articlesH1: "माता-पिता व परिवार के लिए स्वास्थ्य लेख",
@@ -742,7 +742,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         {
           h: "ऑनलाइन परामर्श",
           faqs: [
-            { q: "ऑनलाइन परामर्श कैसे होता है?", a: "45-मिनट के वीडियो परामर्श में बच्चे का पूरा इतिहास, रिपोर्ट्स, फोटो और ग्रोथ चार्ट देखा जाता है, फिर लिखित पर्चा व घरेलू आहार चार्ट WhatsApp/ईमेल पर भेजा जाता है।" },
+            { q: "ऑनलाइन परामर्श कैसे होता है?", a: "30-मिनट के वीडियो परामर्श में बच्चे का पूरा इतिहास, रिपोर्ट्स, फोटो और ग्रोथ चार्ट देखा जाता है, फिर लिखित पर्चा व घरेलू आहार चार्ट WhatsApp/ईमेल पर भेजा जाता है।" },
             { q: "कब प्रत्यक्ष क्लिनिक दिखाना ज़रूरी होता है?", a: "पंचकर्म/अभ्यंग जैसी प्रक्रियाएँ, नवजात शिशु की गहन शारीरिक जांच और किसी भी आपातकालीन स्थिति में प्रत्यक्ष चिकित्सा आवश्यक है।" },
           ],
         },
@@ -829,7 +829,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         ],
         scopeHeading: "चिकित्सा दृष्टिकोण एवं नैतिक कार्यक्षेत्र",
         scopeItems: [
-          "• 45-मिनट का विस्तृत प्रथम परामर्श: स्वास्थ्य इतिहास, प्रकृति–अग्नि–ओजस मूल्यांकन, रिपोर्ट समीक्षा, आहार, नींद और दिनचर्या के आधार पर लिखित योजना।",
+          "• 30-मिनट का विस्तृत प्रथम परामर्श: स्वास्थ्य इतिहास, प्रकृति–अग्नि–ओजस मूल्यांकन, रिपोर्ट समीक्षा, आहार, नींद और दिनचर्या के आधार पर लिखित योजना।",
           "• साक्ष्य-सचेत आयुर्वेदिक सहयोग, जो आपके डॉक्टरों के साथ सम्मानजनक समन्वय रखता है और निर्धारित दवाएँ अचानक बंद नहीं करवाता।",
           "• स्पष्ट सुरक्षा सीमाएँ: आपातकालीन स्थितियाँ, टीकाकरण और अस्पताल देखभाल आधुनिक बाल चिकित्सा के अंतर्गत ही रहती हैं।",
           "• पूर्ण पारदर्शिता: बच्चे की उम्र व वज़न के अनुसार सुरक्षित मात्रा, घर के भोजन आधारित आहार चार्ट और ईमानदार समय-सीमा।",
@@ -1051,7 +1051,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
       treatGroups: [
         { title: "वैयक्तिक सुवर्णप्राशन विभाग", desc: "मुख्य मार्गदर्शकासह सुरक्षितता, योग्य वय, घटक आणि शास्त्रीय माहिती." },
         { title: "पंचकर्म व शास्त्रीय उपचार", desc: "मुलाच्या प्रकृतीनुसार सौम्य व तपासणी-आधारित आयुर्वेदिक उपचार." },
-        { title: "सल्लामसलत (Consultations)", desc: "इंदूर क्लिनिक आणि जगभरात 45-मिनिटांचा सखोल ऑनलाइन व्हिडिओ सल्ला." },
+        { title: "सल्लामसलत (Consultations)", desc: "इंदूर क्लिनिक आणि जगभरात 30-मिनिटांचा सखोल ऑनलाइन व्हिडिओ सल्ला." },
       ],
       articlesEyebrow: "आरोग्य शिक्षण लायब्ररी",
       articlesH1: "पालक व कुटुंबासाठी आरोग्य लेख",
@@ -1085,7 +1085,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         {
           h: "ऑनलाइन सल्लामसलत",
           faqs: [
-            { q: "ऑनलाइन सल्ला कसा घेतला जातो?", a: "45-मिनिटांच्या व्हिडिओ कॉलमध्ये मुलाचा संपूर्ण इतिहास, रिपोर्ट्स, फोटो आणि वाढीचा आलेख पाहून लेखी औषधोपचार व घरगुती आहार तक्ता WhatsApp/ईमेलवर दिला जातो." },
+            { q: "ऑनलाइन सल्ला कसा घेतला जातो?", a: "30-मिनिटांच्या व्हिडिओ कॉलमध्ये मुलाचा संपूर्ण इतिहास, रिपोर्ट्स, फोटो आणि वाढीचा आलेख पाहून लेखी औषधोपचार व घरगुती आहार तक्ता WhatsApp/ईमेलवर दिला जातो." },
             { q: "प्रत्यक्ष भेट केव्हा आवश्यक असते?", a: "अभ्यंग/पंचकर्म उपचार, लहान बाळाची प्रत्यक्ष तपासणी आणि कोणत्याही आपत्कालीन परिस्थितीत प्रत्यक्ष डॉक्टरांकडे नेणे आवश्यक असते." },
           ],
         },
@@ -1172,7 +1172,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         ],
         scopeHeading: "वैद्यकीय कार्यपद्धती आणि नैतिक दृष्टिकोन",
         scopeItems: [
-          "• 45-मिनिटांची सखोल पहिली तपासणी: आरोग्य इतिहास, प्रकृती–अग्नी–ओजस परीक्षण, रिपोर्ट्स आढावा, आहार, झोप आणि दिनचर्येनुसार लेखी योजना.",
+          "• 30-मिनिटांची सखोल पहिली तपासणी: आरोग्य इतिहास, प्रकृती–अग्नी–ओजस परीक्षण, रिपोर्ट्स आढावा, आहार, झोप आणि दिनचर्येनुसार लेखी योजना.",
           "• साक्ष्य-जागरूक आयुर्वेदिक सहाय्य; तुमच्या डॉक्टरांशी समन्वय ठेवून आणि चालू औषधं अचानक बंद न करता पूरक काळजी.",
           "• सुरक्षिततेची स्पष्ट चौकट: आपत्कालीन स्थिती, लसीकरण आणि रुग्णालयीन उपचार बालरोगतज्ज्ञांच्या देखरेखीखालीच राहतात.",
           "• पूर्ण पारदर्शकता: मुलाच्या वय व वजनानुसार सुरक्षित मात्रा, घरच्या जेवणावर आधारित आहार तक्ता आणि वास्तववादी कालावधी.",
@@ -1394,7 +1394,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
       treatGroups: [
         { title: "વ્યક્તિગત સુવર્ણપ્રાશન વિભાગ", desc: "મુખ્ય માર્ગદર્શિકા સાથે સુરક્ષા, યોગ્ય ઉંમર, ઘટકો અને શાસ્ત્રીય માહિતી." },
         { title: "પંચકર્મ અને શાસ્ત્રીય ઉપચાર", desc: "બાળકની પ્રકૃતિ મુજબ સૌમ્ય અને મૂલ્યાંકન-આધારિત ઉપચાર." },
-        { title: "પરામર્શ સેવાઓ", desc: "ઇન્દોર ક્લિનિક અને વિશ્વભરમાં 45-મિનિટનો ઊંડો ઓનલાઇન વિડિયો પરામર્શ." },
+        { title: "પરામર્શ સેવાઓ", desc: "ઇન્દોર ક્લિનિક અને વિશ્વભરમાં 30-મિનિટનો ઊંડો ઓનલાઇન વિડિયો પરામર્શ." },
       ],
       articlesEyebrow: "આરોગ્ય શિક્ષણ લાઇબ્રેરી",
       articlesH1: "માતા-પિતા અને પરિવાર માટે આરોગ્ય લેખો",
@@ -1428,7 +1428,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         {
           h: "ઓનલાઇન પરામર્શ",
           faqs: [
-            { q: "ઓનલાઇન પરામર્શ કેવી રીતે થાય છે?", a: "45-મિનિટના વિડિયો કૉલમાં બાળકનો સંપૂર્ણ ઇતિહાસ, રિપોર્ટ્સ, ફોટા અને ગ્રોથ ચાર્ટ જોઈને લેખિત પ્રિસ્ક્રિપ્શન અને ઘરગથ્થુ આહાર ચાર્ટ WhatsApp/ઈમેલ પર મોકલવામાં આવે છે." },
+            { q: "ઓનલાઇન પરામર્શ કેવી રીતે થાય છે?", a: "30-મિનિટના વિડિયો કૉલમાં બાળકનો સંપૂર્ણ ઇતિહાસ, રિપોર્ટ્સ, ફોટા અને ગ્રોથ ચાર્ટ જોઈને લેખિત પ્રિસ્ક્રિપ્શન અને ઘરગથ્થુ આહાર ચાર્ટ WhatsApp/ઈમેલ પર મોકલવામાં આવે છે." },
             { q: "રૂબરૂ તપાસ ક્યારે જરૂરી બને છે?", a: "અભ્યંગ/પંચકર્મ જેવી પ્રક્રિયાઓ, નવજાત શિશુની શારીરિક તપાસ અને કોઈપણ કટોકટીમાં રૂબરૂ તબીબી સંભાળ જરૂરી છે." },
           ],
         },
@@ -1515,7 +1515,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         ],
         scopeHeading: "તબીબી અભિગમ અને નૈતિક કાર્યક્ષેત્ર",
         scopeItems: [
-          "• 45-મિનિટનો ઊંડો પ્રથમ પરામર્શ: આરોગ્ય ઇતિહાસ, પ્રકૃતિ–અગ્નિ–ઓજસ મૂલ્યાંકન, રિપોર્ટ્સ સમીક્ષા, આહાર, ઊંઘ અને દિનચર્યા આધારિત લેખિત યોજના.",
+          "• 30-મિનિટનો ઊંડો પ્રથમ પરામર્શ: આરોગ્ય ઇતિહાસ, પ્રકૃતિ–અગ્નિ–ઓજસ મૂલ્યાંકન, રિપોર્ટ્સ સમીક્ષા, આહાર, ઊંઘ અને દિનચર્યા આધારિત લેખિત યોજના.",
           "• પુરાવા-સભાન આયુર્વેદિક સહાય; તમારા ડૉક્ટરો સાથે સંકલનમાં અને ચાલુ દવાઓ અચાનક બંધ કર્યા વિના પૂરક સંભાળ.",
           "• સુરક્ષાની સ્પષ્ટ મર્યાદા: કટોકટી, રસીકરણ અને હોસ્પિટલ સંભાળ આધુનિક બાળ ચિકિત્સા હેઠળ જ રહે છે.",
           "• સંપૂર્ણ પારદર્શિતા: બાળકની ઉંમર અને વજન મુજબ સુરક્ષિત માત્રા, ઘરના ખોરાક આધારિત ચાર્ટ અને પ્રામાણિક સમયરેખા.",
