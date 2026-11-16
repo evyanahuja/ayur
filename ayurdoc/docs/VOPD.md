@@ -15,8 +15,7 @@ VOPD adds:
 3. **Category dropdown** reusing the ten existing health-concern category IDs plus Panchakarma, General and Other.
 4. **Plan selection from the existing `PLANS` configuration.** Fees are server-authoritative; Suvarnaprashan and
    "Not sure" have **no invented price** and are enquiry-only.
-5. **Asia/Kolkata 30-minute start grid** within Mon–Sat 10:00–14:00 and 17:00–20:00. Appointment duration (45 / 20 / 30
-   minutes) plus a configurable buffer determines overlap, so 45-minute bookings block adjacent starts.
+5. **Asia/Kolkata 30-minute start grid** within Mon–Sat 10:00–14:00 and 17:00–20:00. Appointment duration (30 / 20 mins) plus a configurable buffer determines overlap, so 30 mins bookings block adjacent starts.
    Past slots, blocked dates, expired holds and existing appointments are excluded.
 6. **15-minute unpaid hold** (configurable), released automatically; availability and admin lists expire stale holds.
 7. **Manual UPI payment:** QR/beneficiary/instructions, UTR required, optional screenshot (≤2 MB, PNG/JPG/WebP).
