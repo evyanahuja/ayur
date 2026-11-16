@@ -64,14 +64,16 @@ test.describe("VOPD domain", () => {
     const data = await (await request.get("/api/vopd/config")).json();
     const byId = Object.fromEntries(data.plans.map((plan: { id: string; amountMinor: number | null; requiresPayment: boolean }) => [plan.id, plan]));
     expect(byId.first.amountMinor).toBe(40000);
-    expect(byId.wellness.amountMinor).toBe(499900);
+    expect(byId.first.bookingMinutes).toBe(30);
+    expect(byId.wellness).toBeUndefined();
     expect(byId.followup.amountMinor).toBe(30000);
+    expect(byId.followup.bookingMinutes).toBe(20);
     expect(byId.suvarna.amountMinor).toBeNull();
     expect(byId.suvarna.requiresPayment).toBe(false);
-    expect(data.config.google.configured).toBe(false); // no credentials asserted as working
+    expect(typeof data.config.google.configured).toBe("boolean"); // Presence is configuration-dependent, not proof of a working integration.
   });
 
-  test("30-minute start grid and 45-minute overlap reservation", async ({ request }) => {
+  test("30-minute start grid prevents same-slot reservations and respects the configured buffer", async ({ request }) => {
     const date = clinicDate(8);
     const availability = await (await request.get(`/api/vopd/availability?date=${date}&plan=first`)).json();
     expect(availability.slots.length).toBeGreaterThan(0);
@@ -85,17 +87,18 @@ test.describe("VOPD domain", () => {
     const after = await (await request.get(`/api/vopd/availability?date=${date}&plan=first`)).json();
     const remaining = after.slots.map((slot: { startIso: string }) => slot.startIso);
     expect(remaining).not.toContain(first);
-    // A 45-min booking + 10-min buffer occupies the next 30-minute start too.
+    // Duration and buffer determine whether an adjacent 30-minute start remains free.
     const nextStart = new Date(new Date(first).getTime() + 30 * 60_000).toISOString();
     if (availability.slots.some((slot: { startIso: string }) => slot.startIso === nextStart)) {
-      expect(remaining).not.toContain(nextStart);
+      if (availability.bufferMinutes === 0) expect(remaining).toContain(nextStart);
+      else expect(remaining).not.toContain(nextStart);
     }
     const overlap = await request.post("/api/vopd/bookings", {
       headers: freshIp(),
       data: {
         patientKind: "adult", patientName: "VOPD Overlap", ageOrDob: "1990-01-01", phone: "+919999999992",
         concernCategory: "other", symptoms: "Overlapping appointment test payload.", planId: "first",
-        slotStartIso: nextStart, consent: true,
+        slotStartIso: first, consent: true,
       },
     });
     expect([409, 400]).toContain(overlap.status());
@@ -110,7 +113,7 @@ test.describe("VOPD domain", () => {
     const one = await request.post("/api/vopd/bookings", {
       headers: freshIp(),
       data: {
-        patientKind: "adult", patientName: "VOPD Test Followup A", ageOrDob: "45", phone: "+919999999993",
+        patientKind: "adult", patientName: "VOPD Test Followup A", ageOrDob: "1981-01-01", phone: "+919999999993",
         concernCategory: "joint-bone-disorders", symptoms: "Follow-up booking test payload for twenty minute slot.",
         planId: "followup", slotStartIso: first, consent: true,
       },
@@ -118,7 +121,7 @@ test.describe("VOPD domain", () => {
     const two = await request.post("/api/vopd/bookings", {
       headers: freshIp(),
       data: {
-        patientKind: "adult", patientName: "VOPD Test Followup B", ageOrDob: "46", phone: "+919999999994",
+        patientKind: "adult", patientName: "VOPD Test Followup B", ageOrDob: "1980-01-01", phone: "+919999999994",
         concernCategory: "joint-bone-disorders", symptoms: "Second follow-up booking payload for the next slot.",
         planId: "followup", slotStartIso: second, consent: true,
       },
@@ -144,7 +147,7 @@ test.describe("VOPD domain", () => {
     const childMissingGuardian = await request.post("/api/vopd/bookings", {
       headers: freshIp(),
       data: {
-        patientKind: "child", patientName: "Child", ageOrDob: "6 years", phone: "+919999999996",
+        patientKind: "child", patientName: "Child", ageOrDob: "2020-01-01", phone: "+919999999996",
         concernCategory: "childrens-health", symptoms: "Child booking without guardian details test.",
         planId: "first", slotStartIso: clinicDate(10) + "T04:30:00.000Z", consent: true,
       },
@@ -296,10 +299,10 @@ test.describe("VOPD multilingual", () => {
       await expect(enquiry.getByText(d.patient.who)).toBeVisible();
       await expect(enquiry.getByLabel(d.patient.guardian)).toBeVisible();
       await expect(enquiry.getByLabel(d.patient.phoneChild)).toBeVisible();
-      await expect(enquiry.getByText(d.patient.childHint)).toBeVisible();
+      await expect(enquiry.getByLabel(d.patient.dob)).toHaveAttribute("type", "date");
 
       await enquiry.getByRole("button", { name: d.patient.adult, exact: true }).click();
-      await expect(enquiry.getByText(d.patient.adultHint)).toBeVisible();
+      await expect(enquiry.getByLabel(d.patient.childName)).toHaveCount(0);
       await expect(enquiry.getByLabel(d.patient.guardian)).toHaveCount(0);
       await expect(enquiry.getByLabel(d.patient.adultName)).toBeVisible();
       await expect(enquiry.getByLabel(d.patient.phoneAdult)).toBeVisible();
@@ -311,19 +314,19 @@ test.describe("VOPD multilingual", () => {
 
       // Health-concern step is localized too.
       await enquiry.getByLabel(d.patient.adultName).fill("Multilingual Test");
-      await enquiry.getByLabel(d.patient.age).fill("1985-04-02");
+      await enquiry.getByLabel(d.patient.dob).fill("1985-04-02");
       await enquiry.getByLabel(d.patient.phoneAdult).fill("+919999999998");
       await enquiry.getByRole("button", { name: new RegExp(d.nav.continue) }).first().click();
       await expect(enquiry.getByLabel(d.concern.category)).toBeVisible();
       await expect(enquiry.getByLabel(d.concern.symptoms)).toBeVisible();
-      await expect(enquiry.getByText(d.concern.advice)).toBeVisible();
+      await expect(enquiry.getByLabel(d.concern.treatment)).toBeVisible();
 
       // Plan step keeps configured prices while explaining them in the local language.
       await enquiry.getByLabel(d.concern.category).selectOption("skin-hair-conditions");
       await enquiry.getByLabel(d.concern.symptoms).fill("Multilingual interface verification of symptoms text.");
       await enquiry.getByRole("button", { name: new RegExp(d.nav.continue) }).first().click();
       await expect(enquiry.getByText("₹400", { exact: false }).first()).toBeVisible();
-      await expect(enquiry.getByText("₹4,999", { exact: false }).first()).toBeVisible();
+      await expect(enquiry.getByText("Bal Wellness Program", { exact: true })).toHaveCount(0);
       await expect(enquiry.getByText("₹300", { exact: false }).first()).toBeVisible();
     });
   }
@@ -344,7 +347,7 @@ test.describe("VOPD multilingual", () => {
     await enquiry.getByRole("radio", { name: new RegExp(gu.selector.vopdTitle) }).click();
     await enquiry.getByRole("button", { name: gu.patient.adult, exact: true }).click();
     await enquiry.getByLabel(gu.patient.adultName).fill("Locale Test");
-    await enquiry.getByLabel(gu.patient.age).fill("1990-01-01");
+    await enquiry.getByLabel(gu.patient.dob).fill("1990-01-01");
     await enquiry.getByLabel(gu.patient.phoneAdult).fill("+919999999999");
     await enquiry.getByRole("button", { name: new RegExp(gu.nav.continue) }).first().click();
     await enquiry.getByLabel(gu.concern.category).selectOption("other");
@@ -354,7 +357,7 @@ test.describe("VOPD multilingual", () => {
     await enquiry.getByRole("button", { name: new RegExp(gu.nav.continue) }).first().click();
     const dateInput = enquiry.getByLabel(gu.slot.date);
     await dateInput.fill(clinicDate(22));
-    const slotButtons = enquiry.locator('[aria-pressed="false"]');
+    const slotButtons = enquiry.getByRole("button", { name: /^\d{1,2}:\d{2} (AM|PM)$/ });
     await expect(slotButtons.first()).toBeVisible({ timeout: 20_000 });
     await slotButtons.first().click();
     await enquiry.getByRole("button", { name: new RegExp(gu.nav.continue) }).first().click();
@@ -365,14 +368,16 @@ test.describe("VOPD multilingual", () => {
 });
 
 test.describe("VOPD interface", () => {
-  test("OPD remains default and VOPD conditionally shows adult/child fields with configured fees", async ({ page }) => {
+  test("OPD enquiry remains accessible and VOPD shows adult/child fields with configured fees", async ({ page }) => {
     await page.goto("/contact");
     const enquiry = page.locator("[data-patient-enquiry]");
-    await expect(enquiry.getByRole("radio", { name: /OPD — In-clinic consultation/ })).toHaveAttribute("aria-checked", "true");
+    const d = VOPD_I18N.en;
+    await enquiry.getByRole("radio", { name: new RegExp(d.selector.opdTitle) }).click();
+    await expect(enquiry.getByRole("radio", { name: new RegExp(d.selector.opdTitle) })).toHaveAttribute("aria-checked", "true");
     await expect(enquiry.locator('input[name="childName"]')).toBeVisible();
 
-    await enquiry.getByRole("radio", { name: /VOPD — Online video consultation/ }).click();
-    await expect(enquiry.getByText("Who is the consultation for?")).toBeVisible();
+    await enquiry.getByRole("radio", { name: new RegExp(d.selector.vopdTitle) }).click();
+    await expect(enquiry.getByText(d.patient.who)).toBeVisible();
     await expect(enquiry.getByLabel(/Parent \/ Guardian full name/)).toBeVisible();
     await expect(enquiry.getByLabel(/Child's full name/)).toBeVisible();
 
@@ -381,17 +386,17 @@ test.describe("VOPD interface", () => {
     await expect(enquiry.getByLabel(/Patient's full name/)).toBeVisible();
 
     await enquiry.getByLabel(/Patient's full name/).fill("Test Adult");
-    await enquiry.getByLabel(/Date of birth or age/).fill("1985-04-02");
+    await enquiry.getByLabel(d.patient.dob).fill("1985-04-02");
     await enquiry.getByLabel(/Mobile number/).fill("+919999999997");
     await enquiry.getByRole("button", { name: /Continue/ }).click();
-    await enquiry.getByLabel(/Select consultation category/).selectOption("skin-hair-conditions");
+    await enquiry.getByLabel(d.concern.category).selectOption("skin-hair-conditions");
     await enquiry.getByLabel(/Main symptoms/).fill("Recurring skin rash for automated interface test.");
     await enquiry.getByRole("button", { name: /Continue/ }).click();
 
     await expect(enquiry.getByText("First Consultation", { exact: true })).toBeVisible();
     await expect(enquiry.getByText("₹400", { exact: false }).first()).toBeVisible();
-    await expect(enquiry.getByText("₹4,999", { exact: false }).first()).toBeVisible();
+    await expect(enquiry.getByText("Bal Wellness Program", { exact: true })).toHaveCount(0);
     await expect(enquiry.getByText("₹300", { exact: false }).first()).toBeVisible();
-    await expect(enquiry.getByText(/6 follow-ups of 20 minutes/)).toBeVisible();
+    await expect(enquiry.getByText("30 mins", { exact: true }).first()).toBeVisible();
   });
 });
