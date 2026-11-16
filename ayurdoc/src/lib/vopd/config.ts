@@ -201,7 +201,8 @@ export function publicVopdConfig(): VopdConfig {
       configured: isUpiConfigured(),
       beneficiaryName: process.env.VOPD_UPI_NAME?.trim() || "",
       upiId: process.env.VOPD_UPI_ID?.trim() || "",
-      qrImagePath: process.env.VOPD_UPI_QR_PATH?.trim() || "/images/upi-qr.png",
+      qrImagePath: process.env.VOPD_UPI_QR_PATH?.trim() || "",
+      demo: process.env.VOPD_UPI_DEMO?.trim() === "true",
       instructions: [
         "Scan the QR code with Google Pay, PhonePe, Paytm or any UPI app.",
         "Pay the exact consultation fee shown in your booking summary.",
