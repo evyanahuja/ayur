@@ -78,6 +78,7 @@ export type VopdDict = {
     reference: string; plan: string; when: string; fee: string; status: string;
     noPayTitle: string; noPayBody: string; whatsapp: string;
     upiTitle: string; beneficiary: string; upiId: string; amount: string; mention: string; notConfigured: string; hold: string;
+    scanHint: string; demoNote: string;
     payer: string; utr: string; utrPh: string; screenshot: string; chooseFile: string; eScreenshot: string; ePayer: string; eUtr: string;
     submit: string; disclaimer: string; receivedTitle: string; receivedBody: string; meeting: string; join: string;
     copy: string; copied: string; statusLabel: string;
@@ -171,6 +172,8 @@ const en: VopdDict = {
     beneficiary: "Beneficiary", upiId: "UPI ID", amount: "Amount", mention: "Note / Reference",
     notConfigured: "Share booking reference {ref} on WhatsApp or call the clinic to receive the verified UPI QR and confirm your slot.",
     hold: "Slot held until {time} IST.",
+    scanHint: "Scan with Google Pay, PhonePe, Paytm or any UPI app. The amount and booking reference are pre-filled.",
+    demoNote: "Test configuration — this QR uses a placeholder UPI ID. Do not send real money.",
     payer: "Payer name *", utr: "UPI Reference / UTR *", utrPh: "12-digit UTR number",
     screenshot: "Payment screenshot (optional, max 2 MB)", chooseFile: "Upload PNG, JPG or WebP",
     eScreenshot: "Screenshot must be under 2 MB.", ePayer: "Enter the payer name.",
@@ -301,6 +304,8 @@ const hi: VopdDict = {
     beneficiary: "लाभार्थी", upiId: "UPI आईडी", amount: "राशि", mention: "संदर्भ",
     notConfigured: "सत्यापित UPI QR प्राप्त करने के लिए संदर्भ {ref} के साथ क्लिनिक को WhatsApp या कॉल करें।",
     hold: "स्लॉट {time} IST तक आरक्षित है।",
+    scanHint: "Google Pay, PhonePe, Paytm या किसी भी UPI ऐप से स्कैन करें। राशि और बुकिंग संदर्भ पहले से भरे होते हैं।",
+    demoNote: "परीक्षण कॉन्फ़िगरेशन — यह QR एक placeholder UPI आईडी उपयोग करता है। वास्तविक पैसा न भेजें।",
     payer: "भुगतानकर्ता का नाम *", utr: "UPI संदर्भ / UTR *", utrPh: "12-अंकीय UTR नंबर",
     screenshot: "भुगतान स्क्रीनशॉट (वैकल्पिक, अधिकतम 2 MB)", chooseFile: "PNG, JPG या WebP चुनें",
     eScreenshot: "स्क्रीनशॉट 2 MB से छोटा होना चाहिए।", ePayer: "कृपया भुगतानकर्ता का नाम लिखें।",
@@ -431,6 +436,8 @@ const mr: VopdDict = {
     beneficiary: "लाभार्थी", upiId: "UPI आयडी", amount: "रक्कम", mention: "संदर्भ",
     notConfigured: "अधिकृत UPI QR मिळवण्यासाठी संदर्भ {ref} सह क्लिनिकला WhatsApp किंवा कॉल करा.",
     hold: "स्लॉट {time} IST पर्यंत राखीव आहे.",
+    scanHint: "Google Pay, PhonePe, Paytm किंवा कोणत्याही UPI अ‍ॅपने स्कॅन करा. रक्कम व बुकिंग संदर्भ आधीच भरलेले आहेत.",
+    demoNote: "चाचणी कॉन्फिगरेशन — हा QR placeholder UPI आयडी वापरतो. खरे पैसे पाठवू नका.",
     payer: "पैसे भरणाऱ्याचे नाव *", utr: "UPI संदर्भ / UTR *", utrPh: "12-अंकी UTR क्रमांक",
     screenshot: "पेमेंट स्क्रीनशॉट (ऐच्छिक, कमाल 2 MB)", chooseFile: "PNG, JPG किंवा WebP निवडा",
     eScreenshot: "स्क्रीनशॉट 2 MB पेक्षा लहान असावा.", ePayer: "कृपया नाव लिहा.",
@@ -561,6 +568,8 @@ const gu: VopdDict = {
     beneficiary: "લાભાર્થી", upiId: "UPI આઈડી", amount: "રકમ", mention: "સંદર્ભ",
     notConfigured: "ચકાસાયેલ UPI QR મેળવવા સંદર્ભ {ref} સાથે ક્લિનિકને WhatsApp અથવા કૉલ કરો.",
     hold: "સ્લોટ {time} IST સુધી આરક્ષિત છે.",
+    scanHint: "Google Pay, PhonePe, Paytm અથવા કોઈપણ UPI એપથી સ્કેન કરો. રકમ અને બુકિંગ સંદર્ભ પહેલેથી ભરેલા છે.",
+    demoNote: "પરીક્ષણ રૂપરેખાંકન — આ QR placeholder UPI આઈડી વાપરે છે. સાચા પૈસા મોકલશો નહીં.",
     payer: "ચૂકવનારનું નામ *", utr: "UPI સંદર્ભ / UTR *", utrPh: "12-અંકનો UTR નંબર",
     screenshot: "પેમેન્ટ સ્ક્રીનશોટ (વૈકલ્પિક, વધુમાં વધુ 2 MB)", chooseFile: "PNG, JPG અથવા WebP પસંદ કરો",
     eScreenshot: "સ્ક્રીનશોટ 2 MB થી નાનો હોવો જોઈએ.", ePayer: "કૃપા કરીને નામ લખો.",
