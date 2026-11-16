@@ -198,3 +198,49 @@ the VOPD flow. Type generation, `tsc --noEmit`, production build and platform he
 8. Consider a cron/scheduled cleanup for holds (currently lazy expiry on availability/admin reads), and a shared rate-limit
    store if traffic grows. Calendar reschedule currently marks `RESYNC_REQUIRED`; retry creates a new event rather than
    updating the original — add event update/delete for cleaner calendar hygiene.
+
+## Payment QR (auto-generated)
+
+The patient payment QR no longer depends on uploading an image. When `VOPD_UPI_ID` and `VOPD_UPI_NAME` are set,
+`GET /api/vopd/bookings/{reference}/upi-qr` returns an SVG QR encoding
+`upi://pay?pa=<VPA>&pn=<beneficiary>&am=<server amount>&cu=INR&tn=<booking reference>`.
+The payee and amount are taken from server environment variables and the stored booking, never from the client.
+`VOPD_UPI_QR_PATH` remains an optional override for a static clinic QR image (must be served from our own origin or an
+allowed CSP host). If UPI is not configured, patients see the phone/WhatsApp fallback and no QR is rendered.
+
+`VOPD_UPI_DEMO=true` marks the configuration as a sandbox test: the payment panel shows a
+"Test configuration — do not send real money" banner in all four languages. **Never set this in production.**
+
+## Verifying a payment (administrator walkthrough)
+
+1. Sign in at `/admin/vopd` with `VOPD_ADMIN_PASSWORD` (sessions are HttpOnly, SameSite=Lax, expire after 2 hours).
+2. The default filter is `PAYMENT_VERIFICATION_PENDING`. Open the booking and compare the payer name, UTR/transaction
+   reference and **exact amount** against the clinic's actual bank/UPI statement. A UTR or screenshot alone is never proof.
+3. Click **Verify payment & confirm**. The payment becomes `VERIFIED` and the server attempts Google Calendar + Meet.
+   - Google configured and reachable → status `CONFIRMED`, Meet link stored, confirmation email attempted.
+   - Google missing/failing → status stays `PAYMENT_VERIFIED`, a warning is shown, and the booking is safe.
+     Paste a `https://meet.google.com/...` link and click **Save & email link**: this confirms the appointment
+     (`CONFIRMED`) and emails the patient. **Retry Google Calendar** is available once credentials are fixed.
+4. **Reject payment** requires a reason and moves the booking to `REJECTED` (slot freed). **Cancel booking** frees the slot
+   at any pre-completion stage. Every action is written to `vopd_audit_log` with the administrator name.
+5. Duplicate verification/rejection is rejected server-side; patients cannot call any admin endpoint without a session.
+
+## Google Calendar + Meet configuration (for automatic links)
+
+1. In Google Cloud Console create a project and enable the **Google Calendar API**.
+2. Configure the OAuth consent screen (External, testing mode is fine) and add the doctor's Google account as a test user.
+3. Create an **OAuth client ID** (Web application or Desktop) and note the client ID/secret.
+4. Obtain a refresh token for the doctor's account with scope `https://www.googleapis.com/auth/calendar.events`
+   (OAuth Playground or a one-off local script with `access_type=offline&prompt=consent`).
+5. Set in Netlify: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REFRESH_TOKEN`,
+   and optionally `GOOGLE_CALENDAR_ID` (defaults to `primary`).
+6. Redeploy, then run one real booking end to end: verify payment → confirm the event appears in the doctor's calendar
+   with a `meet.google.com` link → confirm the patient email contains the join link. Until this passes, use the manual
+   Meet-link fallback; the system never reports a Meet link that was not actually created.
+
+## Sandbox preview testing
+
+The preview `.env.local` contains placeholder UPI (`VOPD_UPI_DEMO=true`) and preview-only admin credentials so the whole
+flow (QR → UTR → manual verification → manual Meet link → confirmed) can be exercised without real money or Google
+credentials. These values must never be copied to Netlify. Automated coverage: `tests/hero-and-upi.spec.ts`
+(three-line hero headline, QR generation, pending-until-verified, admin-only actions, manual Meet confirmation).
