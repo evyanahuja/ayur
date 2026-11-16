@@ -1,0 +1,23 @@
+# dependencies / build
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# env files (secrets) — keep the template
+.env
+.env.*
+!.env.example
+!netlify.env.example
+netlify.env
+
+# test artifacts
+test-results/
+playwright-report/
+blob-report/
+
+# misc
+.DS_Store
+*.log
+.netlify/
