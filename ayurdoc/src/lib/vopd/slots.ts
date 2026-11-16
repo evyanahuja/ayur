@@ -40,7 +40,8 @@ export function addDaysToDateString(dateString: string, days: number): string {
   return new Date(Date.UTC(year, month - 1, day) + days * DAY_MS).toISOString().slice(0, 10);
 }
 
-export type SlotCandidate = { startIso: string; endIso: string; label: string };
+export type SlotSession = "morning" | "evening";
+export type SlotCandidate = { startIso: string; endIso: string; label: string; session: SlotSession };
 
 /** Format a clinic-time label such as "10:30 AM". */
 export function slotLabel(instant: Date): string {
@@ -59,27 +60,29 @@ function minutesFromTime(value: string): number {
 
 /**
  * Candidate start times for a date. A start is only included when the full
- * appointment (duration) plus the inter-appointment buffer fits before the
- * session ends, so 45-minute and 20-minute plans can never run past closing.
+ * appointment duration fits before the session ends, so 30 mins and 20 mins
+ * plans never overrun clinic closing times (10:00–14:00 & 17:00–20:00 IST).
  */
 export function candidateSlots(
   dateString: string,
   durationMinutes: number,
-  options: { interval?: number; buffer?: number } = {}
+  options: { interval?: number } = {}
 ): SlotCandidate[] {
   const interval = Math.max(5, options.interval ?? SLOT_INTERVAL_MINUTES);
-  const buffer = Math.max(0, options.buffer ?? BUFFER_MINUTES);
+  const safeDuration = Math.max(10, durationMinutes || 30);
   const weekday = clinicWeekday(dateString);
   if (weekday === 0) return []; // Mon–Sat clinic
   const slots: SlotCandidate[] = [];
-  for (const session of SESSIONS) {
+  for (let sIdx = 0; sIdx < SESSIONS.length; sIdx++) {
+    const session = SESSIONS[sIdx];
+    const sessionKind: SlotSession = sIdx === 0 ? "morning" : "evening";
     const sessionStart = minutesFromTime(session.start);
     const sessionEnd = minutesFromTime(session.end);
-    for (let minute = sessionStart; minute + durationMinutes <= sessionEnd; minute += interval) {
+    for (let minute = sessionStart; minute + safeDuration <= sessionEnd; minute += interval) {
       const time = `${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
       const start = clinicWallTimeToUtc(dateString, time);
-      const end = new Date(start.getTime() + durationMinutes * 60_000);
-      slots.push({ startIso: start.toISOString(), endIso: end.toISOString(), label: slotLabel(start) });
+      const end = new Date(start.getTime() + safeDuration * 60_000);
+      slots.push({ startIso: start.toISOString(), endIso: end.toISOString(), label: slotLabel(start), session: sessionKind });
     }
   }
   return slots;
@@ -108,4 +111,19 @@ export function getStoredEnd(start: Date, durationMinutes: number): Date {
 
 export function todayInClinic(now = new Date()): string {
   return clinicDateString(now);
+}
+
+/** Next N open clinic dates (Mon–Sat) in IST with at least one future candidate slot. */
+export function upcomingClinicDates(durationMinutes = 30, count = 6, maxLookahead = 30, now = new Date()): string[] {
+  const today = todayInClinic(now);
+  const out: string[] = [];
+  for (let offset = 0; offset <= maxLookahead && out.length < count; offset++) {
+    const candidate = addDaysToDateString(today, offset);
+    if (clinicWeekday(candidate) === 0) continue;
+    const hasFuture = candidateSlots(candidate, durationMinutes).some((slot) =>
+      isFutureSlot(new Date(slot.startIso), now)
+    );
+    if (hasFuture) out.push(candidate);
+  }
+  return out;
 }

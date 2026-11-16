@@ -1,23 +1,39 @@
-/* VOPD persistence and state machine. All money, durations and slot validity are
-   recomputed here; database rows are the source of truth (never localStorage). */
+/* VOPD persistence, dynamic plan management, and booking state machine.
+   All money, durations and slot validity are recomputed on the server;
+   PostgreSQL rows are the single source of truth. */
 import { randomBytes } from "node:crypto";
 import { and, asc, desc, eq, gte, inArray, lt, or, sql } from "drizzle-orm";
-import { db } from "@/db";
-import { vopdAuditLog, vopdBlockedSlots, vopdBookings, vopdPaymentScreenshots, type VopdBooking } from "@/db/schema";
-import { canTransition, type BookingStatus, type PaymentStatus } from "@/content/vopd";
-import { BUFFER_MINUTES, HOLD_MINUTES, getVopdPlan, getVopdPlans } from "./config";
+import { db, isDatabaseConfigured } from "@/db";
+import {
+  vopdAuditLog,
+  vopdBlockedSlots,
+  vopdBookings,
+  vopdConsultationPlans,
+  vopdPaymentScreenshots,
+  type VopdBooking,
+} from "@/db/schema";
+import {
+  BUILTIN_PLAN_IDS,
+  canTransition,
+  type BookingStatus,
+  type PaymentStatus,
+  type VopdPlan,
+} from "@/content/vopd";
+import { ADVANCE_DAYS, BUFFER_MINUTES, HOLD_MINUTES, SLOT_INTERVAL_MINUTES, getResolvedVopdPlan, rowToVopdPlan } from "./config";
 import {
   addDaysToDateString,
   candidateSlots,
   clinicDateString,
   clinicWallTimeToUtc,
+  clinicWeekday,
   getStoredEnd,
   isDateString,
   isFutureSlot,
   slotsOverlap,
   todayInClinic,
+  type SlotSession,
 } from "./slots";
-import type { BookingInput } from "./validation";
+import type { BookingInput, CustomPlanInput } from "./validation";
 
 const BLOCKING: BookingStatus[] = [
   "SLOT_RESERVED",
@@ -34,6 +50,153 @@ export class VopdConflictError extends Error {
   }
 }
 
+let schemaReadyPromise: Promise<void> | null = null;
+
+/** Idempotently ensures all VOPD & inquiry tables exist even on a fresh database
+ *  before the first migration runs — prevents slot availability 500s on deploy. */
+export async function ensureVopdSchema(): Promise<void> {
+  if (!isDatabaseConfigured()) return;
+  if (!schemaReadyPromise) {
+    schemaReadyPromise = (async () => {
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS patient_inquiries (
+          id serial PRIMARY KEY,
+          parent_name varchar(120) NOT NULL,
+          phone varchar(20) NOT NULL,
+          email varchar(160),
+          child_name varchar(120) NOT NULL,
+          child_age varchar(40) NOT NULL,
+          child_gender varchar(20),
+          concern_category varchar(40) NOT NULL DEFAULT 'general',
+          symptoms text,
+          preferred_mode varchar(20) NOT NULL DEFAULT 'online',
+          preferred_date varchar(40),
+          preferred_time varchar(40),
+          plan_interest varchar(60),
+          message text,
+          status varchar(20) NOT NULL DEFAULT 'new',
+          created_at timestamp NOT NULL DEFAULT now()
+        )
+      `);
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS vopd_bookings (
+          id serial PRIMARY KEY,
+          reference varchar(24) NOT NULL UNIQUE,
+          mode varchar(8) NOT NULL DEFAULT 'vopd',
+          patient_kind varchar(8) NOT NULL,
+          patient_name varchar(120) NOT NULL,
+          guardian_name varchar(120),
+          age_or_dob varchar(40) NOT NULL,
+          gender varchar(20),
+          phone varchar(20) NOT NULL,
+          email varchar(160),
+          city varchar(80),
+          state varchar(80),
+          concern_category varchar(40) NOT NULL,
+          symptoms text NOT NULL,
+          duration varchar(120),
+          previous_diagnosis text,
+          current_treatment text,
+          message text,
+          plan_id varchar(40) NOT NULL,
+          plan_name varchar(120) NOT NULL,
+          amount_minor integer,
+          currency varchar(3) NOT NULL DEFAULT 'INR',
+          duration_minutes integer NOT NULL,
+          follow_up_count integer NOT NULL DEFAULT 0,
+          follow_up_minutes integer NOT NULL DEFAULT 0,
+          slot_start timestamptz NOT NULL,
+          slot_end timestamptz NOT NULL,
+          status varchar(40) NOT NULL DEFAULT 'SLOT_RESERVED',
+          payment_status varchar(24) NOT NULL DEFAULT 'PENDING',
+          hold_expires_at timestamptz,
+          payer_name varchar(120),
+          upi_reference varchar(80),
+          payment_submitted_at timestamptz,
+          verified_at timestamptz,
+          verified_by varchar(120),
+          rejection_reason text,
+          meet_url text,
+          calendar_event_id varchar(200),
+          calendar_status varchar(24) NOT NULL DEFAULT 'NOT_ATTEMPTED',
+          calendar_error text,
+          confirmation_email_sent_at timestamptz,
+          cancellation_reason text,
+          locale varchar(5) NOT NULL DEFAULT 'en',
+          consent_at timestamptz NOT NULL DEFAULT now(),
+          created_at timestamptz NOT NULL DEFAULT now(),
+          updated_at timestamptz NOT NULL DEFAULT now()
+        )
+      `);
+      await db.execute(sql`CREATE INDEX IF NOT EXISTS vopd_bookings_slot_idx ON vopd_bookings (slot_start)`);
+      await db.execute(sql`CREATE INDEX IF NOT EXISTS vopd_bookings_status_idx ON vopd_bookings (status)`);
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS vopd_audit_log (
+          id serial PRIMARY KEY,
+          reference varchar(24) NOT NULL,
+          action varchar(60) NOT NULL,
+          from_status varchar(40),
+          to_status varchar(40),
+          actor varchar(120) NOT NULL,
+          note text,
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `);
+      await db.execute(sql`CREATE INDEX IF NOT EXISTS vopd_audit_reference_idx ON vopd_audit_log (reference)`);
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS vopd_blocked_slots (
+          id serial PRIMARY KEY,
+          blocked_date date NOT NULL,
+          slot_start timestamptz,
+          reason varchar(200),
+          created_by varchar(120) NOT NULL,
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `);
+      await db.execute(sql`CREATE INDEX IF NOT EXISTS vopd_blocked_date_idx ON vopd_blocked_slots (blocked_date)`);
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS vopd_payment_screenshots (
+          reference varchar(24) PRIMARY KEY,
+          mime_type varchar(80) NOT NULL,
+          size_bytes integer NOT NULL,
+          data bytea NOT NULL,
+          uploaded_at timestamptz NOT NULL DEFAULT now()
+        )
+      `);
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS vopd_consultation_plans (
+          id serial PRIMARY KEY,
+          slug varchar(40) NOT NULL UNIQUE,
+          name varchar(120) NOT NULL,
+          subtitle varchar(120),
+          period varchar(80),
+          description text NOT NULL,
+          features_json text NOT NULL DEFAULT '[]',
+          amount_minor_inr integer,
+          strike_minor_inr integer,
+          amount_minor_usd integer,
+          strike_minor_usd integer,
+          duration_minutes integer NOT NULL DEFAULT 30,
+          follow_up_count integer NOT NULL DEFAULT 0,
+          follow_up_minutes integer NOT NULL DEFAULT 0,
+          requires_payment boolean NOT NULL DEFAULT true,
+          show_on_pricing boolean NOT NULL DEFAULT true,
+          featured boolean NOT NULL DEFAULT false,
+          active boolean NOT NULL DEFAULT true,
+          sort_order integer NOT NULL DEFAULT 50,
+          created_at timestamptz NOT NULL DEFAULT now(),
+          updated_at timestamptz NOT NULL DEFAULT now()
+        )
+      `);
+      await db.execute(sql`CREATE INDEX IF NOT EXISTS vopd_consultation_plans_active_idx ON vopd_consultation_plans (active, sort_order)`);
+    })().catch((err) => {
+      schemaReadyPromise = null;
+      throw err;
+    });
+  }
+  return schemaReadyPromise;
+}
+
 function makeReference(): string {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const bytes = randomBytes(8);
@@ -43,6 +206,7 @@ function makeReference(): string {
 }
 
 export async function expireStaleHolds(): Promise<number> {
+  await ensureVopdSchema();
   const now = new Date();
   const stale = await db
     .update(vopdBookings)
@@ -64,7 +228,7 @@ export async function expireStaleHolds(): Promise<number> {
   return stale.length;
 }
 
-async function dayBounds(date: string): Promise<{ start: Date; end: Date }> {
+function dayBounds(date: string): { start: Date; end: Date } {
   return { start: clinicWallTimeToUtc(date, "00:00"), end: clinicWallTimeToUtc(addDaysToDateString(date, 1), "00:00") };
 }
 
@@ -91,6 +255,8 @@ async function blockedRows(date: string) {
     .where(eq(vopdBlockedSlots.blockedDate, date));
 }
 
+export type AvailabilitySlotItem = { startIso: string; label: string; session: SlotSession };
+
 export type Availability = {
   date: string;
   timeZone: "Asia/Kolkata";
@@ -98,66 +264,158 @@ export type Availability = {
   durationMinutes: number;
   intervalMinutes: number;
   bufferMinutes: number;
-  slots: { startIso: string; label: string }[];
+  slots: AvailabilitySlotItem[];
+  nextAvailableDate?: string | null;
+  code?: string;
   message?: string;
 };
 
+async function findNextOpenDateAfter(fromDate: string, durationMinutes: number, now: Date): Promise<string | null> {
+  const today = todayInClinic(now);
+  const maxDate = addDaysToDateString(today, ADVANCE_DAYS);
+  let blockedAllDay = new Set<string>();
+  if (isDatabaseConfigured()) {
+    try {
+      const rows = await db
+        .select({ blockedDate: vopdBlockedSlots.blockedDate, slotStart: vopdBlockedSlots.slotStart })
+        .from(vopdBlockedSlots)
+        .where(gte(vopdBlockedSlots.blockedDate, today));
+      blockedAllDay = new Set(rows.filter((r) => !r.slotStart).map((r) => r.blockedDate));
+    } catch {
+      blockedAllDay = new Set();
+    }
+  }
+  for (let i = 1; i <= ADVANCE_DAYS; i++) {
+    const candidate = addDaysToDateString(fromDate, i);
+    if (candidate < today) continue;
+    if (candidate > maxDate) break;
+    if (clinicWeekday(candidate) === 0) continue;
+    if (blockedAllDay.has(candidate)) continue;
+    const hasOpen = candidateSlots(candidate, durationMinutes).some((slot) => isFutureSlot(new Date(slot.startIso), now));
+    if (hasOpen) return candidate;
+  }
+  return null;
+}
+
+/** Returns upcoming open clinic dates (ignoring blocked full-day dates and Sundays). */
+export async function getOpenClinicDates(durationMinutes = 30, count = 6): Promise<string[]> {
+  const now = new Date();
+  const today = todayInClinic(now);
+  let blockedAllDay = new Set<string>();
+  if (isDatabaseConfigured()) {
+    try {
+      await ensureVopdSchema();
+      const rows = await db
+        .select({ blockedDate: vopdBlockedSlots.blockedDate, slotStart: vopdBlockedSlots.slotStart })
+        .from(vopdBlockedSlots)
+        .where(gte(vopdBlockedSlots.blockedDate, today));
+      blockedAllDay = new Set(rows.filter((r) => !r.slotStart).map((r) => r.blockedDate));
+    } catch {
+      blockedAllDay = new Set();
+    }
+  }
+  const dates: string[] = [];
+  for (let offset = 0; offset <= ADVANCE_DAYS && dates.length < count; offset++) {
+    const candidate = addDaysToDateString(today, offset);
+    if (clinicWeekday(candidate) === 0) continue;
+    if (blockedAllDay.has(candidate)) continue;
+    const hasOpen = candidateSlots(candidate, durationMinutes).some((slot) => isFutureSlot(new Date(slot.startIso), now));
+    if (hasOpen) dates.push(candidate);
+  }
+  return dates;
+}
+
 export async function getAvailability(date: string, planId: string): Promise<Availability> {
-  const plan = getVopdPlan(planId);
+  if (isDatabaseConfigured()) {
+    try {
+      await ensureVopdSchema();
+    } catch (err) {
+      console.error("ensureVopdSchema warning:", err);
+    }
+  }
+  const resolvedPlan = (await getResolvedVopdPlan(planId)) ?? (await getResolvedVopdPlan("first"));
+  const durationMinutes = resolvedPlan?.bookingMinutes ?? 30;
   const base = {
     date,
     timeZone: "Asia/Kolkata" as const,
-    planId,
-    durationMinutes: plan?.bookingMinutes ?? 30,
-    intervalMinutes: 30,
+    planId: resolvedPlan?.id ?? planId,
+    durationMinutes,
+    intervalMinutes: SLOT_INTERVAL_MINUTES,
     bufferMinutes: BUFFER_MINUTES,
-    slots: [] as { startIso: string; label: string }[],
+    slots: [] as AvailabilitySlotItem[],
   };
-  if (!plan) return { ...base, message: "Choose a consultation plan to see available times." };
-  if (!isDateString(date)) return { ...base, message: "Choose a valid date." };
-  const today = todayInClinic();
-  if (date < today) return { ...base, message: "Past dates cannot be booked." };
-  if (date > addDaysToDateString(today, 30)) return { ...base, message: "Bookings open only for the next 30 days." };
-
+  if (!isDateString(date)) return { ...base, code: "INVALID_DATE", message: "Please select a valid consultation date." };
   const now = new Date();
-  if (now > new Date(clinicWallTimeToUtc(date, "23:59").getTime())) return { ...base, message: "This clinic day has ended." };
+  const today = todayInClinic(now);
+  if (date < today) {
+    const nextAvailableDate = await findNextOpenDateAfter(addDaysToDateString(today, -1), durationMinutes, now);
+    return { ...base, code: "PAST_DATE", nextAvailableDate, message: "Past dates cannot be booked. Please choose an upcoming date." };
+  }
+  if (date > addDaysToDateString(today, ADVANCE_DAYS)) {
+    return { ...base, code: "OUT_OF_RANGE", message: `Bookings are open for the next ${ADVANCE_DAYS} days.` };
+  }
+  if (clinicWeekday(date) === 0) {
+    const nextAvailableDate = await findNextOpenDateAfter(date, durationMinutes, now);
+    return { ...base, code: "SUNDAY_CLOSED", nextAvailableDate, message: "The clinic is closed on Sundays (open Monday–Saturday)." };
+  }
 
-  await expireStaleHolds();
-  const { start, end } = await dayBounds(date);
-  const [busy, blocked] = await Promise.all([blockingRowsBetween(start, end), blockedRows(date)]);
+  let busy: { reference: string; start: Date; durationMinutes: number }[] = [];
+  let blocked: { id: number; slotStart: Date | null; reason: string | null }[] = [];
+  if (isDatabaseConfigured()) {
+    try {
+      await expireStaleHolds();
+      const { start, end } = dayBounds(date);
+      [busy, blocked] = await Promise.all([blockingRowsBetween(start, end), blockedRows(date)]);
+    } catch (err) {
+      console.error("VOPD availability DB lookup warning:", err);
+    }
+  }
+
   const allDayBlocked = blocked.some((row) => !row.slotStart);
-  if (allDayBlocked) return { ...base, message: "The clinic is unavailable on this date. Please choose another day." };
+  if (allDayBlocked) {
+    const nextAvailableDate = await findNextOpenDateAfter(date, durationMinutes, now);
+    return { ...base, code: "DAY_BLOCKED", nextAvailableDate, message: "The clinic is unavailable on this date. Please select another day." };
+  }
 
   const blockedInstants = new Set(
     blocked.filter((row) => row.slotStart).map((row) => row.slotStart?.getTime())
   );
 
-  const slots = candidateSlots(date, plan.bookingMinutes)
+  const slots = candidateSlots(date, durationMinutes)
     .filter((slot) => {
       const slotStart = new Date(slot.startIso);
       if (!isFutureSlot(slotStart, now)) return false;
       if (blockedInstants.has(slotStart.getTime())) return false;
-      return !busy.some((appt) => slotsOverlap({ start: slotStart, durationMinutes: plan.bookingMinutes }, appt));
+      return !busy.some((appt) => slotsOverlap({ start: slotStart, durationMinutes }, appt));
     })
-    .map((slot) => ({ startIso: slot.startIso, label: slot.label }));
+    .map((slot) => ({ startIso: slot.startIso, label: slot.label, session: slot.session }));
 
-  return { ...base, slots, message: slots.length ? undefined : "No matching slots remain on this date. Please try another day." };
+  if (!slots.length) {
+    const nextAvailableDate = await findNextOpenDateAfter(date, durationMinutes, now);
+    const code = date === today ? "TODAY_ENDED" : "NO_SLOTS";
+    const message = date === today
+      ? "Today's video consultation hours have ended. Please pick the next available day."
+      : "All slots are booked on this date. Please choose another day.";
+    return { ...base, slots: [], code, nextAvailableDate, message };
+  }
+
+  return { ...base, slots };
 }
 
 export type BookingRecord = VopdBooking;
 
 export async function createBooking(
-  input: BookingInput & { start: Date; durationMinutes: number; plan: NonNullable<ReturnType<typeof getVopdPlan>> }
+  input: BookingInput & { start: Date; durationMinutes: number; plan: VopdPlan }
 ): Promise<BookingRecord> {
+  await ensureVopdSchema();
   const date = clinicDateString(input.start);
-  const bounds = await dayBounds(date);
+  const bounds = dayBounds(date);
   const reference = makeReference();
   const allowed = candidateSlots(date, input.durationMinutes).some((slot) => slot.startIso === input.start.toISOString());
   if (!allowed) throw new VopdConflictError("That time is not a valid consultation slot.", "INVALID_SLOT");
   if (!isFutureSlot(input.start)) throw new VopdConflictError("That time has passed.", "PAST_SLOT");
 
   return db.transaction(async (tx) => {
-    // Serialise booking attempts for the same clinic day.
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`vopd:${date}`}))`);
     await tx
       .update(vopdBookings)
@@ -183,6 +441,7 @@ export async function createBooking(
     }
 
     const holdExpiresAt = input.plan.requiresPayment ? new Date(Date.now() + HOLD_MINUTES * 60_000) : null;
+    const initialStatus: BookingStatus = input.plan.requiresPayment ? "PAYMENT_PENDING" : "PAYMENT_VERIFICATION_PENDING";
     const [row] = await tx
       .insert(vopdBookings)
       .values({
@@ -212,7 +471,7 @@ export async function createBooking(
         followUpMinutes: input.plan.followUpMinutes,
         slotStart: input.start,
         slotEnd: getStoredEnd(input.start, input.durationMinutes),
-        status: "PAYMENT_PENDING",
+        status: initialStatus,
         paymentStatus: input.plan.requiresPayment ? "PENDING" : "NOT_REQUIRED",
         holdExpiresAt,
         locale: input.locale,
@@ -223,9 +482,9 @@ export async function createBooking(
       reference,
       action: "BOOKING_CREATED",
       fromStatus: null,
-      toStatus: "PAYMENT_PENDING",
+      toStatus: initialStatus,
       actor: "patient",
-      note: `VOPD reservation for ${input.plan.name} (server-computed fee).`,
+      note: `VOPD reservation for ${input.plan.name} (${input.durationMinutes} mins).`,
     });
 
     return row;
@@ -233,6 +492,7 @@ export async function createBooking(
 }
 
 export async function getBooking(reference: string): Promise<BookingRecord | undefined> {
+  await ensureVopdSchema();
   const [row] = await db.select().from(vopdBookings).where(eq(vopdBookings.reference, reference)).limit(1);
   return row;
 }
@@ -261,6 +521,7 @@ export async function getPublicBooking(reference: string) {
 export type ScreenshotInput = { mimeType: string; sizeBytes: number; data: Buffer };
 
 export async function submitPayment(reference: string, payment: { payerName: string; upiReference: string }, screenshot?: ScreenshotInput) {
+  await ensureVopdSchema();
   const now = new Date();
   const [updated] = await db
     .update(vopdBookings)
@@ -314,12 +575,13 @@ export async function submitPayment(reference: string, payment: { payerName: str
 }
 
 export async function getScreenshot(reference: string) {
+  await ensureVopdSchema();
   const [row] = await db.select().from(vopdPaymentScreenshots).where(eq(vopdPaymentScreenshots.reference, reference)).limit(1);
   return row;
 }
 
-/** Step 1 of verification: mark money received. Atomic guard prevents duplicates. */
 export async function verifyPayment(reference: string, admin: string) {
+  await ensureVopdSchema();
   const now = new Date();
   const [updated] = await db
     .update(vopdBookings)
@@ -345,6 +607,7 @@ export async function verifyPayment(reference: string, admin: string) {
 }
 
 export async function recordCalendarResult(reference: string, admin: string, result: { eventId: string; meetUrl: string | null; htmlLink?: string | null }) {
+  await ensureVopdSchema();
   const now = new Date();
   const [updated] = await db
     .update(vopdBookings)
@@ -371,6 +634,7 @@ export async function recordCalendarResult(reference: string, admin: string, res
 }
 
 export async function recordCalendarFailure(reference: string, admin: string, message: string) {
+  await ensureVopdSchema();
   const [updated] = await db
     .update(vopdBookings)
     .set({ calendarStatus: "FAILED", calendarError: message.slice(0, 1000), updatedAt: new Date() })
@@ -390,6 +654,7 @@ export async function recordCalendarFailure(reference: string, admin: string, me
 }
 
 export async function setManualMeetUrl(reference: string, meetUrl: string, admin: string) {
+  await ensureVopdSchema();
   const [updated] = await db
     .update(vopdBookings)
     .set({ meetUrl, calendarStatus: "MANUAL_LINK", updatedAt: new Date() })
@@ -408,6 +673,7 @@ export async function setManualMeetUrl(reference: string, meetUrl: string, admin
 }
 
 export async function rejectPayment(reference: string, admin: string, reason: string) {
+  await ensureVopdSchema();
   const now = new Date();
   const [updated] = await db
     .update(vopdBookings)
@@ -422,6 +688,7 @@ export async function rejectPayment(reference: string, admin: string, reason: st
 }
 
 export async function cancelBooking(reference: string, admin: string, reason: string) {
+  await ensureVopdSchema();
   const now = new Date();
   const cancellable: BookingStatus[] = ["SLOT_RESERVED", "PAYMENT_PENDING", "PAYMENT_VERIFICATION_PENDING", "PAYMENT_VERIFIED", "CONFIRMED"];
   const [existing] = await db.select().from(vopdBookings).where(eq(vopdBookings.reference, reference)).limit(1);
@@ -441,6 +708,7 @@ export async function cancelBooking(reference: string, admin: string, reason: st
 }
 
 export async function completeBooking(reference: string, admin: string) {
+  await ensureVopdSchema();
   const [updated] = await db
     .update(vopdBookings)
     .set({ status: "COMPLETED", updatedAt: new Date() })
@@ -454,6 +722,7 @@ export async function completeBooking(reference: string, admin: string) {
 }
 
 export async function rescheduleBooking(reference: string, newStartIso: string, admin: string) {
+  await ensureVopdSchema();
   const start = new Date(newStartIso);
   if (Number.isNaN(start.getTime()) || !isFutureSlot(start)) throw new VopdConflictError("Choose a future slot.", "INVALID_SLOT");
   const existing = await getBooking(reference);
@@ -462,7 +731,7 @@ export async function rescheduleBooking(reference: string, newStartIso: string, 
   if (!reschedulable.includes(existing.status as BookingStatus)) throw new VopdConflictError("This booking cannot be rescheduled.", "NOT_RESCHEDULABLE");
 
   const date = clinicDateString(start);
-  const bounds = await dayBounds(date);
+  const bounds = dayBounds(date);
   const allowed = candidateSlots(date, existing.durationMinutes).some((slot) => slot.startIso === start.toISOString());
   if (!allowed) throw new VopdConflictError("That time is not a valid slot for this plan.", "INVALID_SLOT");
 
@@ -502,6 +771,7 @@ export async function rescheduleBooking(reference: string, newStartIso: string, 
 }
 
 export async function listBookings(filters: { status?: string; query?: string } = {}) {
+  await ensureVopdSchema();
   const conditions = [];
   if (filters.status && filters.status !== "all") conditions.push(eq(vopdBookings.status, filters.status));
   if (filters.query) {
@@ -521,6 +791,7 @@ export async function listBookings(filters: { status?: string; query?: string } 
       patientKind: vopdBookings.patientKind,
       patientName: vopdBookings.patientName,
       guardianName: vopdBookings.guardianName,
+      ageOrDob: vopdBookings.ageOrDob,
       phone: vopdBookings.phone,
       email: vopdBookings.email,
       concernCategory: vopdBookings.concernCategory,
@@ -552,6 +823,7 @@ export async function listBookings(filters: { status?: string; query?: string } 
 }
 
 export async function getAuditTrail(reference: string) {
+  await ensureVopdSchema();
   return db
     .select()
     .from(vopdAuditLog)
@@ -561,6 +833,7 @@ export async function getAuditTrail(reference: string) {
 }
 
 export async function blockDate(date: string, admin: string, reason?: string) {
+  await ensureVopdSchema();
   if (!isDateString(date)) throw new VopdConflictError("Invalid date.", "INVALID_DATE");
   const [row] = await db.insert(vopdBlockedSlots).values({ blockedDate: date, createdBy: admin, reason: reason?.slice(0, 200) ?? null }).returning();
   await db.insert(vopdAuditLog).values({ reference: `DATE-${date}`, action: "DATE_BLOCKED", actor: admin, note: reason?.slice(0, 900) ?? null });
@@ -568,10 +841,12 @@ export async function blockDate(date: string, admin: string, reason?: string) {
 }
 
 export async function listBlockedDates() {
+  await ensureVopdSchema();
   return db.select().from(vopdBlockedSlots).orderBy(asc(vopdBlockedSlots.blockedDate)).limit(100);
 }
 
 export async function unblockDate(id: number, admin: string) {
+  await ensureVopdSchema();
   const [row] = await db.delete(vopdBlockedSlots).where(eq(vopdBlockedSlots.id, id)).returning();
   if (row) await db.insert(vopdAuditLog).values({ reference: `DATE-${row.blockedDate}`, action: "DATE_UNBLOCKED", actor: admin, note: null });
   return row;
@@ -579,4 +854,120 @@ export async function unblockDate(id: number, admin: string) {
 
 export function markPaymentStatus(reference: string, status: PaymentStatus) {
   return db.update(vopdBookings).set({ paymentStatus: status }).where(eq(vopdBookings.reference, reference));
+}
+
+/* ==================== CUSTOM CONSULTATION PLANS ==================== */
+
+function slugifyPlan(name: string): string {
+  const base = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 32);
+  return base || `plan-${randomBytes(3).toString("hex")}`;
+}
+
+export async function listCustomPlans(): Promise<VopdPlan[]> {
+  await ensureVopdSchema();
+  const rows = await db
+    .select()
+    .from(vopdConsultationPlans)
+    .orderBy(asc(vopdConsultationPlans.sortOrder), asc(vopdConsultationPlans.id));
+  return rows.map(rowToVopdPlan);
+}
+
+export async function createCustomPlan(input: CustomPlanInput, admin: string): Promise<VopdPlan> {
+  await ensureVopdSchema();
+  let slug = input.slug || slugifyPlan(input.name);
+  if ((BUILTIN_PLAN_IDS as readonly string[]).includes(slug) || slug === "wellness") {
+    slug = `${slug}-${randomBytes(2).toString("hex")}`;
+  }
+  const [existing] = await db.select({ id: vopdConsultationPlans.id }).from(vopdConsultationPlans).where(eq(vopdConsultationPlans.slug, slug)).limit(1);
+  if (existing) slug = `${slug.slice(0, 33)}-${randomBytes(2).toString("hex")}`;
+
+  const [created] = await db
+    .insert(vopdConsultationPlans)
+    .values({
+      slug,
+      name: input.name,
+      subtitle: input.subtitle ?? null,
+      period: input.period ?? `${input.durationMinutes} mins consultation`,
+      description: input.description,
+      featuresJson: JSON.stringify(input.features),
+      amountMinorInr: input.requiresPayment ? input.amountMinorInr : null,
+      strikeMinorInr: input.strikeMinorInr ?? null,
+      amountMinorUsd: input.amountMinorUsd ?? null,
+      strikeMinorUsd: input.strikeMinorUsd ?? null,
+      durationMinutes: input.durationMinutes,
+      followUpCount: input.followUpCount,
+      followUpMinutes: input.followUpMinutes,
+      requiresPayment: input.requiresPayment,
+      showOnPricing: input.showOnPricing,
+      featured: input.featured,
+      active: input.active,
+      sortOrder: input.sortOrder,
+    })
+    .returning();
+
+  await db.insert(vopdAuditLog).values({
+    reference: `PLAN-${slug}`.slice(0, 24),
+    action: "PLAN_CREATED",
+    actor: admin,
+    note: `Created plan "${input.name}" (${input.durationMinutes} mins).`,
+  });
+
+  return rowToVopdPlan(created);
+}
+
+export async function updateCustomPlan(
+  slug: string,
+  patch: Partial<{ active: boolean; showOnPricing: boolean; featured: boolean; name: string; description: string; durationMinutes: number; amountMinorInr: number | null; amountMinorUsd: number | null; followUpCount: number; followUpMinutes: number; requiresPayment: boolean; features: string[]; subtitle: string | null; period: string | null }>,
+  admin: string
+): Promise<VopdPlan> {
+  await ensureVopdSchema();
+  const values: Record<string, unknown> = { updatedAt: new Date() };
+  if (typeof patch.active === "boolean") values.active = patch.active;
+  if (typeof patch.showOnPricing === "boolean") values.showOnPricing = patch.showOnPricing;
+  if (typeof patch.featured === "boolean") values.featured = patch.featured;
+  if (typeof patch.name === "string" && patch.name.trim().length >= 2) values.name = patch.name.trim().slice(0, 120);
+  if (typeof patch.description === "string" && patch.description.trim().length >= 4) values.description = patch.description.trim().slice(0, 600);
+  if (typeof patch.durationMinutes === "number" && patch.durationMinutes >= 10 && patch.durationMinutes <= 120) values.durationMinutes = Math.round(patch.durationMinutes);
+  if (patch.amountMinorInr !== undefined) values.amountMinorInr = patch.amountMinorInr;
+  if (patch.amountMinorUsd !== undefined) values.amountMinorUsd = patch.amountMinorUsd;
+  if (typeof patch.followUpCount === "number") values.followUpCount = Math.max(0, Math.round(patch.followUpCount));
+  if (typeof patch.followUpMinutes === "number") values.followUpMinutes = Math.max(0, Math.round(patch.followUpMinutes));
+  if (typeof patch.requiresPayment === "boolean") values.requiresPayment = patch.requiresPayment;
+  if (Array.isArray(patch.features)) values.featuresJson = JSON.stringify(patch.features);
+  if (patch.subtitle !== undefined) values.subtitle = patch.subtitle;
+  if (patch.period !== undefined) values.period = patch.period;
+
+  const [updated] = await db
+    .update(vopdConsultationPlans)
+    .set(values)
+    .where(eq(vopdConsultationPlans.slug, slug))
+    .returning();
+
+  if (!updated) throw new VopdConflictError("Consultation plan not found.", "NOT_FOUND");
+  await db.insert(vopdAuditLog).values({
+    reference: `PLAN-${slug}`.slice(0, 24),
+    action: "PLAN_UPDATED",
+    actor: admin,
+    note: `Updated plan "${updated.name}" (active=${updated.active}).`,
+  });
+  return rowToVopdPlan(updated);
+}
+
+export async function deleteCustomPlan(slug: string, admin: string): Promise<void> {
+  await ensureVopdSchema();
+  const [deleted] = await db
+    .delete(vopdConsultationPlans)
+    .where(eq(vopdConsultationPlans.slug, slug))
+    .returning();
+  if (!deleted) throw new VopdConflictError("Consultation plan not found.", "NOT_FOUND");
+  await db.insert(vopdAuditLog).values({
+    reference: `PLAN-${slug}`.slice(0, 24),
+    action: "PLAN_DELETED",
+    actor: admin,
+    note: `Removed custom plan "${deleted.name}".`,
+  });
 }

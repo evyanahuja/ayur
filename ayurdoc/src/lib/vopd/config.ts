@@ -1,9 +1,13 @@
 /* Server-only VOPD settings. Never import this module from a client component.
    UPI details and Google credentials are read from environment variables so the
    repository never contains clinic secrets. */
+import { asc, eq } from "drizzle-orm";
+import { db, isDatabaseConfigured } from "@/db";
+import { vopdConsultationPlans, type VopdConsultationPlanRow } from "@/db/schema";
 import { PLANS } from "@/content/site";
 import {
-  type PlanId,
+  BUILTIN_PLAN_IDS,
+  formatMinor,
   VOPD_DEFAULTS,
   VOPD_PLAN_META,
   type VopdConfig,
@@ -27,24 +31,72 @@ export const CLINIC_EMAIL = process.env.DOCTOR_EMAIL || process.env.NOTIFY_EMAIL
 
 const planById = new Map(PLANS.map((plan) => [plan.id, plan]));
 
-/* Options that exist in the site's plan labels but have no standalone price.
-   They remain enquiry-only: no amount is accepted or invented. */
+/* Options that exist in the site's plan labels but have no standalone online fee. */
 const ENQUIRY_ONLY = [
-  { id: "suvarna" as const, name: "Suvarnaprashan Only", description: "Standalone Suvarnaprashan enquiries are confirmed by the clinic; no online fee is collected." },
-  { id: "unsure" as const, name: "Not sure — need guidance", description: "The clinic will help choose the right consultation and confirm any fee before payment." },
+  {
+    id: "suvarna" as const,
+    name: "Suvarnaprashan Guidance",
+    description: "Monthly Pushya Nakshatra Suvarnaprashan assessment; fee confirmed by clinic.",
+  },
+  {
+    id: "unsure" as const,
+    name: "Need Guidance Choosing a Plan",
+    description: "Speak with the clinic first to confirm the right plan before paying.",
+  },
 ];
 
-/** Plans exposed in VOPD, with server-authoritative amounts and durations. */
+export function rowToVopdPlan(row: VopdConsultationPlanRow): VopdPlan {
+  let inclusions: string[] = [];
+  try {
+    const parsed = JSON.parse(row.featuresJson || "[]");
+    if (Array.isArray(parsed)) inclusions = parsed.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+  } catch {
+    inclusions = [];
+  }
+  const hasFee = row.requiresPayment && row.amountMinorInr != null && row.amountMinorInr > 0;
+  return {
+    id: row.slug,
+    name: row.name,
+    subtitle: row.subtitle ?? undefined,
+    period: row.period || `${row.durationMinutes} mins consultation`,
+    priceLabel: hasFee && row.amountMinorInr != null ? formatMinor(row.amountMinorInr, "INR") : "Fee on confirmation",
+    strikeLabel: row.strikeMinorInr != null && row.strikeMinorInr > 0 ? formatMinor(row.strikeMinorInr, "INR") : undefined,
+    usdPrice: row.amountMinorUsd != null && row.amountMinorUsd > 0 ? formatMinor(row.amountMinorUsd, "USD") : undefined,
+    usdStrike: row.strikeMinorUsd != null && row.strikeMinorUsd > 0 ? formatMinor(row.strikeMinorUsd, "USD") : undefined,
+    amountMinor: hasFee ? row.amountMinorInr : null,
+    amountMinorUsd: row.amountMinorUsd ?? null,
+    currency: "INR",
+    bookingMinutes: row.durationMinutes,
+    followUpCount: row.followUpCount,
+    followUpMinutes: row.followUpMinutes,
+    requiresPayment: hasFee,
+    description: row.description,
+    inclusions,
+    showOnPricing: row.showOnPricing,
+    featured: row.featured,
+    isCustom: true,
+    active: row.active,
+    sortOrder: row.sortOrder,
+  };
+}
+
+/** Built-in consultation plans (synchronous fallback & baseline). */
 export function getVopdPlans(): VopdPlan[] {
-  return (Object.keys(VOPD_PLAN_META) as PlanId[]).flatMap((id) => {
+  const paid: VopdPlan[] = BUILTIN_PLAN_IDS.flatMap((id) => {
     const plan = planById.get(id);
     const meta = VOPD_PLAN_META[id];
     if (!plan) return [];
     return [{
       id,
       name: plan.name,
+      subtitle: plan.hindi,
+      period: plan.period,
       priceLabel: plan.price,
+      strikeLabel: plan.strike,
+      usdPrice: plan.usdPrice,
+      usdStrike: plan.usdStrike,
       amountMinor: meta.requiresPayment ? meta.amountMinorINR : null,
+      amountMinorUsd: meta.amountMinorUSD,
       currency: "INR" as const,
       bookingMinutes: meta.bookingMinutes,
       followUpCount: meta.followUpCount,
@@ -52,26 +104,77 @@ export function getVopdPlans(): VopdPlan[] {
       requiresPayment: meta.requiresPayment,
       description: plan.desc,
       inclusions: plan.features,
+      showOnPricing: true,
+      featured: plan.featured,
+      isCustom: false,
+      active: true,
+      sortOrder: meta.sortOrder,
     }];
-  }).concat(
-    ENQUIRY_ONLY.map((extra) => ({
-      id: extra.id,
-      name: extra.name,
-      priceLabel: "Fee confirmed by clinic",
-      amountMinor: null,
-      currency: "INR" as const,
-      bookingMinutes: VOPD_PLAN_META[extra.id].bookingMinutes,
-      followUpCount: 0,
-      followUpMinutes: 0,
-      requiresPayment: false,
-      description: extra.description,
-      inclusions: [],
-    }))
-  );
+  });
+
+  const extras: VopdPlan[] = ENQUIRY_ONLY.map((extra) => ({
+    id: extra.id,
+    name: extra.name,
+    period: `${VOPD_PLAN_META[extra.id].bookingMinutes} mins`,
+    priceLabel: "Fee on confirmation",
+    amountMinor: null,
+    amountMinorUsd: null,
+    currency: "INR" as const,
+    bookingMinutes: VOPD_PLAN_META[extra.id].bookingMinutes,
+    followUpCount: 0,
+    followUpMinutes: 0,
+    requiresPayment: false,
+    description: extra.description,
+    inclusions: [],
+    showOnPricing: false,
+    featured: false,
+    isCustom: false,
+    active: true,
+    sortOrder: VOPD_PLAN_META[extra.id].sortOrder,
+  }));
+
+  return [...paid, ...extras].sort((a, b) => (a.sortOrder ?? 50) - (b.sortOrder ?? 50));
+}
+
+/** Built-in + active custom consultation plans stored in PostgreSQL. */
+export async function getAllActiveVopdPlans(): Promise<VopdPlan[]> {
+  const builtin = getVopdPlans();
+  if (!isDatabaseConfigured()) return builtin;
+  try {
+    const rows = await db
+      .select()
+      .from(vopdConsultationPlans)
+      .where(eq(vopdConsultationPlans.active, true))
+      .orderBy(asc(vopdConsultationPlans.sortOrder), asc(vopdConsultationPlans.id));
+    if (!rows.length) return builtin;
+    const custom = rows.map(rowToVopdPlan);
+    const builtinIds = new Set(builtin.map((p) => p.id));
+    const merged = [...builtin, ...custom.filter((p) => !builtinIds.has(p.id))];
+    return merged.sort((a, b) => (a.sortOrder ?? 50) - (b.sortOrder ?? 50));
+  } catch {
+    return builtin;
+  }
 }
 
 export function getVopdPlan(id: string): VopdPlan | undefined {
   return getVopdPlans().find((plan) => plan.id === id);
+}
+
+export async function getResolvedVopdPlan(id: string): Promise<VopdPlan | undefined> {
+  const builtin = getVopdPlan(id);
+  if (builtin) return builtin;
+  if (!isDatabaseConfigured() || !id) return undefined;
+  try {
+    const [row] = await db
+      .select()
+      .from(vopdConsultationPlans)
+      .where(eq(vopdConsultationPlans.slug, id))
+      .limit(1);
+    if (!row || !row.active) return undefined;
+    return rowToVopdPlan(row);
+  } catch {
+    return undefined;
+  }
 }
 
 export function isUpiConfigured(): boolean {
@@ -103,7 +206,7 @@ export function publicVopdConfig(): VopdConfig {
         "Scan the QR code with Google Pay, PhonePe, Paytm or any UPI app.",
         "Pay the exact consultation fee shown in your booking summary.",
         "Enter the UPI transaction reference (UTR) after paying.",
-        "Your appointment is confirmed only after the clinic verifies the payment.",
+        "Your appointment is confirmed after the clinic verifies payment.",
       ],
     },
     google: { configured: isGoogleConfigured() },

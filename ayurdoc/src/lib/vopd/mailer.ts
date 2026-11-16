@@ -53,8 +53,9 @@ function baseRows(booking: VopdBooking): [string, string][] {
   return [
     [d.pay.reference, booking.reference],
     [d.review.patient, `${booking.patientName} (${kind})`],
+    [d.review.dob, booking.ageOrDob],
     ...(booking.guardianName ? [[d.review.guardian, booking.guardianName] as [string, string]] : []),
-    [d.review.plan, `${booking.planName} · ${booking.durationMinutes} ${d.review.minutes}`],
+    [d.review.plan, `${booking.planName} · ${booking.durationMinutes} ${d.review.mins}`],
     [d.review.when, `${formatClinicDateTime(booking.slotStart.toISOString())} (IST)`],
     [d.review.category, concernLabel(booking.concernCategory)],
     [d.review.fee, feeLabel(booking)],
@@ -117,9 +118,9 @@ export async function sendConfirmation(booking: VopdBooking) {
       d.emails.confirmBadge,
       [
         ...baseRows(booking),
-        [d.review.reserved, `${booking.durationMinutes} ${d.review.minutes}`],
+        [d.review.duration, `${booking.durationMinutes} ${d.review.mins}`],
         ...(booking.followUpCount
-          ? [[d.review.plan, `${booking.followUpCount} × ${booking.followUpMinutes} ${d.review.minutes}`] as [string, string]]
+          ? [[d.review.plan, `${booking.followUpCount} × ${booking.followUpMinutes} ${d.review.mins}`] as [string, string]]
           : []),
       ],
       meet ? d.emails.confirmNote : d.emails.confirmNoMeet,

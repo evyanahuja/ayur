@@ -1,8 +1,14 @@
-/* Server-side validation for VOPD. The browser is never trusted for money,
-   plan duration or slot validity. */
-import { getVopdPlan } from "./config";
-import { clinicWallTimeToUtc, isDateString, isFutureSlot } from "./slots";
-import { isVopdConcernId, type PatientKind } from "@/content/vopd";
+/* Server-side validation for VOPD bookings, payments, and custom consultation plans.
+   The browser is never trusted for money, plan duration or slot validity. */
+import { getResolvedVopdPlan } from "./config";
+import { isDateString, isFutureSlot, todayInClinic } from "./slots";
+import {
+  computeAgeFromDob,
+  isValidDobString,
+  isVopdConcernId,
+  type PatientKind,
+  type VopdPlan,
+} from "@/content/vopd";
 import { isVopdLocale, type VopdLocale } from "@/i18n/vopd";
 
 export type BookingInput = {
@@ -39,11 +45,11 @@ function trim(value: unknown, max: number): string {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
 
-export function validateBooking(raw: unknown): ValidationResult<BookingInput & {
+export async function validateBooking(raw: unknown): Promise<ValidationResult<BookingInput & {
   start: Date;
   durationMinutes: number;
-  plan: NonNullable<ReturnType<typeof getVopdPlan>>;
-}> {
+  plan: VopdPlan;
+}>> {
   const body = (raw ?? {}) as Record<string, unknown>;
   const errors: Record<string, string> = {};
 
@@ -56,8 +62,16 @@ export function validateBooking(raw: unknown): ValidationResult<BookingInput & {
   const guardianName = trim(body.guardianName, 120);
   if (patientKind === "child" && guardianName.length < 2) errors.guardianName = "Enter the parent or guardian's full name.";
 
-  const ageOrDob = trim(body.ageOrDob, 40);
-  if (!ageOrDob) errors.ageOrDob = "Enter the patient's date of birth or age.";
+  const rawDob = trim(body.ageOrDob, 40);
+  const today = todayInClinic();
+  const isoDob = rawDob.slice(0, 10);
+  let normalizedDob = "";
+  if (!rawDob || !isValidDobString(isoDob, today)) {
+    errors.ageOrDob = "Please select a valid date of birth.";
+  } else {
+    const computed = computeAgeFromDob(isoDob, today);
+    normalizedDob = computed ? `${isoDob} (${computed.short})` : isoDob;
+  }
 
   const phone = trim(body.phone, 20);
   if (!PHONE.test(phone)) errors.phone = "Enter a valid mobile number.";
@@ -69,9 +83,9 @@ export function validateBooking(raw: unknown): ValidationResult<BookingInput & {
   if (!isVopdConcernId(concernCategory)) errors.concernCategory = "Choose a consultation category.";
 
   const symptoms = trim(body.symptoms, 2000);
-  if (symptoms.length < 10) errors.symptoms = "Please describe the main symptoms (at least 10 characters).";
+  if (symptoms.length < 5) errors.symptoms = "Please describe the main symptoms.";
 
-  const plan = typeof body.planId === "string" ? getVopdPlan(body.planId) : undefined;
+  const plan = typeof body.planId === "string" ? await getResolvedVopdPlan(body.planId) : undefined;
   if (!plan) errors.planId = "Choose a consultation plan.";
 
   const slotStartIso = trim(body.slotStartIso, 40);
@@ -82,7 +96,6 @@ export function validateBooking(raw: unknown): ValidationResult<BookingInput & {
   if (body.consent !== true) errors.consent = "Please accept the consent statement.";
 
   const gender = trim(body.gender, 20);
-  if (gender && !["Female", "Male", "Other", "Girl", "Boy"].includes(gender)) errors.gender = "Choose a valid gender option.";
 
   if (Object.keys(errors).length || !patientKind || !plan || !start) return { ok: false, errors };
 
@@ -92,7 +105,7 @@ export function validateBooking(raw: unknown): ValidationResult<BookingInput & {
       patientKind,
       patientName,
       guardianName: patientKind === "child" ? guardianName : undefined,
-      ageOrDob,
+      ageOrDob: normalizedDob,
       gender: gender || undefined,
       phone,
       email: email || undefined,
@@ -124,10 +137,106 @@ export function validatePayment(raw: unknown): ValidationResult<PaymentInput> {
   const payerName = trim(body.payerName, 120);
   if (payerName.length < 2) errors.payerName = "Enter the name used to make the payment.";
   const upiReference = trim(body.upiReference, 80);
-  // UPI UTRs are typically 12 digits, but banks/apps vary; accept 6–40 safe characters.
   if (!/^[A-Za-z0-9-]{6,40}$/.test(upiReference)) errors.upiReference = "Enter the UPI transaction reference (UTR) from your payment app.";
   if (Object.keys(errors).length) return { ok: false, errors };
   return { ok: true, value: { payerName, upiReference } };
+}
+
+export type CustomPlanInput = {
+  slug?: string;
+  name: string;
+  subtitle?: string;
+  period?: string;
+  description: string;
+  features: string[];
+  amountMinorInr: number | null;
+  strikeMinorInr?: number | null;
+  amountMinorUsd?: number | null;
+  strikeMinorUsd?: number | null;
+  durationMinutes: number;
+  followUpCount: number;
+  followUpMinutes: number;
+  requiresPayment: boolean;
+  showOnPricing: boolean;
+  featured: boolean;
+  active: boolean;
+  sortOrder: number;
+};
+
+function parsePositiveRupeesToMinor(val: unknown): number | null {
+  if (val === null || val === undefined || val === "") return null;
+  const num = Number(val);
+  if (!Number.isFinite(num) || num <= 0 || num > 500_000) return null;
+  return Math.round(num * 100);
+}
+
+export function validateCustomPlan(raw: unknown): ValidationResult<CustomPlanInput> {
+  const body = (raw ?? {}) as Record<string, unknown>;
+  const errors: Record<string, string> = {};
+
+  const name = trim(body.name, 120);
+  if (name.length < 3) errors.name = "Enter a plan name (at least 3 characters).";
+
+  const description = trim(body.description, 600);
+  if (description.length < 6) errors.description = "Enter a short description for patients.";
+
+  const durationMinutes = Number(body.durationMinutes ?? 30);
+  if (!Number.isFinite(durationMinutes) || durationMinutes < 10 || durationMinutes > 120) {
+    errors.durationMinutes = "Duration must be between 10 and 120 minutes.";
+  }
+
+  const requiresPayment = body.requiresPayment !== false;
+  const amountMinorInr = parsePositiveRupeesToMinor(body.priceInr);
+  if (requiresPayment && amountMinorInr == null) {
+    errors.priceInr = "Enter a valid INR fee (or switch to enquiry-only).";
+  }
+
+  const strikeMinorInr = parsePositiveRupeesToMinor(body.strikeInr);
+  const amountMinorUsd = parsePositiveRupeesToMinor(body.priceUsd);
+  const strikeMinorUsd = parsePositiveRupeesToMinor(body.strikeUsd);
+
+  const followUpCount = Math.max(0, Math.min(24, Math.round(Number(body.followUpCount ?? 0) || 0)));
+  const followUpMinutes = followUpCount > 0
+    ? Math.max(10, Math.min(60, Math.round(Number(body.followUpMinutes ?? 20) || 20)))
+    : 0;
+
+  let features: string[] = [];
+  if (Array.isArray(body.features)) {
+    features = body.features.map((f) => trim(f, 140)).filter(Boolean).slice(0, 8);
+  } else if (typeof body.features === "string") {
+    features = body.features.split(/\r?\n|,/).map((f) => f.trim().slice(0, 140)).filter(Boolean).slice(0, 8);
+  }
+
+  const subtitle = trim(body.subtitle, 120) || undefined;
+  const period = trim(body.period, 80) || `${Math.round(durationMinutes)} mins consultation`;
+  const sortOrder = Math.max(1, Math.min(999, Math.round(Number(body.sortOrder ?? 30) || 30)));
+  const slug = trim(body.slug, 36).toLowerCase().replace(/[^a-z0-9-]/g, "") || undefined;
+
+  if (Object.keys(errors).length) return { ok: false, errors };
+
+  return {
+    ok: true,
+    value: {
+      slug,
+      name,
+      subtitle,
+      period,
+      description,
+      features,
+      amountMinorInr: requiresPayment ? amountMinorInr : null,
+      strikeMinorInr,
+      amountMinorUsd,
+      strikeMinorUsd,
+      durationMinutes: Math.round(durationMinutes),
+      followUpCount,
+      followUpMinutes,
+      requiresPayment,
+      showOnPricing: body.showOnPricing !== false,
+      featured: body.featured === true,
+      active: body.active !== false,
+      sortOrder,
+    },
+  };
 }
 
 export function normalizeSlotKey(slotStartIso: string): { date: string; start: Date } | null {
