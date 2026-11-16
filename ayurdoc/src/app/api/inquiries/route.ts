@@ -75,7 +75,12 @@ export async function POST(req: Request) {
     if (!/^[+\d][\d\s\-()]{6,18}$/.test(phone)) errors.phone = "Please enter a valid phone number";
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Please enter a valid email";
     if (childName.length < 2) errors.childName = "Please enter the patient's name";
-    if (!rawChildAge || !isValidDobString(isoDob, todayInClinic())) errors.childAge = "Please select a valid date of birth";
+    // The UI sends an ISO date of birth; legacy API clients may still send a free-text
+    // age (e.g. "6 years"). Accept both so the existing API contract keeps working.
+    const legacyAgeOk = rawChildAge.length > 0 && rawChildAge.length <= 40 && /\d/.test(rawChildAge);
+    if (!rawChildAge || (!isValidDobString(isoDob, todayInClinic()) && !legacyAgeOk)) {
+      errors.childAge = "Please select a valid date of birth";
+    }
     if (!concernCategory) errors.concernCategory = "Please choose a concern";
     if (body.consent !== true) errors.consent = "Please confirm consent so we can process your enquiry.";
 
