@@ -116,7 +116,11 @@ export function VopdAdminConsole() {
     }
   }, [filter, query]);
 
-  useEffect(() => { void load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    // Defer the initial fetch so no state is set synchronously in the effect body.
+    const timer = setTimeout(() => { void load(); }, 0);
+    return () => clearTimeout(timer);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function login(event: React.FormEvent) {
     event.preventDefault();
@@ -350,7 +354,7 @@ export function VopdAdminConsole() {
 
         {!upiConfigured && (
           <p className="mt-4 flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-[13px] text-amber-900">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> UPI QR settings are not configured yet. Set VOPD_UPI_ID, VOPD_UPI_NAME and VOPD_UPI_QR_PATH.
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> UPI is not configured yet. Set VOPD_UPI_ID and VOPD_UPI_NAME — the patient payment QR (exact amount + booking reference) is then generated automatically. VOPD_UPI_QR_PATH is an optional static-image override.
           </p>
         )}
         {calendar && (
@@ -498,17 +502,24 @@ export function VopdAdminConsole() {
                   </button>
                 )}
                 {selected.status === "CONFIRMED" && (
-                  <>
-                    <button disabled={busy} onClick={() => void act("complete")} className="rounded-full border border-forest-900/20 px-4 py-2 text-[12.5px] font-semibold disabled:opacity-60">
-                      Mark completed
-                    </button>
+                  <button disabled={busy} onClick={() => void act("complete")} className="rounded-full border border-forest-900/20 px-4 py-2 text-[12.5px] font-semibold disabled:opacity-60">
+                    Mark completed
+                  </button>
+                )}
+                {(selected.status === "PAYMENT_VERIFIED" || selected.status === "CONFIRMED") && (
+                  <div className="w-full space-y-1.5">
+                    {selected.status === "PAYMENT_VERIFIED" && (
+                      <p className="text-[11.5px] text-forest-700">
+                        Payment is verified. Google Meet was not created automatically — paste a Meet link below to confirm the appointment and email the patient.
+                      </p>
+                    )}
                     <div className="flex w-full gap-2">
                       <input value={meetDraft} onChange={(event) => setMeetDraft(event.target.value)} placeholder="https://meet.google.com/..." className="min-w-0 flex-1 rounded-xl border border-forest-900/15 px-3 py-2 text-[12.5px]" />
                       <button disabled={busy} onClick={() => void act("set-meet", { meetUrl: meetDraft })} className="rounded-full bg-forest-950 px-4 py-2 text-[12.5px] font-semibold text-cream-50 disabled:opacity-60">
                         Save &amp; email link
                       </button>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             </div>

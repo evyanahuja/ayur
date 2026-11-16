@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   ArrowLeft, ArrowRight, Baby, Calendar, CalendarCheck, Check, Clock, Copy, CreditCard,
   Loader2, Lock, MessageCircle, Moon, Phone, Sun, Upload, User,
@@ -80,16 +81,12 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
   const computedAge = patient.ageOrDob ? computeAgeFromDob(patient.ageOrDob, todayIso) : null;
   const id = (name: string) => `${prefix}-${name}`;
 
-  useEffect(() => {
-    if (initialPlanId) {
-      setPlanId(initialPlanId);
-      setSlotStartIso("");
-    }
-  }, [initialPlanId]);
-
+  // The initial plan arrives via props at mount; later changes arrive through the
+  // shared "select-plan" window event (handled below), so no prop-sync effect is needed.
   useEffect(() => {
     const onSelectPlan = (event: Event) => {
-      const targetId = (event as CustomEvent<string>).detail;
+      const detail = (event as CustomEvent<string | { planId?: string }>).detail;
+      const targetId = typeof detail === "string" ? detail : detail?.planId;
       if (targetId) {
         setPlanId(targetId);
         setSlotStartIso("");
@@ -160,17 +157,17 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
     }
   }, [v.genericError]);
 
+  const effectiveDate = date || openDates[0] || todayIso;
+
   useEffect(() => {
-    if (step !== 3) return;
-    const effectiveDate = date || openDates[0] || todayIso;
-    if (!date && effectiveDate) {
-      setDate(effectiveDate);
-      return;
-    }
-    if (effectiveDate) {
+    if (step !== 3 || !effectiveDate) return;
+    // Defer so no state is set synchronously in the effect body; cleanup also
+    // cancels a pending reload when the date/plan changes quickly.
+    const timer = setTimeout(() => {
       void loadSlots(effectiveDate, selectedPlan?.id || planId || "first");
-    }
-  }, [date, planId, selectedPlan?.id, step, openDates, todayIso, loadSlots]);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [effectiveDate, planId, selectedPlan?.id, step, loadSlots]);
 
   useEffect(() => {
     if (!created || paymentState !== "submitted" || !created.requiresPayment) return;
@@ -808,7 +805,7 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
                 {openDates.map((d) => {
                   const formatted = formatShortClinicDate(d, lang);
-                  const selected = date === d;
+                  const selected = effectiveDate === d;
                   return (
                     <button
                       key={d}
@@ -841,7 +838,7 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
                 type="date"
                 min={todayIso}
                 max={maxDateIso}
-                value={date}
+                value={date || effectiveDate}
                 onChange={(event) => { setDate(event.target.value); setSlotStartIso(""); setErrors({}); }}
                 className={inputCls()}
               />
@@ -1010,7 +1007,7 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
           {errors.consent && <p role="alert" className="text-xs font-medium text-red-600">{v.review.eConsent}</p>}
           <p className="text-[12px] text-forest-700/70">
             {v.review.privacyPre}{" "}
-            <a className="font-medium underline underline-offset-2" href="/privacy-policy">{v.review.privacyLink}</a>
+            <Link className="font-medium underline underline-offset-2" href="/privacy-policy">{v.review.privacyLink}</Link>
             {v.review.privacyPost}
           </p>
         </div>
@@ -1072,16 +1069,16 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
                   <CreditCard className="h-4 w-4 text-saffron-700" /> {v.pay.upiTitle}
                 </p>
                 {config?.upi.configured ? (
-                  <div className="mt-3 grid gap-4 sm:grid-cols-[148px_1fr]">
+                  <div className="mt-3 grid gap-4 sm:grid-cols-[168px_1fr]">
                     <div className="rounded-xl border border-forest-900/10 bg-white p-2">
                       <Image
-                        src={config.upi.qrImagePath}
-                        alt={`UPI QR — ${config.upi.beneficiaryName}`}
-                        width={148}
-                        height={148}
+                        src={config.upi.qrImagePath || `/api/vopd/bookings/${created.reference}/upi-qr`}
+                        alt={`UPI QR code — pay ${created.amountMinor != null ? `₹${(created.amountMinor / 100).toLocaleString("en-IN")}` : "the consultation fee"} to ${config.upi.beneficiaryName} with reference ${created.reference}`}
+                        width={168}
+                        height={168}
                         className="h-auto w-full rounded-lg object-contain"
                         unoptimized
-                        onError={(event) => { (event.currentTarget as HTMLImageElement).style.display = "none"; }}
+                        onError={config.upi.qrImagePath ? (event) => { (event.currentTarget as HTMLImageElement).style.display = "none"; } : undefined}
                       />
                     </div>
                     <div className="text-[13px] leading-relaxed text-forest-900/85">
@@ -1092,6 +1089,7 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
                         {created.amountMinor != null ? `₹${(created.amountMinor / 100).toLocaleString("en-IN")}` : "—"}
                       </p>
                       <p className="mt-1"><span className="font-semibold">{v.pay.mention}:</span> {created.reference}</p>
+                      <p className="mt-2 text-[12px] text-forest-700/80">{v.pay.scanHint}</p>
                     </div>
                   </div>
                 ) : (
@@ -1100,6 +1098,11 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
                     <a className="font-semibold underline" href={`tel:${SITE.phoneHref}`}>{SITE.phoneDisplay}</a> ·{" "}
                     <a className="font-semibold underline" href={waHref} target="_blank" rel="noopener noreferrer">WhatsApp</a>
                   </div>
+                )}
+                {config?.upi.configured && config.upi.demo && (
+                  <p className="mt-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[12px] font-medium text-amber-900">
+                    {v.pay.demoNote}
+                  </p>
                 )}
                 {created.holdExpiresAt && paymentState !== "submitted" && (
                   <p className="mt-2.5 flex items-center gap-1.5 text-[12px] text-forest-700">

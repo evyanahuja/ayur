@@ -39,7 +39,7 @@ export function Hero() {
               <span className="hero-specialty-copy">{t.hero.badgeSub}</span>
             </div>
 
-            <h1 className="mt-5 sm:mt-6 font-display font-light text-[clamp(2.15rem,4.2vw+0.6rem,3.35rem)] leading-[1.05] text-forest-950">
+            <h1 className="hero-headline mt-5 sm:mt-6 font-display font-light leading-[1.05] text-forest-950">
               <LineReveal
                 lines={[
                   <>{h.line1}</>,

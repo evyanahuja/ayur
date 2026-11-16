@@ -52,22 +52,16 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
   const [errors, setErrors] = useState<Errors>({});
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [today, setToday] = useState(() => clinicTodayIso());
-  const [consultType, setConsultType] = useState<"opd" | "vopd">(
-    preferredMode === "in_clinic" ? "opd" : "vopd"
-  );
+  // Original behaviour preserved: the enquiry (OPD) form is the default view;
+  // VOPD is opt-in via the selector. The online/clinic preference stays a
+  // separate field inside the OPD form, exactly as before.
+  const [consultType, setConsultType] = useState<"opd" | "vopd">("opd");
   const [selectedPlanId, setSelectedPlanId] = useState("first");
   const [customPlans, setCustomPlans] = useState<VopdPlan[]>([]);
+  const mode = preferredMode ?? form.preferredMode;
   const Heading = headingLevel === 3 ? "h3" : "h2";
 
-  useEffect(() => {
-    if (!preferredMode) return;
-    setConsultType(preferredMode === "in_clinic" ? "opd" : "vopd");
-  }, [preferredMode]);
-
-  const switchConsultType = (next: "opd" | "vopd") => {
-    setConsultType(next);
-    onModeChange?.(next === "vopd" ? "online" : "in_clinic");
-  };
+  const switchConsultType = (next: "opd" | "vopd") => setConsultType(next);
 
   const errorMessage = (name: ErrorField): string => {
     if (name === "consent") return f.consentError;
@@ -101,8 +95,14 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
       const detail = (event as CustomEvent<string | { planId: string; mode?: "online" | "clinic" }>).detail;
       const plan = typeof detail === "string" ? detail : detail?.planId;
       const targetMode = typeof detail === "object" ? detail?.mode : undefined;
-      if (targetMode === "clinic") switchConsultType("opd");
-      else if (targetMode === "online") switchConsultType("vopd");
+      if (targetMode === "clinic") {
+        setConsultType("opd");
+        setForm((value) => ({ ...value, preferredMode: "in_clinic" }));
+        onModeChange?.("in_clinic");
+      } else if (targetMode === "online") {
+        setConsultType("vopd");
+        onModeChange?.("online");
+      }
       if (plan) {
         setSelectedPlanId(plan);
         setForm((value) => ({ ...value, planInterest: plan }));
@@ -116,6 +116,7 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
 
   const set = <K extends keyof typeof initial>(key: K, value: typeof initial[K]) => {
     setForm((current) => ({ ...current, [key]: value }));
+    if (key === "preferredMode") onModeChange?.(value as ConsultationMode);
     setErrors((current) => ({ ...current, [key]: false, form: false }));
   };
 
@@ -146,7 +147,7 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
       const response = await fetch("/api/inquiries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...fields, preferredMode: "in_clinic", currency }),
+        body: JSON.stringify({ ...fields, preferredMode: mode, currency }),
         signal: controller.signal,
       });
       const data = await response.json();
@@ -444,7 +445,24 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="min-w-0" role="group" aria-labelledby={id("mode-label")}>
+                <span id={id("mode-label")} className={labelCls}>{t.booking.mode}</span>
+                <input type="hidden" name="preferredMode" value={mode} />
+                <div className="flex overflow-hidden rounded-xl border-2 border-forest-100">
+                  {([["online", t.booking.modeOnline], ["in_clinic", t.booking.modeClinic]] as const).map(([value, label]) => (
+                    <button
+                      type="button"
+                      key={value}
+                      onClick={() => set("preferredMode", value)}
+                      aria-pressed={mode === value}
+                      className={cn("min-w-0 flex-1 px-1 py-2.5 text-[13px] font-bold transition-colors", mode === value ? "bg-forest-900 text-cream-100" : "bg-white text-forest-700 hover:bg-forest-50")}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="min-w-0">
                 <label htmlFor={id("preferredDate")} className={labelCls}>{t.booking.date}</label>
                 <input id={id("preferredDate")} name="preferredDate" type="date" value={form.preferredDate} min={today || undefined} onChange={(event) => set("preferredDate", event.target.value)} className={inputCls()} />
