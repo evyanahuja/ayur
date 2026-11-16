@@ -1,5 +1,5 @@
 // Patient inquiry schema for Dr. Priyanka Likhar landing page, plus VOPD (video OPD) tables.
-import { pgTable, serial, varchar, text, timestamp, integer, date, customType, index, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, text, timestamp, integer, boolean, date, customType, index, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const patientInquiries = pgTable("patient_inquiries", {
   id: serial("id").primaryKey(),
@@ -7,7 +7,7 @@ export const patientInquiries = pgTable("patient_inquiries", {
   phone: varchar("phone", { length: 20 }).notNull(),
   email: varchar("email", { length: 160 }),
   childName: varchar("child_name", { length: 120 }).notNull(),
-  childAge: varchar("child_age", { length: 20 }).notNull(),
+  childAge: varchar("child_age", { length: 40 }).notNull(),
   childGender: varchar("child_gender", { length: 20 }),
   concernCategory: varchar("concern_category", { length: 40 }).notNull().default("general"),
   symptoms: text("symptoms"),
@@ -46,8 +46,8 @@ export const vopdBookings = pgTable(
     previousDiagnosis: text("previous_diagnosis"),
     currentTreatment: text("current_treatment"),
     message: text("message"),
-    planId: varchar("plan_id", { length: 20 }).notNull(),
-    planName: varchar("plan_name", { length: 80 }).notNull(),
+    planId: varchar("plan_id", { length: 40 }).notNull(),
+    planName: varchar("plan_name", { length: 120 }).notNull(),
     amountMinor: integer("amount_minor"),
     currency: varchar("currency", { length: 3 }).notNull().default("INR"),
     durationMinutes: integer("duration_minutes").notNull(),
@@ -126,3 +126,40 @@ export const vopdPaymentScreenshots = pgTable("vopd_payment_screenshots", {
   data: bytea("data").notNull(),
   uploadedAt: timestamp("uploaded_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/** Custom consultation plans added by the clinic administrator. Active rows
+ *  automatically merge into the VOPD Consultation Plan step, the OPD enquiry
+ *  dropdown, and (when showOnPricing is true) the homepage Consultation Plans section. */
+export const vopdConsultationPlans = pgTable(
+  "vopd_consultation_plans",
+  {
+    id: serial("id").primaryKey(),
+    slug: varchar("slug", { length: 40 }).notNull(),
+    name: varchar("name", { length: 120 }).notNull(),
+    subtitle: varchar("subtitle", { length: 120 }),
+    period: varchar("period", { length: 80 }),
+    description: text("description").notNull(),
+    featuresJson: text("features_json").notNull().default("[]"),
+    amountMinorInr: integer("amount_minor_inr"),
+    strikeMinorInr: integer("strike_minor_inr"),
+    amountMinorUsd: integer("amount_minor_usd"),
+    strikeMinorUsd: integer("strike_minor_usd"),
+    durationMinutes: integer("duration_minutes").notNull().default(30),
+    followUpCount: integer("follow_up_count").notNull().default(0),
+    followUpMinutes: integer("follow_up_minutes").notNull().default(0),
+    requiresPayment: boolean("requires_payment").notNull().default(true),
+    showOnPricing: boolean("show_on_pricing").notNull().default(true),
+    featured: boolean("featured").notNull().default(false),
+    active: boolean("active").notNull().default(true),
+    sortOrder: integer("sort_order").notNull().default(50),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("vopd_consultation_plans_slug_key").on(table.slug),
+    index("vopd_consultation_plans_active_idx").on(table.active, table.sortOrder),
+  ]
+);
+
+export type VopdConsultationPlanRow = typeof vopdConsultationPlans.$inferSelect;
+export type NewVopdConsultationPlanRow = typeof vopdConsultationPlans.$inferInsert;
