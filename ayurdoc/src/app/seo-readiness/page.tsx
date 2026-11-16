@@ -9,6 +9,7 @@ import { TREATMENTS } from "@/content/treatments";
 import { ARTICLES } from "@/content/articles";
 import { LOCAL_PAGES } from "@/content/local";
 import { SeoReadinessPanel } from "@/components/SeoReadinessPanel";
+import { PageMandalas, SectionMandalas } from "@/components/ScrollMandala";
 
 export const dynamic = "force-dynamic";
 
@@ -34,20 +35,25 @@ export default function SeoReadinessPage() {
 
   return (
     <main id="main" className="bg-[#fffdf8]">
-      <div className="bg-forest-950 text-cream-50 pt-28 sm:pt-32 pb-10">
+      <div className="mandala-section relative overflow-hidden bg-forest-950 text-cream-50 pt-28 sm:pt-32 pb-10">
+        <SectionMandalas id="seo-hero" palette="peacock" side="left" dark innerHero />
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <p className="eyebrow text-saffron-300">Owner Search Diagnostic • Noindex</p>
-          <h1 className="mt-2 font-display font-light text-[clamp(2rem,4.5vw,2.8rem)] leading-tight">
-            Google &amp; Bing Search Indexing Readiness
-          </h1>
-          <p className="mt-2.5 max-w-3xl text-[15px] text-cream-100/80 leading-relaxed">
-            Live verification status, XML sitemap inventory, deduplicated clinical JSON-LD checks, and one-click IndexNow URL submission for{" "}
-            <strong className="font-semibold text-white">{SITE.clinicName}</strong> ({SITE.doctorName}, Reg. No. {SITE.registrationNumber}).
-          </p>
+          <div className="page-hero-glass">
+            <p className="eyebrow text-saffron-300">Owner Search Diagnostic • Noindex</p>
+            <h1 className="mt-2 font-display font-light text-[clamp(2rem,4.5vw,2.8rem)] leading-tight">
+              Google &amp; Bing Search Indexing Readiness
+            </h1>
+            <p className="mt-2.5 max-w-3xl text-[15px] text-cream-100/85 leading-relaxed">
+              Live verification status, XML sitemap inventory, deduplicated clinical JSON-LD checks, and one-click IndexNow URL submission for{" "}
+              <strong className="font-semibold text-white">{SITE.clinicName}</strong> ({SITE.doctorName}, Reg. No. {SITE.registrationNumber}).
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10">
+      <div className="mandala-section relative overflow-hidden">
+        <PageMandalas id="seo-body" tall />
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10">
         <SeoReadinessPanel
           summary={{
             siteUrl: SITE.siteUrl,
@@ -74,6 +80,7 @@ export default function SeoReadinessPage() {
             indexNowConfigured: Boolean((process.env.INDEXNOW_KEY || "").trim()),
           }}
         />
+        </div>
       </div>
     </main>
   );

@@ -3,6 +3,7 @@ import { Hero } from "@/components/Hero";
 import { DoctorIntro } from "@/components/DoctorIntro";
 import { Pricing } from "@/components/Pricing";
 import { BookingSection } from "@/components/BookingSection";
+import { SectionMandalas } from "@/components/ScrollMandala";
 import { AuthorBox, CtaBand } from "@/components/seo";
 import {
   ArticlePreview,
@@ -72,14 +73,20 @@ export default function HomePage() {
         <ArticlePreview />
         <Pricing />
         <HomeFaq />
-        <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
-          <AuthorBox date="pending" />
-        </div>
+        <section className="mandala-section relative overflow-hidden py-8">
+          <SectionMandalas id="home-reviewer" palette="marigold" side="left" />
+          <div className="mx-auto max-w-4xl px-4 sm:px-6">
+            <AuthorBox />
+          </div>
+        </section>
         <ClinicLocation />
         <BookingSection />
-        <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
-          <CtaBand />
-        </div>
+        <section className="mandala-section relative overflow-hidden py-12">
+          <SectionMandalas id="home-cta" palette="peacock" side="right" />
+          <div className="mx-auto max-w-4xl px-4 sm:px-6">
+            <CtaBand />
+          </div>
+        </section>
       </main>
     </>
   );

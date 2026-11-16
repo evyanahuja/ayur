@@ -376,7 +376,7 @@ html[lang="hi"] .truncate, html[lang="mr"] .truncate, html[lang="gu"] .truncate 
     isolation: isolate;
   }
   .mandala-backdrop {
-    --mandala-ink: #80a09a;
+    --mandala-ink: #799c95;
     position: absolute;
     inset: 0;
     z-index: -1;
@@ -384,11 +384,17 @@ html[lang="hi"] .truncate, html[lang="mr"] .truncate, html[lang="gu"] .truncate 
     contain: layout paint;
     pointer-events: none;
     user-select: none;
-    -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 8%, rgba(0,0,0,.28) 26%, rgba(0,0,0,.12) 42%, rgba(0,0,0,.12) 58%, rgba(0,0,0,.28) 74%, #000 92%, #000 100%);
-    mask-image: linear-gradient(90deg, #000 0%, #000 8%, rgba(0,0,0,.28) 26%, rgba(0,0,0,.12) 42%, rgba(0,0,0,.12) 58%, rgba(0,0,0,.28) 74%, #000 92%, #000 100%);
+    -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 12%, rgba(0,0,0,.42) 28%, rgba(0,0,0,.2) 44%, rgba(0,0,0,.2) 56%, rgba(0,0,0,.42) 72%, #000 88%, #000 100%);
+    mask-image: linear-gradient(90deg, #000 0%, #000 12%, rgba(0,0,0,.42) 28%, rgba(0,0,0,.2) 44%, rgba(0,0,0,.2) 56%, rgba(0,0,0,.42) 72%, #000 88%, #000 100%);
+  }
+  .mandala-backdrop--hero,
+  .mandala-backdrop--inner-hero {
+    -webkit-mask-image: none;
+    mask-image: none;
+    contain: layout;
   }
   .mandala-backdrop--dark {
-    --mandala-ink: #bda77d;
+    --mandala-ink: #c6b085;
   }
   .mandala-motif {
     --mandala-size: 440px;
@@ -396,11 +402,11 @@ html[lang="hi"] .truncate, html[lang="mr"] .truncate, html[lang="gu"] .truncate 
     width: var(--mandala-size);
     height: var(--mandala-size);
     aspect-ratio: 1;
-    opacity: .84;
+    opacity: .88;
     pointer-events: none;
   }
   .mandala-backdrop--dark .mandala-motif {
-    opacity: .66;
+    opacity: .72;
   }
   .mandala-svg {
     display: block;
@@ -410,56 +416,71 @@ html[lang="hi"] .truncate, html[lang="mr"] .truncate, html[lang="gu"] .truncate 
     pointer-events: none;
   }
   .mandala-edge {
-    --mandala-size: clamp(330px, 36vw, 490px);
-    top: 32px;
+    --mandala-size: clamp(330px, 36vw, 500px);
+    top: 24px;
   }
-  .mandala-edge--left { left: calc(var(--mandala-size) * -.56); }
-  .mandala-edge--right { right: calc(var(--mandala-size) * -.56); }
+  .mandala-edge--left { left: calc(var(--mandala-size) * -.5); }
+  .mandala-edge--right { right: calc(var(--mandala-size) * -.5); }
   .mandala-corner {
-    --mandala-size: clamp(180px, 21vw, 270px);
-    bottom: calc(var(--mandala-size) * -.3);
+    --mandala-size: clamp(185px, 21vw, 280px);
+    bottom: calc(var(--mandala-size) * -.28);
   }
-  .mandala-corner--left { left: calc(var(--mandala-size) * -.3); }
-  .mandala-corner--right { right: calc(var(--mandala-size) * -.3); }
+  .mandala-corner--left { left: calc(var(--mandala-size) * -.28); }
+  .mandala-corner--right { right: calc(var(--mandala-size) * -.28); }
 
-  /* Hero-only placement: the left ornament is a slim framing crescent, while
-     the stronger, moving colour lives behind / beside the portrait on right. */
-  .mandala-backdrop--hero .mandala-motif { opacity: .58; }
+  /* Homepage hero placement: rich mandala blooms sit both behind the frosted-glass
+     hero text card AND framing the doctor's portrait so the artwork stays visible
+     around and gently diffused through the frosted glass panel. */
+  .mandala-backdrop--hero .mandala-motif { opacity: .88; }
   .mandala-hero-left {
-    --mandala-size: clamp(360px, 43vw, 620px);
-    left: calc(var(--mandala-size) * -.78);
-    top: 56px;
-    opacity: .42 !important;
+    --mandala-size: clamp(380px, 44vw, 620px);
+    left: calc(var(--mandala-size) * -.28);
+    top: 44px;
+    opacity: .92 !important;
   }
   .mandala-hero-right {
     --mandala-size: clamp(390px, 43vw, 620px);
-    right: calc(var(--mandala-size) * -.35);
-    top: 10%;
-    opacity: .8 !important;
+    right: calc(var(--mandala-size) * -.28);
+    top: 8%;
+    opacity: .88 !important;
   }
   .mandala-hero-corner {
-    --mandala-size: clamp(170px, 19vw, 250px);
-    left: auto;
-    right: 3%;
-    bottom: calc(var(--mandala-size) * -.5);
-    opacity: .45 !important;
+    --mandala-size: clamp(250px, 26vw, 370px);
+    left: clamp(26%, 34vw, 40%);
+    right: auto;
+    bottom: calc(var(--mandala-size) * -.24);
+    opacity: .78 !important;
   }
 
-  .mandala-linework { opacity: .45; }
+  /* Inner-page dark hero placement */
+  .mandala-inner-hero-left {
+    --mandala-size: clamp(300px, 34vw, 470px);
+    left: calc(var(--mandala-size) * -.34);
+    top: 30px;
+    opacity: .72 !important;
+  }
+  .mandala-inner-hero-right {
+    --mandala-size: clamp(280px, 31vw, 430px);
+    right: calc(var(--mandala-size) * -.30);
+    bottom: calc(var(--mandala-size) * -.32);
+    opacity: .76 !important;
+  }
+
+  .mandala-linework { opacity: .5; }
   .mandala-colour {
-    opacity: var(--paint, .7);
+    opacity: var(--paint, .82);
     transition: opacity 650ms ease;
   }
   .mandala-petal-fill {
     fill: currentColor;
-    fill-opacity: .13;
+    fill-opacity: .16;
   }
   .mandala-outline {
     fill: none;
     stroke: var(--mandala-ink);
-    opacity: .62;
+    opacity: .66;
   }
-  .mandala-beads { opacity: .7; }
+  .mandala-beads { opacity: .75; }
   .mandala-ring, .mandala-orbit {
     transform-box: view-box;
     transform-origin: 240px 240px;
@@ -479,16 +500,17 @@ html[lang="hi"] .truncate, html[lang="mr"] .truncate, html[lang="gu"] .truncate 
   }
 
   @media (max-width: 767px) {
-    .mandala-edge { --mandala-size: 300px; top: 12px; }
-    .mandala-edge--left { left: -185px; }
-    .mandala-edge--right { left: auto; right: -185px; }
+    .mandala-edge { --mandala-size: 290px; top: 14px; }
+    .mandala-edge--left { left: -165px; }
+    .mandala-edge--right { left: auto; right: -165px; }
     .mandala-corner { --mandala-size: 184px; }
-    /* On phones, anchor the left half-mandala below .hero-copy::before so both H1 readability and crescent colour remain clear. */
-    .mandala-backdrop--hero .mandala-hero-left { --mandala-size: 310px; left: -240px; top: auto; bottom: 24px; opacity: .76 !important; }
-    .mandala-backdrop--hero .mandala-hero-right { --mandala-size: 340px; right: -202px; top: 66%; opacity: .66 !important; }
-    .mandala-backdrop--hero .mandala-hero-corner { --mandala-size: 175px; left: auto; right: -34px; bottom: -86px; opacity: .38 !important; }
-    .mandala-motif { opacity: .78; }
-    .mandala-backdrop--dark .mandala-motif { opacity: .62; }
+    .mandala-backdrop--hero .mandala-hero-left { --mandala-size: 320px; left: -120px; top: 58px; bottom: auto; opacity: .88 !important; }
+    .mandala-backdrop--hero .mandala-hero-right { --mandala-size: 320px; right: -135px; top: 52%; opacity: .82 !important; }
+    .mandala-backdrop--hero .mandala-hero-corner { --mandala-size: 220px; left: auto; right: -55px; top: 22%; bottom: auto; opacity: .72 !important; }
+    .mandala-inner-hero-left { --mandala-size: 250px; left: -115px; top: 44px; opacity: .66 !important; }
+    .mandala-inner-hero-right { --mandala-size: 230px; right: -100px; bottom: -85px; opacity: .68 !important; }
+    .mandala-motif { opacity: .82; }
+    .mandala-backdrop--dark .mandala-motif { opacity: .68; }
   }
 }
 @keyframes mandala-orbit {
@@ -523,12 +545,47 @@ html[lang="hi"] .truncate, html[lang="mr"] .truncate, html[lang="gu"] .truncate 
 
 /* ---------- Stable portrait cards and matching hero actions ---------- */
 @layer components {
+  /* Frosted glass hero panel: lets the ornate Mandala art glow through cleanly
+     while providing strong blur and luminous ivory contrast so every line of text
+     remains crisp and effortless to read on desktop and mobile. */
   .hero-copy {
     position: relative;
     z-index: 1;
     min-width: 0;
     container: hero-copy / inline-size;
-    isolation: isolate;
+    padding: clamp(1.35rem, 2.8vw, 2.25rem);
+    border-radius: 30px;
+    background: linear-gradient(
+      145deg,
+      rgba(255, 254, 251, 0.68) 0%,
+      rgba(255, 251, 242, 0.60) 52%,
+      rgba(255, 254, 251, 0.72) 100%
+    );
+    -webkit-backdrop-filter: blur(14px) saturate(155%);
+    backdrop-filter: blur(14px) saturate(155%);
+    border: 1px solid rgba(212, 162, 76, 0.32);
+    box-shadow:
+      0 24px 60px -28px rgba(11, 36, 25, 0.16),
+      inset 0 1px 0 rgba(255, 255, 255, 0.88),
+      inset 0 -1px 0 rgba(212, 162, 76, 0.14);
+  }
+
+  /* Matching dark frosted-glass hero text panel for inner pages over night-palette mandalas */
+  .page-hero-glass {
+    border-radius: 28px;
+    padding: clamp(1.35rem, 2.6vw, 2.15rem);
+    background: linear-gradient(
+      145deg,
+      rgba(11, 36, 25, 0.62) 0%,
+      rgba(15, 48, 35, 0.54) 52%,
+      rgba(11, 36, 25, 0.66) 100%
+    );
+    -webkit-backdrop-filter: blur(14px) saturate(145%);
+    backdrop-filter: blur(14px) saturate(145%);
+    border: 1px solid rgba(244, 188, 79, 0.24);
+    box-shadow:
+      0 22px 54px -26px rgba(0, 0, 0, 0.42),
+      inset 0 1px 0 rgba(255, 255, 255, 0.10);
   }
 
   /* Credential pill: compact horizontal treatment on tablet/desktop, and a
@@ -578,17 +635,9 @@ html[lang="hi"] .truncate, html[lang="mr"] .truncate, html[lang="gu"] .truncate 
     .hero-specialty-copy { font-size: 12.5px; }
   }
 
-  /* A quiet reading surface keeps the hero copy crisp while still letting the
-     half-mandala theme frame the composition at the far edges. */
-  .hero-copy::before {
-    content: "";
-    position: absolute;
-    z-index: -1;
-    inset: -28px -42px -34px -28px;
-    border-radius: 34px;
-    background: linear-gradient(90deg, rgba(255,255,255,.985) 0%, rgba(255,255,255,.96) 66%, rgba(255,255,255,.72) 84%, rgba(255,255,255,0) 100%);
-    box-shadow: 0 0 42px 24px rgba(255,255,255,.72);
-    pointer-events: none;
+  .hero-specialty-pill {
+    background: rgba(255, 255, 255, 0.62);
+    border: 1px solid rgba(212, 162, 76, 0.25);
   }
 
   .hero-actions {
