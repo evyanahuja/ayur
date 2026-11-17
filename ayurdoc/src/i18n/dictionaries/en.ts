@@ -411,7 +411,7 @@ export const en = {
     doctorName: "Dr. Priyanka Likhar",
     shortDoctorName: "Dr. Priyanka",
     clinicName: "BalChikitsa Ayurved Clinic",
-    qualification: "BAMS • MD (Pediatrician — Kaumarbhritya) • Reg. No. 63934",
+    qualification: "BAMS • MD (Pediatrician — Kaumarbhritya)",
     shortCreds: "MD (Pediatrics) • BAMS • Reg. 63934",
     hours: "Mon–Sat • 10 AM–2 PM & 5 PM–8 PM IST",
     hoursNote: "Evening + NRI-friendly online slots",
