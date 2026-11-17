@@ -41,6 +41,7 @@ export function addDaysToDateString(dateString: string, days: number): string {
 }
 
 export type SlotSession = "morning" | "evening";
+export type TimeRange = { start: string; end: string };
 export type SlotCandidate = { startIso: string; endIso: string; label: string; session: SlotSession };
 
 /** Format a clinic-time label such as "10:30 AM". */
@@ -66,23 +67,23 @@ function minutesFromTime(value: string): number {
 export function candidateSlots(
   dateString: string,
   durationMinutes: number,
-  options: { interval?: number } = {}
+  options: { interval?: number; sessions?: TimeRange[]; breaks?: TimeRange[]; closed?: boolean } = {}
 ): SlotCandidate[] {
   const interval = Math.max(5, options.interval ?? SLOT_INTERVAL_MINUTES);
   const safeDuration = Math.max(10, durationMinutes || 30);
-  const weekday = clinicWeekday(dateString);
-  if (weekday === 0) return []; // Mon–Sat clinic
+  if (options.closed || (options.sessions === undefined && clinicWeekday(dateString) === 0)) return [];
+  const sessions = options.sessions ?? SESSIONS;
+  const breaks = options.breaks ?? [];
   const slots: SlotCandidate[] = [];
-  for (let sIdx = 0; sIdx < SESSIONS.length; sIdx++) {
-    const session = SESSIONS[sIdx];
-    const sessionKind: SlotSession = sIdx === 0 ? "morning" : "evening";
+  for (const session of sessions) {
     const sessionStart = minutesFromTime(session.start);
     const sessionEnd = minutesFromTime(session.end);
     for (let minute = sessionStart; minute + safeDuration <= sessionEnd; minute += interval) {
+      if (breaks.some((pause) => minute < minutesFromTime(pause.end) && minute + safeDuration > minutesFromTime(pause.start))) continue;
       const time = `${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
       const start = clinicWallTimeToUtc(dateString, time);
       const end = new Date(start.getTime() + safeDuration * 60_000);
-      slots.push({ startIso: start.toISOString(), endIso: end.toISOString(), label: slotLabel(start), session: sessionKind });
+      slots.push({ startIso: start.toISOString(), endIso: end.toISOString(), label: slotLabel(start), session: minute < 12 * 60 ? "morning" : "evening" });
     }
   }
   return slots;

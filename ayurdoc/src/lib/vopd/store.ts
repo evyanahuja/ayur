@@ -2,7 +2,7 @@
    All money, durations and slot validity are recomputed on the server;
    PostgreSQL rows are the single source of truth. */
 import { randomBytes } from "node:crypto";
-import { and, asc, desc, eq, gte, inArray, lt, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, gte, inArray, lt, or, sql } from "drizzle-orm";
 import { db, isDatabaseConfigured } from "@/db";
 import {
   vopdAuditLog,
@@ -19,7 +19,7 @@ import {
   type PaymentStatus,
   type VopdPlan,
 } from "@/content/vopd";
-import { ADVANCE_DAYS, BUFFER_MINUTES, HOLD_MINUTES, SLOT_INTERVAL_MINUTES, getResolvedVopdPlan, rowToVopdPlan } from "./config";
+import { ADVANCE_DAYS, BUFFER_MINUTES, HOLD_MINUTES, SLOT_INTERVAL_MINUTES, getResolvedVopdPlan, getVopdPlan, rowToVopdPlan } from "./config";
 import {
   addDaysToDateString,
   candidateSlots,
@@ -34,6 +34,7 @@ import {
   type SlotSession,
 } from "./slots";
 import type { BookingInput, CustomPlanInput } from "./validation";
+import { getScheduleForDate } from "./schedule";
 
 const BLOCKING: BookingStatus[] = [
   "SLOT_RESERVED",
@@ -189,6 +190,26 @@ export async function ensureVopdSchema(): Promise<void> {
         )
       `);
       await db.execute(sql`CREATE INDEX IF NOT EXISTS vopd_consultation_plans_active_idx ON vopd_consultation_plans (active, sort_order)`);
+      await db.execute(sql`ALTER TABLE patient_inquiries ADD COLUMN IF NOT EXISTS patient_kind varchar(8) NOT NULL DEFAULT 'child'`);
+      await db.execute(sql`ALTER TABLE patient_inquiries ADD COLUMN IF NOT EXISTS patient_gender varchar(20)`);
+      await db.execute(sql`ALTER TABLE vopd_bookings ADD COLUMN IF NOT EXISTS payment_method varchar(32) NOT NULL DEFAULT 'UPI'`);
+      await db.execute(sql`CREATE TABLE IF NOT EXISTS vopd_weekly_availability (
+        weekday integer PRIMARY KEY, closed boolean NOT NULL DEFAULT false,
+        sessions_json text NOT NULL DEFAULT '[]', breaks_json text NOT NULL DEFAULT '[]',
+        interval_minutes integer NOT NULL DEFAULT 30, updated_by varchar(120) NOT NULL,
+        updated_at timestamptz NOT NULL DEFAULT now()
+      )`);
+      await db.execute(sql`CREATE TABLE IF NOT EXISTS vopd_date_availability (
+        date date PRIMARY KEY, closed boolean NOT NULL DEFAULT false,
+        sessions_json text NOT NULL DEFAULT '[]', breaks_json text NOT NULL DEFAULT '[]',
+        interval_minutes integer NOT NULL DEFAULT 30, reason varchar(200),
+        updated_by varchar(120) NOT NULL, updated_at timestamptz NOT NULL DEFAULT now()
+      )`);
+      await db.execute(sql`CREATE TABLE IF NOT EXISTS doctor_profile_translations (
+        language varchar(5) PRIMARY KEY, introduction text NOT NULL,
+        care_paragraphs_json text NOT NULL, updated_by varchar(120) NOT NULL,
+        updated_at timestamptz NOT NULL DEFAULT now()
+      )`);
     })().catch((err) => {
       schemaReadyPromise = null;
       throw err;
@@ -264,6 +285,7 @@ export type Availability = {
   durationMinutes: number;
   intervalMinutes: number;
   bufferMinutes: number;
+  hoursLabel: string;
   slots: AvailabilitySlotItem[];
   nextAvailableDate?: string | null;
   code?: string;
@@ -289,9 +311,10 @@ async function findNextOpenDateAfter(fromDate: string, durationMinutes: number, 
     const candidate = addDaysToDateString(fromDate, i);
     if (candidate < today) continue;
     if (candidate > maxDate) break;
-    if (clinicWeekday(candidate) === 0) continue;
     if (blockedAllDay.has(candidate)) continue;
-    const hasOpen = candidateSlots(candidate, durationMinutes).some((slot) => isFutureSlot(new Date(slot.startIso), now));
+    const schedule = await getScheduleForDate(candidate);
+    const hasOpen = candidateSlots(candidate, durationMinutes, { ...schedule, interval: schedule.intervalMinutes })
+      .some((slot) => isFutureSlot(new Date(slot.startIso), now));
     if (hasOpen) return candidate;
   }
   return null;
@@ -317,9 +340,10 @@ export async function getOpenClinicDates(durationMinutes = 30, count = 6): Promi
   const dates: string[] = [];
   for (let offset = 0; offset <= ADVANCE_DAYS && dates.length < count; offset++) {
     const candidate = addDaysToDateString(today, offset);
-    if (clinicWeekday(candidate) === 0) continue;
     if (blockedAllDay.has(candidate)) continue;
-    const hasOpen = candidateSlots(candidate, durationMinutes).some((slot) => isFutureSlot(new Date(slot.startIso), now));
+    const schedule = await getScheduleForDate(candidate);
+    const hasOpen = candidateSlots(candidate, durationMinutes, { ...schedule, interval: schedule.intervalMinutes })
+      .some((slot) => isFutureSlot(new Date(slot.startIso), now));
     if (hasOpen) dates.push(candidate);
   }
   return dates;
@@ -333,7 +357,7 @@ export async function getAvailability(date: string, planId: string): Promise<Ava
       console.error("ensureVopdSchema warning:", err);
     }
   }
-  const resolvedPlan = (await getResolvedVopdPlan(planId)) ?? (await getResolvedVopdPlan("first"));
+  const resolvedPlan = await getResolvedVopdPlan(planId);
   const durationMinutes = resolvedPlan?.bookingMinutes ?? 30;
   const base = {
     date,
@@ -342,9 +366,11 @@ export async function getAvailability(date: string, planId: string): Promise<Ava
     durationMinutes,
     intervalMinutes: SLOT_INTERVAL_MINUTES,
     bufferMinutes: BUFFER_MINUTES,
+    hoursLabel: "",
     slots: [] as AvailabilitySlotItem[],
   };
   if (!isDateString(date)) return { ...base, code: "INVALID_DATE", message: "Please select a valid consultation date." };
+  if (!resolvedPlan) return { ...base, code: "INVALID_PLAN", message: "Choose an active consultation plan." };
   const now = new Date();
   const today = todayInClinic(now);
   if (date < today) {
@@ -354,9 +380,13 @@ export async function getAvailability(date: string, planId: string): Promise<Ava
   if (date > addDaysToDateString(today, ADVANCE_DAYS)) {
     return { ...base, code: "OUT_OF_RANGE", message: `Bookings are open for the next ${ADVANCE_DAYS} days.` };
   }
-  if (clinicWeekday(date) === 0) {
+  const schedule = await getScheduleForDate(date);
+  base.intervalMinutes = schedule.intervalMinutes;
+  base.hoursLabel = schedule.sessions.map((session) => `${session.start}–${session.end}`).join(" · ") + " IST";
+  if (schedule.closed) {
     const nextAvailableDate = await findNextOpenDateAfter(date, durationMinutes, now);
-    return { ...base, code: "SUNDAY_CLOSED", nextAvailableDate, message: "The clinic is closed on Sundays (open Monday–Saturday)." };
+    return { ...base, code: clinicWeekday(date) === 0 ? "SUNDAY_CLOSED" : "DAY_BLOCKED", nextAvailableDate,
+      message: "The clinic is closed on this date. Please choose another day." };
   }
 
   let busy: { reference: string; start: Date; durationMinutes: number }[] = [];
@@ -367,7 +397,8 @@ export async function getAvailability(date: string, planId: string): Promise<Ava
       const { start, end } = dayBounds(date);
       [busy, blocked] = await Promise.all([blockingRowsBetween(start, end), blockedRows(date)]);
     } catch (err) {
-      console.error("VOPD availability DB lookup warning:", err);
+      console.error("VOPD availability DB lookup failed:", err);
+      throw err; // Never display bookable times if conflict checks could not run.
     }
   }
 
@@ -381,7 +412,7 @@ export async function getAvailability(date: string, planId: string): Promise<Ava
     blocked.filter((row) => row.slotStart).map((row) => row.slotStart?.getTime())
   );
 
-  const slots = candidateSlots(date, durationMinutes)
+  const slots = candidateSlots(date, durationMinutes, { ...schedule, interval: schedule.intervalMinutes })
     .filter((slot) => {
       const slotStart = new Date(slot.startIso);
       if (!isFutureSlot(slotStart, now)) return false;
@@ -411,12 +442,27 @@ export async function createBooking(
   const date = clinicDateString(input.start);
   const bounds = dayBounds(date);
   const reference = makeReference();
-  const allowed = candidateSlots(date, input.durationMinutes).some((slot) => slot.startIso === input.start.toISOString());
-  if (!allowed) throw new VopdConflictError("That time is not a valid consultation slot.", "INVALID_SLOT");
   if (!isFutureSlot(input.start)) throw new VopdConflictError("That time has passed.", "PAST_SLOT");
+  if (date > addDaysToDateString(todayInClinic(), ADVANCE_DAYS)) throw new VopdConflictError("Date is outside the booking window.", "INVALID_SLOT");
 
   return db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext('vopd:schedule'))`);
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext('vopd:plans'))`);
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`vopd:${date}`}))`);
+    const freshPlan = await getResolvedVopdPlan(input.planId);
+    if (!freshPlan) throw new VopdConflictError("This plan is no longer active.", "INVALID_PLAN");
+    const durationMinutes = freshPlan.bookingMinutes;
+    const amountMinor = freshPlan.requiresPayment
+      ? (input.currency === "USD" ? freshPlan.amountMinorUsd : freshPlan.amountMinor) ?? null : null;
+    if (freshPlan.requiresPayment && (amountMinor == null || amountMinor <= 0)) {
+      throw new VopdConflictError(`This plan has no ${input.currency} price set.`, "CURRENCY_UNAVAILABLE");
+    }
+    const schedule = await getScheduleForDate(date);
+    if (schedule.closed || !candidateSlots(date, durationMinutes, { ...schedule, interval: schedule.intervalMinutes })
+      .some((slot) => slot.startIso === input.start.toISOString())) {
+      throw new VopdConflictError("That time is no longer a valid consultation slot.", "INVALID_SLOT");
+    }
+    if (!isFutureSlot(input.start)) throw new VopdConflictError("That time has passed.", "PAST_SLOT");
     await tx
       .update(vopdBookings)
       .set({ status: "EXPIRED", updatedAt: new Date() })
@@ -428,7 +474,7 @@ export async function createBooking(
       .where(and(inArray(vopdBookings.status, BLOCKING), gte(vopdBookings.slotStart, bounds.start), lt(vopdBookings.slotStart, bounds.end)));
 
     const conflict = sameDay.some((row) =>
-      slotsOverlap({ start: input.start, durationMinutes: input.durationMinutes }, { start: row.slotStart, durationMinutes: row.durationMinutes })
+      slotsOverlap({ start: input.start, durationMinutes: durationMinutes }, { start: row.slotStart, durationMinutes: row.durationMinutes })
     );
     if (conflict) throw new VopdConflictError("That slot was just taken. Please choose another time.", "SLOT_TAKEN");
 
@@ -440,8 +486,8 @@ export async function createBooking(
       throw new VopdConflictError("The clinic is unavailable at that time.", "SLOT_BLOCKED");
     }
 
-    const holdExpiresAt = input.plan.requiresPayment ? new Date(Date.now() + HOLD_MINUTES * 60_000) : null;
-    const initialStatus: BookingStatus = input.plan.requiresPayment ? "PAYMENT_PENDING" : "PAYMENT_VERIFICATION_PENDING";
+    const holdExpiresAt = freshPlan.requiresPayment ? new Date(Date.now() + HOLD_MINUTES * 60_000) : null;
+    const initialStatus: BookingStatus = freshPlan.requiresPayment ? "PAYMENT_PENDING" : "PAYMENT_VERIFICATION_PENDING";
     const [row] = await tx
       .insert(vopdBookings)
       .values({
@@ -462,17 +508,18 @@ export async function createBooking(
         previousDiagnosis: input.previousDiagnosis ?? null,
         currentTreatment: input.currentTreatment ?? null,
         message: input.message ?? null,
-        planId: input.plan.id,
-        planName: input.plan.name,
-        amountMinor: input.plan.amountMinor,
-        currency: "INR",
-        durationMinutes: input.durationMinutes,
-        followUpCount: input.plan.followUpCount,
-        followUpMinutes: input.plan.followUpMinutes,
+        planId: freshPlan.id,
+        planName: freshPlan.name,
+        amountMinor: amountMinor,
+        currency: input.currency,
+        paymentMethod: freshPlan.requiresPayment ? (input.currency === "USD" ? "MANUAL_USD" : "UPI") : "NOT_REQUIRED",
+        durationMinutes: durationMinutes,
+        followUpCount: freshPlan.followUpCount,
+        followUpMinutes: freshPlan.followUpMinutes,
         slotStart: input.start,
-        slotEnd: getStoredEnd(input.start, input.durationMinutes),
+        slotEnd: getStoredEnd(input.start, durationMinutes),
         status: initialStatus,
-        paymentStatus: input.plan.requiresPayment ? "PENDING" : "NOT_REQUIRED",
+        paymentStatus: freshPlan.requiresPayment ? "PENDING" : "NOT_REQUIRED",
         holdExpiresAt,
         locale: input.locale,
       })
@@ -484,7 +531,7 @@ export async function createBooking(
       fromStatus: null,
       toStatus: initialStatus,
       actor: "patient",
-      note: `VOPD reservation for ${input.plan.name} (${input.durationMinutes} mins).`,
+      note: `VOPD reservation for ${freshPlan.name} (${durationMinutes} mins), ${input.currency} ${amountMinor == null ? "fee on confirmation" : (amountMinor / 100).toFixed(2)}.`,
     });
 
     return row;
@@ -507,6 +554,7 @@ export async function getPublicBooking(reference: string) {
     planName: row.planName,
     amountMinor: row.amountMinor,
     currency: row.currency,
+    paymentMethod: row.paymentMethod,
     durationMinutes: row.durationMinutes,
     slotStart: row.slotStart.toISOString(),
     status: row.status,
@@ -522,56 +570,40 @@ export type ScreenshotInput = { mimeType: string; sizeBytes: number; data: Buffe
 
 export async function submitPayment(reference: string, payment: { payerName: string; upiReference: string }, screenshot?: ScreenshotInput) {
   await ensureVopdSchema();
-  const now = new Date();
-  const [updated] = await db
-    .update(vopdBookings)
-    .set({
-      payerName: payment.payerName,
-      upiReference: payment.upiReference,
-      paymentStatus: "SUBMITTED",
-      paymentSubmittedAt: now,
-      status: "PAYMENT_VERIFICATION_PENDING",
-      holdExpiresAt: null,
-      updatedAt: now,
-    })
-    .where(
-      and(
-        eq(vopdBookings.reference, reference),
-        inArray(vopdBookings.status, ACTIVE_UNPAID),
-        eq(vopdBookings.paymentStatus, "PENDING")
-      )
-    )
-    .returning();
+  return db.transaction(async (tx) => {
+    const now = new Date();
+    const [updated] = await tx.update(vopdBookings).set({
+      payerName: payment.payerName, upiReference: payment.upiReference,
+      paymentStatus: "SUBMITTED", paymentSubmittedAt: now,
+      status: "PAYMENT_VERIFICATION_PENDING", holdExpiresAt: null, updatedAt: now,
+    }).where(and(
+      eq(vopdBookings.reference, reference),
+      inArray(vopdBookings.status, ACTIVE_UNPAID),
+      eq(vopdBookings.paymentStatus, "PENDING"),
+      gt(vopdBookings.holdExpiresAt, now),
+    )).returning();
 
-  if (!updated) {
-    const existing = await getBooking(reference);
-    if (!existing) throw new VopdConflictError("Booking not found.", "NOT_FOUND");
-    if (existing.paymentStatus === "SUBMITTED" || existing.paymentStatus === "VERIFIED") {
-      throw new VopdConflictError("Payment details have already been submitted for this booking.", "PAYMENT_ALREADY_SUBMITTED");
+    if (!updated) {
+      const [existing] = await tx.select().from(vopdBookings).where(eq(vopdBookings.reference, reference)).limit(1);
+      if (!existing) throw new VopdConflictError("Booking not found.", "NOT_FOUND");
+      if (["SUBMITTED", "VERIFIED"].includes(existing.paymentStatus)) {
+        throw new VopdConflictError("Payment details have already been submitted for this booking.", "PAYMENT_ALREADY_SUBMITTED");
+      }
+      throw new VopdConflictError("This reservation has expired or been cancelled. Please call the clinic if you already paid.", "RESERVATION_CLOSED");
     }
-    throw new VopdConflictError("This reservation has expired or been cancelled. Please start a new booking.", "RESERVATION_CLOSED");
-  }
-
-  if (screenshot) {
-    await db
-      .insert(vopdPaymentScreenshots)
-      .values({ reference, mimeType: screenshot.mimeType, sizeBytes: screenshot.sizeBytes, data: screenshot.data })
-      .onConflictDoUpdate({
-        target: vopdPaymentScreenshots.reference,
-        set: { mimeType: screenshot.mimeType, sizeBytes: screenshot.sizeBytes, data: screenshot.data, uploadedAt: now },
-      });
-  }
-
-  await db.insert(vopdAuditLog).values({
-    reference,
-    action: "PAYMENT_SUBMITTED",
-    fromStatus: "PAYMENT_PENDING",
-    toStatus: "PAYMENT_VERIFICATION_PENDING",
-    actor: "patient",
-    note: `UTR on file. Screenshot: ${screenshot ? "yes" : "no"}. State: pending manual verification.`,
+    if (screenshot) {
+      await tx.insert(vopdPaymentScreenshots)
+        .values({ reference, mimeType: screenshot.mimeType, sizeBytes: screenshot.sizeBytes, data: screenshot.data })
+        .onConflictDoUpdate({ target: vopdPaymentScreenshots.reference,
+          set: { mimeType: screenshot.mimeType, sizeBytes: screenshot.sizeBytes, data: screenshot.data, uploadedAt: now } });
+    }
+    await tx.insert(vopdAuditLog).values({
+      reference, action: "PAYMENT_SUBMITTED", fromStatus: "PAYMENT_PENDING",
+      toStatus: "PAYMENT_VERIFICATION_PENDING", actor: "patient",
+      note: `${updated.paymentMethod} reference recorded; ${updated.currency} ${updated.amountMinor == null ? "no fee" : (updated.amountMinor / 100).toFixed(2)}. Screenshot: ${screenshot ? "yes" : "no"}. Pending manual bank verification.`,
+    });
+    return updated;
   });
-
-  return updated;
 }
 
 export async function getScreenshot(reference: string) {
@@ -582,28 +614,18 @@ export async function getScreenshot(reference: string) {
 
 export async function verifyPayment(reference: string, admin: string) {
   await ensureVopdSchema();
-  const now = new Date();
-  const [updated] = await db
-    .update(vopdBookings)
-    .set({ paymentStatus: "VERIFIED", status: "PAYMENT_VERIFIED", verifiedAt: now, verifiedBy: admin, updatedAt: now })
-    .where(
-      and(
-        eq(vopdBookings.reference, reference),
-        eq(vopdBookings.status, "PAYMENT_VERIFICATION_PENDING"),
-        inArray(vopdBookings.paymentStatus, ["SUBMITTED", "NOT_REQUIRED"])
-      )
-    )
-    .returning();
-  if (!updated) throw new VopdConflictError("This payment was already verified, rejected, or the booking is not pending verification.", "NOT_VERIFIABLE");
-  await db.insert(vopdAuditLog).values({
-    reference,
-    action: "PAYMENT_VERIFIED",
-    fromStatus: "PAYMENT_VERIFICATION_PENDING",
-    toStatus: "PAYMENT_VERIFIED",
-    actor: admin,
-    note: "Administrator confirmed receipt of payment (or confirmed a no-fee enquiry).",
+  return db.transaction(async (tx) => {
+    const now = new Date();
+    const [updated] = await tx.update(vopdBookings)
+      .set({ paymentStatus: "VERIFIED", status: "PAYMENT_VERIFIED", verifiedAt: now, verifiedBy: admin, updatedAt: now })
+      .where(and(eq(vopdBookings.reference, reference), eq(vopdBookings.status, "PAYMENT_VERIFICATION_PENDING"),
+        inArray(vopdBookings.paymentStatus, ["SUBMITTED", "NOT_REQUIRED"]))).returning();
+    if (!updated) throw new VopdConflictError("This payment was already verified, rejected, or is not pending verification.", "NOT_VERIFIABLE");
+    await tx.insert(vopdAuditLog).values({ reference, action: "PAYMENT_VERIFIED",
+      fromStatus: "PAYMENT_VERIFICATION_PENDING", toStatus: "PAYMENT_VERIFIED", actor: admin,
+      note: `Administrator independently confirmed ${updated.currency} ${updated.amountMinor == null ? "no fee" : (updated.amountMinor / 100).toFixed(2)} (${updated.paymentMethod}).` });
+    return updated;
   });
-  return updated;
 }
 
 export async function recordCalendarResult(reference: string, admin: string, result: { eventId: string; meetUrl: string | null; htmlLink?: string | null }) {
@@ -678,17 +700,17 @@ export async function setManualMeetUrl(reference: string, meetUrl: string, admin
 
 export async function rejectPayment(reference: string, admin: string, reason: string) {
   await ensureVopdSchema();
-  const now = new Date();
-  const [updated] = await db
-    .update(vopdBookings)
-    .set({ paymentStatus: "REJECTED", status: "REJECTED", rejectionReason: reason.slice(0, 1000), holdExpiresAt: null, updatedAt: now })
-    .where(and(eq(vopdBookings.reference, reference), eq(vopdBookings.status, "PAYMENT_VERIFICATION_PENDING")))
-    .returning();
-  if (!updated) throw new VopdConflictError("Only bookings awaiting verification can be rejected.", "NOT_REJECTABLE");
-  await db.insert(vopdAuditLog).values({
-    reference, action: "PAYMENT_REJECTED", fromStatus: "PAYMENT_VERIFICATION_PENDING", toStatus: "REJECTED", actor: admin, note: reason.slice(0, 900),
+  return db.transaction(async (tx) => {
+    const now = new Date();
+    const [updated] = await tx.update(vopdBookings)
+      .set({ paymentStatus: "REJECTED", status: "REJECTED", rejectionReason: reason.slice(0, 1000), holdExpiresAt: null, updatedAt: now })
+      .where(and(eq(vopdBookings.reference, reference), eq(vopdBookings.status, "PAYMENT_VERIFICATION_PENDING")))
+      .returning();
+    if (!updated) throw new VopdConflictError("Only bookings awaiting verification can be rejected.", "NOT_REJECTABLE");
+    await tx.insert(vopdAuditLog).values({ reference, action: "PAYMENT_REJECTED",
+      fromStatus: "PAYMENT_VERIFICATION_PENDING", toStatus: "REJECTED", actor: admin, note: reason.slice(0, 900) });
+    return updated;
   });
-  return updated;
 }
 
 export async function cancelBooking(reference: string, admin: string, reason: string) {
@@ -736,11 +758,20 @@ export async function rescheduleBooking(reference: string, newStartIso: string, 
 
   const date = clinicDateString(start);
   const bounds = dayBounds(date);
-  const allowed = candidateSlots(date, existing.durationMinutes).some((slot) => slot.startIso === start.toISOString());
-  if (!allowed) throw new VopdConflictError("That time is not a valid slot for this plan.", "INVALID_SLOT");
 
   return db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext('vopd:schedule'))`);
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`vopd:${date}`}))`);
+    const schedule = await getScheduleForDate(date);
+    if (schedule.closed || !candidateSlots(date, existing.durationMinutes, { ...schedule, interval: schedule.intervalMinutes })
+      .some((slot) => slot.startIso === start.toISOString())) {
+      throw new VopdConflictError("That time is not a valid slot for this plan.", "INVALID_SLOT");
+    }
+    const blocked = await tx.select({ slotStart: vopdBlockedSlots.slotStart }).from(vopdBlockedSlots)
+      .where(eq(vopdBlockedSlots.blockedDate, date));
+    if (blocked.some((row) => !row.slotStart || row.slotStart.getTime() === start.getTime())) {
+      throw new VopdConflictError("The clinic is unavailable at that time.", "SLOT_BLOCKED");
+    }
     const sameDay = await tx
       .select({ reference: vopdBookings.reference, slotStart: vopdBookings.slotStart, durationMinutes: vopdBookings.durationMinutes })
       .from(vopdBookings)
@@ -774,6 +805,20 @@ export async function rescheduleBooking(reference: string, newStartIso: string, 
   });
 }
 
+export async function getOverviewStats() {
+  await ensureVopdSchema();
+  const result = await db.execute(sql`
+    SELECT count(*)::int AS total,
+      count(*) FILTER (WHERE status = 'PAYMENT_VERIFICATION_PENDING')::int AS pending,
+      count(*) FILTER (WHERE status = 'CONFIRMED')::int AS confirmed,
+      count(*) FILTER (WHERE payment_status = 'VERIFIED')::int AS verified_payments,
+      count(*) FILTER (WHERE status = 'REJECTED')::int AS rejected,
+      count(*) FILTER (WHERE status = 'COMPLETED')::int AS completed
+    FROM vopd_bookings
+  `);
+  return result.rows[0];
+}
+
 export async function listBookings(filters: { status?: string; query?: string } = {}) {
   await ensureVopdSchema();
   const conditions = [];
@@ -795,6 +840,7 @@ export async function listBookings(filters: { status?: string; query?: string } 
       patientKind: vopdBookings.patientKind,
       patientName: vopdBookings.patientName,
       guardianName: vopdBookings.guardianName,
+      gender: vopdBookings.gender,
       ageOrDob: vopdBookings.ageOrDob,
       phone: vopdBookings.phone,
       email: vopdBookings.email,
@@ -803,6 +849,7 @@ export async function listBookings(filters: { status?: string; query?: string } 
       planName: vopdBookings.planName,
       amountMinor: vopdBookings.amountMinor,
       currency: vopdBookings.currency,
+      paymentMethod: vopdBookings.paymentMethod,
       durationMinutes: vopdBookings.durationMinutes,
       followUpCount: vopdBookings.followUpCount,
       slotStart: vopdBookings.slotStart,
@@ -877,7 +924,7 @@ export async function listCustomPlans(): Promise<VopdPlan[]> {
     .select()
     .from(vopdConsultationPlans)
     .orderBy(asc(vopdConsultationPlans.sortOrder), asc(vopdConsultationPlans.id));
-  return rows.map(rowToVopdPlan);
+  return rows.map(rowToVopdPlan).filter((plan) => plan.isCustom && plan.id !== "wellness" && plan.name.toLowerCase() !== "bal wellness program");
 }
 
 export async function createCustomPlan(input: CustomPlanInput, admin: string): Promise<VopdPlan> {
@@ -929,6 +976,20 @@ export async function updateCustomPlan(
   admin: string
 ): Promise<VopdPlan> {
   await ensureVopdSchema();
+  // A built-in remains code-backed until its first admin edit. At that point
+  // snapshot the *existing* published settings once; never seed over DB data.
+  const builtin = getVopdPlan(slug);
+  if (builtin) {
+    await db.insert(vopdConsultationPlans).values({
+      slug, name: builtin.name, subtitle: builtin.subtitle ?? null,
+      period: builtin.period ?? null, description: builtin.description,
+      featuresJson: JSON.stringify(builtin.inclusions), amountMinorInr: builtin.amountMinor,
+      amountMinorUsd: builtin.amountMinorUsd ?? null, durationMinutes: builtin.bookingMinutes,
+      followUpCount: builtin.followUpCount, followUpMinutes: builtin.followUpMinutes,
+      requiresPayment: builtin.requiresPayment, showOnPricing: builtin.showOnPricing !== false,
+      featured: Boolean(builtin.featured), active: true, sortOrder: builtin.sortOrder ?? 50,
+    }).onConflictDoNothing();
+  }
   const values: Record<string, unknown> = { updatedAt: new Date() };
   if (typeof patch.active === "boolean") values.active = patch.active;
   if (typeof patch.showOnPricing === "boolean") values.showOnPricing = patch.showOnPricing;
@@ -956,22 +1017,16 @@ export async function updateCustomPlan(
     reference: `PLAN-${slug}`.slice(0, 24),
     action: "PLAN_UPDATED",
     actor: admin,
-    note: `Updated plan "${updated.name}" (active=${updated.active}).`,
+    note: `Updated "${updated.name}" (active=${updated.active}, INR=${updated.amountMinorInr}, USD=${updated.amountMinorUsd}, duration=${updated.durationMinutes}).`,
   });
   return rowToVopdPlan(updated);
 }
 
+/** Historical plan references are immutable. DELETE is a soft-deactivation too. */
 export async function deleteCustomPlan(slug: string, admin: string): Promise<void> {
-  await ensureVopdSchema();
-  const [deleted] = await db
-    .delete(vopdConsultationPlans)
-    .where(eq(vopdConsultationPlans.slug, slug))
-    .returning();
-  if (!deleted) throw new VopdConflictError("Consultation plan not found.", "NOT_FOUND");
+  await updateCustomPlan(slug, { active: false }, admin);
   await db.insert(vopdAuditLog).values({
-    reference: `PLAN-${slug}`.slice(0, 24),
-    action: "PLAN_DELETED",
-    actor: admin,
-    note: `Removed custom plan "${deleted.name}".`,
+    reference: `PLAN-${slug}`.slice(0, 24), action: "PLAN_DEACTIVATED", actor: admin,
+    note: "Plan deactivated; historical bookings and prices remain unchanged.",
   });
 }

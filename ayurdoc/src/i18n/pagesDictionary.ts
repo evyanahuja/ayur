@@ -539,7 +539,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
           { strong: "Storage & confidentiality:", body: "Enquiries are stored confidentially for the clinic team and follow standard medical privacy practices. Avoid uploading sensitive government IDs in general enquiry boxes." },
           { strong: "Children's privacy:", body: "All information relating to a minor must be submitted solely by a parent or legal guardian for clinical care purposes." },
           { strong: "Your rights & contact:", body: "You may request review, correction, or deletion of enquiry records (subject to statutory medical-record retention rules) by contacting us directly:" },
-          { strong: "Cookies & trackers:", body: "This website stores only essential preferences such as your chosen reading language and regional currency preference — zero third-party ad trackers are installed." },
+          { strong: "Cookies & trackers:", body: "This website stores only essential settings such as your chosen reading language and automatically detected regional currency — zero third-party ad trackers are installed." },
         ],
       },
       terms: {

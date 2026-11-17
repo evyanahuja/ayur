@@ -74,7 +74,7 @@ export function rowToVopdPlan(row: VopdConsultationPlanRow): VopdPlan {
     inclusions,
     showOnPricing: row.showOnPricing,
     featured: row.featured,
-    isCustom: true,
+    isCustom: !(BUILTIN_PLAN_IDS as readonly string[]).includes(row.slug),
     active: row.active,
     sortOrder: row.sortOrder,
   };
@@ -136,24 +136,23 @@ export function getVopdPlans(): VopdPlan[] {
   return [...paid, ...extras].sort((a, b) => (a.sortOrder ?? 50) - (b.sortOrder ?? 50));
 }
 
-/** Built-in + active custom consultation plans stored in PostgreSQL. */
-export async function getAllActiveVopdPlans(): Promise<VopdPlan[]> {
+/** Database rows take precedence over built-ins, including inactive rows.
+ *  No automatic seeding: existing production records are never overwritten. */
+export async function getAdminVopdPlans(): Promise<VopdPlan[]> {
   const builtin = getVopdPlans();
   if (!isDatabaseConfigured()) return builtin;
-  try {
-    const rows = await db
-      .select()
-      .from(vopdConsultationPlans)
-      .where(eq(vopdConsultationPlans.active, true))
-      .orderBy(asc(vopdConsultationPlans.sortOrder), asc(vopdConsultationPlans.id));
-    if (!rows.length) return builtin;
-    const custom = rows.map(rowToVopdPlan);
-    const builtinIds = new Set(builtin.map((p) => p.id));
-    const merged = [...builtin, ...custom.filter((p) => !builtinIds.has(p.id))];
-    return merged.sort((a, b) => (a.sortOrder ?? 50) - (b.sortOrder ?? 50));
-  } catch {
-    return builtin;
-  }
+  const rows = await db.select().from(vopdConsultationPlans)
+    .orderBy(asc(vopdConsultationPlans.sortOrder), asc(vopdConsultationPlans.id));
+  const overrides = new Map(rows.map((row) => [row.slug, rowToVopdPlan(row)]));
+  return [
+    ...builtin.map((plan) => overrides.get(plan.id) ?? plan),
+    ...rows.filter((row) => !builtin.some((plan) => plan.id === row.slug)).map(rowToVopdPlan),
+  ].filter((plan) => plan.name.toLowerCase() !== "bal wellness program" && plan.id !== "wellness")
+    .sort((a, b) => (a.sortOrder ?? 50) - (b.sortOrder ?? 50));
+}
+
+export async function getAllActiveVopdPlans(): Promise<VopdPlan[]> {
+  return (await getAdminVopdPlans()).filter((plan) => plan.active !== false);
 }
 
 export function getVopdPlan(id: string): VopdPlan | undefined {
@@ -161,20 +160,16 @@ export function getVopdPlan(id: string): VopdPlan | undefined {
 }
 
 export async function getResolvedVopdPlan(id: string): Promise<VopdPlan | undefined> {
-  const builtin = getVopdPlan(id);
-  if (builtin) return builtin;
-  if (!isDatabaseConfigured() || !id) return undefined;
-  try {
-    const [row] = await db
-      .select()
-      .from(vopdConsultationPlans)
-      .where(eq(vopdConsultationPlans.slug, id))
-      .limit(1);
-    if (!row || !row.active) return undefined;
-    return rowToVopdPlan(row);
-  } catch {
-    return undefined;
+  if (!id || id === "wellness") return undefined;
+  if (isDatabaseConfigured()) {
+    const [row] = await db.select().from(vopdConsultationPlans)
+      .where(eq(vopdConsultationPlans.slug, id)).limit(1);
+    if (row) {
+      if (!row.active || row.name.toLowerCase() === "bal wellness program") return undefined;
+      return rowToVopdPlan(row);
+    }
   }
+  return getVopdPlan(id);
 }
 
 export function isUpiConfigured(): boolean {
@@ -211,6 +206,8 @@ export function publicVopdConfig(): VopdConfig {
       ],
     },
     google: { configured: isGoogleConfigured() },
+    usdPaymentInstructions: process.env.VOPD_USD_PAYMENT_INSTRUCTIONS?.trim() ||
+      "Contact the clinic for verified international transfer instructions. Pay the exact USD amount shown; UPI accepts INR only. Keep the transfer reference for manual verification.",
   };
 }
 

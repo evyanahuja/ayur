@@ -2,7 +2,7 @@
  * Structured data (schema.org JSON-LD) for Google / Bing.
  * Includes verified medical registration (Reg. No. 63934) and alumniOf credentials.
  */
-import { SITE, SEO, STATS, FAQS, SPECIALTIES, IMAGES } from "@/content/site";
+import { SITE, SEO, FAQS, SPECIALTIES, IMAGES } from "@/content/site";
 
 const abs = (path: string) => (path.startsWith("http") ? path : `${SITE.siteUrl}${path}`);
 
@@ -67,11 +67,11 @@ export function buildJsonLd() {
         email: SITE.email,
         identifier: {
           "@type": "PropertyValue",
-          name: "Medical Registration Number",
+          name: SITE.registrationAuthority,
           value: SITE.registrationNumber,
         },
         medicalSpecialty: "Pediatric",
-        description: `${SITE.qualification} (Reg. No. ${SITE.registrationNumber}). Post-graduation (MD — Pediatrician / Kaumarbhritya) from ${SITE.pgCollege} and BAMS from ${SITE.ugCollege}. Ayurvedic child specialist with ${STATS.yearsExperience}+ years in Balarog.`,
+        description: `${SITE.qualification} (Reg. No. ${SITE.registrationNumber}). Post-graduation (MD — Pediatrician / Kaumarbhritya) from ${SITE.pgCollege} and BAMS from ${SITE.ugCollege}. Ayurvedic pediatrics and individualised care for all ages.`,
         alumniOf: [
           {
             "@type": "CollegeOrUniversity",
@@ -97,6 +97,7 @@ export function buildJsonLd() {
             "@type": "EducationalOccupationalCredential",
             credentialCategory: "license",
             name: `Medical Registration No. ${SITE.registrationNumber}`,
+            recognizedBy: { "@type": "Organization", name: SITE.registrationAuthority },
           },
         ],
         knowsLanguage: ["hi", "mr", "en", "gu"],

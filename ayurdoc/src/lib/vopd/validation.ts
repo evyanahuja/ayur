@@ -5,7 +5,7 @@ import { isDateString, isFutureSlot, todayInClinic } from "./slots";
 import {
   computeAgeFromDob,
   isValidDobString,
-  isVopdConcernId,
+  isAllowedConcern,
   type PatientKind,
   type VopdPlan,
 } from "@/content/vopd";
@@ -28,6 +28,7 @@ export type BookingInput = {
   currentTreatment?: string;
   message?: string;
   planId: string;
+  currency: "INR" | "USD";
   slotStartIso: string;
   consent: boolean;
   website?: string;
@@ -79,14 +80,24 @@ export async function validateBooking(raw: unknown): Promise<ValidationResult<Bo
   const email = trim(body.email, 160);
   if (email && !EMAIL.test(email)) errors.email = "Enter a valid email address.";
 
+  const gender = trim(body.gender, 20);
+  if (patientKind === "adult" && !["Male", "Female"].includes(gender)) errors.gender = "Choose Male or Female for an adult consultation.";
+  if (patientKind === "child" && gender && !["Boy", "Girl", "Other"].includes(gender)) errors.gender = "Choose a valid gender for the child.";
+
   const concernCategory = trim(body.concernCategory, 40);
-  if (!isVopdConcernId(concernCategory)) errors.concernCategory = "Choose a consultation category.";
+  if (patientKind && !isAllowedConcern(concernCategory, patientKind, gender)) {
+    errors.concernCategory = "This consultation category is not available for the selected patient type and gender.";
+  }
 
   const symptoms = trim(body.symptoms, 2000);
   if (symptoms.length < 5) errors.symptoms = "Please describe the main symptoms.";
 
   const plan = typeof body.planId === "string" ? await getResolvedVopdPlan(body.planId) : undefined;
-  if (!plan) errors.planId = "Choose a consultation plan.";
+  if (!plan) errors.planId = "Choose an active consultation plan.";
+  const currency: "INR" | "USD" = body.currency === "USD" ? "USD" : "INR";
+  if (plan?.requiresPayment && (currency === "USD" ? plan.amountMinorUsd : plan.amountMinor) == null) {
+    errors.currency = `This plan does not have an active ${currency} fee configured. Please contact the clinic to book.`;
+  }
 
   const slotStartIso = trim(body.slotStartIso, 40);
   const start = slotStartIso ? new Date(slotStartIso) : null;
@@ -94,8 +105,6 @@ export async function validateBooking(raw: unknown): Promise<ValidationResult<Bo
   else if (!isFutureSlot(start)) errors.slotStartIso = "That time has passed. Please choose a later slot.";
 
   if (body.consent !== true) errors.consent = "Please accept the consent statement.";
-
-  const gender = trim(body.gender, 20);
 
   if (Object.keys(errors).length || !patientKind || !plan || !start) return { ok: false, errors };
 
@@ -118,6 +127,7 @@ export async function validateBooking(raw: unknown): Promise<ValidationResult<Bo
       currentTreatment: trim(body.currentTreatment, 1000) || undefined,
       message: trim(body.message, 1000) || undefined,
       planId: plan.id,
+      currency,
       slotStartIso,
       consent: true,
       website: trim(body.website, 100) || undefined,
@@ -194,6 +204,8 @@ export function validateCustomPlan(raw: unknown): ValidationResult<CustomPlanInp
   const strikeMinorInr = parsePositiveRupeesToMinor(body.strikeInr);
   const amountMinorUsd = parsePositiveRupeesToMinor(body.priceUsd);
   const strikeMinorUsd = parsePositiveRupeesToMinor(body.strikeUsd);
+  if (requiresPayment && amountMinorUsd == null) errors.priceUsd = "Enter an independent USD fee for this plan.";
+  if (/^bal\s+wellness\s+program$/i.test(name)) errors.name = "This retired plan cannot be recreated.";
 
   const followUpCount = Math.max(0, Math.min(24, Math.round(Number(body.followUpCount ?? 0) || 0)));
   const followUpMinutes = followUpCount > 0

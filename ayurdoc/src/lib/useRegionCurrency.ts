@@ -5,86 +5,124 @@ import { useEffect, useState } from "react";
 export type Currency = "INR" | "USD";
 
 const STORAGE_KEY = "ayur-currency";
-const STORAGE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
+const CHANGE_EVENT = "ayur-currency-change";
+const AUTO_TTL = 7 * 24 * 60 * 60 * 1000;
 
-/**
- * Legacy fallback: guess from the browser's locale + timezone.
- * This is unreliable for NRIs abroad (their browser often still reports
- * an Indian locale/timezone) and for VPN users, which is why the primary
- * detection is IP-based via /api/geo (see detectCurrencyViaServer).
- */
-function isIndia(): boolean {
-  if (typeof window === "undefined") return true;
-  const locale = window.navigator.languages?.length ? window.navigator.languages : [window.navigator.language];
-  const localeMatch = locale.some((value) => /^en-(in)?$/i.test(value) || /-(in)$/i.test(value) || /^hi($|-)/i.test(value) || /^mr($|-)/i.test(value) || /^gu($|-)/i.test(value));
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-  const tzMatch = timeZone.toLowerCase() === "asia/kolkata" || timeZone.toLowerCase() === "asia/calcutta";
-  return localeMatch || tzMatch;
-}
+type AutoStored = { value: Currency; ts: number; auto: true };
 
-function readStoredCurrency(): Currency | null {
+let inFlightDetection: Promise<Currency> | null = null;
+let resolvedSessionCurrency: Currency | null = null;
+
+function readAutoCurrency(): Currency | null {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (parsed?.value !== "INR" && parsed?.value !== "USD") return null;
-    if (typeof parsed?.ts !== "number" || Date.now() - parsed.ts > STORAGE_TTL) return null;
-    return parsed.value as Currency;
+    const item = JSON.parse(raw) as Partial<AutoStored> & { manual?: boolean };
+    // Discard any legacy manual selection; currency is strictly location-based.
+    if (item?.manual || item?.auto !== true) {
+      window.localStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+    if (item.value !== "INR" && item.value !== "USD") return null;
+    if (typeof item.ts !== "number" || !Number.isFinite(item.ts) || Date.now() - item.ts > AUTO_TTL) {
+      return null;
+    }
+    return item.value;
   } catch {
     return null;
   }
 }
 
-function storeCurrency(c: Currency) {
+function storeAutoCurrency(value: Currency) {
+  resolvedSessionCurrency = value;
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ value: c, ts: Date.now() }));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ value, ts: Date.now(), auto: true }));
   } catch {
-    // storage may be unavailable (private mode) — ignore
+    // storage unavailable (private mode) — ignore
   }
+  window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 
-/** Ask the server where the visitor's IP is located (via host geo headers). */
-async function detectCurrencyViaServer(): Promise<Currency | null> {
+/**
+ * Secondary fallback used only when host/CDN IP geo headers are absent
+ * (e.g. non-CDN environments). India timezones resolve to INR; concrete
+ * non-India IANA timezones resolve to USD; missing or generic UTC/GMT
+ * timezones default safely to INR.
+ */
+function fallbackCurrencyFromTimezone(): Currency {
   try {
-    const res = await fetch("/api/geo", { cache: "no-store" });
-    if (!res.ok) return null;
-    const data = (await res.json()) as { currency?: string | null };
-    if (data.currency === "INR" || data.currency === "USD") return data.currency;
-    return null;
+    const tz = (Intl.DateTimeFormat().resolvedOptions().timeZone || "").trim().toLowerCase();
+    if (!tz || tz === "utc" || tz === "gmt" || tz === "etc/utc" || tz === "etc/gmt") {
+      return "INR";
+    }
+    if (tz === "asia/kolkata" || tz === "asia/calcutta") {
+      return "INR";
+    }
+    if (tz.includes("/")) {
+      return "USD";
+    }
+    return "INR";
   } catch {
-    return null;
+    return "INR";
   }
 }
 
+async function detectCurrencyOnce(): Promise<Currency> {
+  if (resolvedSessionCurrency) return resolvedSessionCurrency;
+  if (!inFlightDetection) {
+    inFlightDetection = (async () => {
+      try {
+        const response = await fetch("/api/geo", { cache: "no-store" });
+        if (response.ok) {
+          const data = (await response.json()) as { currency?: string | null };
+          if (data.currency === "INR" || data.currency === "USD") {
+            storeAutoCurrency(data.currency);
+            return data.currency;
+          }
+        }
+      } catch {
+        // network failure — fall through to timezone/INR fallback
+      }
+      const fallback = fallbackCurrencyFromTimezone();
+      storeAutoCurrency(fallback);
+      return fallback;
+    })().finally(() => {
+      inFlightDetection = null;
+    });
+  }
+  return inFlightDetection;
+}
+
+/**
+ * Automatic location-based currency (IN -> INR, outside IN -> USD).
+ * No manual currency switching is exposed anywhere on the site.
+ */
 export function useRegionCurrency(): Currency {
-  // Start at INR so the first client render matches the static HTML (no
-  // hydration mismatch); the effect below corrects it for non-India visitors.
+  // Start at INR so SSR and initial client hydration match cleanly.
   const [currency, setCurrency] = useState<Currency>("INR");
 
   useEffect(() => {
     let cancelled = false;
 
-    // Repeat visits: apply the remembered currency instantly (no price flash),
-    // then still refresh from the server in case the visitor moved/travelled.
-    const stored = readStoredCurrency();
-    if (stored) setCurrency(stored);
+    const sync = () => {
+      const next = resolvedSessionCurrency ?? readAutoCurrency() ?? "INR";
+      setCurrency(next);
+    };
 
-    detectCurrencyViaServer()
-      .then((serverCurrency) => {
-        if (cancelled) return;
-        const resolved = serverCurrency ?? (isIndia() ? "INR" : "USD");
-        storeCurrency(resolved);
-        setCurrency(resolved);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        const resolved = isIndia() ? "INR" : "USD";
-        storeCurrency(resolved);
-        setCurrency(resolved);
-      });
+    const cached = resolvedSessionCurrency ?? readAutoCurrency();
+    if (cached) setCurrency(cached);
+
+    window.addEventListener(CHANGE_EVENT, sync);
+    window.addEventListener("storage", sync);
+
+    void detectCurrencyOnce().then((detected) => {
+      if (!cancelled) setCurrency(detected);
+    });
 
     return () => {
       cancelled = true;
+      window.removeEventListener(CHANGE_EVENT, sync);
+      window.removeEventListener("storage", sync);
     };
   }, []);
 

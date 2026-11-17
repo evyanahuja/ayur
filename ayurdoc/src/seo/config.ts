@@ -1,12 +1,14 @@
-/* Central SEO + verified clinic & practitioner configuration + pure JSON-LD helpers.
-   Pure TypeScript module (safe in both Server Components and Client Components). */
+/* Central SEO + clinic & practitioner configuration and JSON-LD helpers. */
+import { SITE } from "@/content/site";
+import { CLINIC_LOCATION, CLINIC_DIRECTIONS_URL, CLINIC_MAP_EMBED_URL as MAP_EMBED_URL } from "@/content/clinicLocation";
 
 export const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL || "https://ayurveddoctor.netlify.app"
 ).replace(/\/+$/, "");
 export const SITE_NAME = "BalChikitsa Ayurved Clinic";
 export const DOCTOR_NAME = "Dr. Priyanka Likhar";
-export const DOCTOR_REG_NO = "63934";
+export const DOCTOR_REG_NO = SITE.registrationNumber;
+export const DOCTOR_REG_AUTHORITY = SITE.registrationAuthority;
 export const DOCTOR_CREDS = "BAMS, MD (Ayurvedic Pediatrician — Kaumarbhritya) • Reg. No. 63934";
 export const DOCTOR_PG_DEGREE = "MD — Pediatrician (Kaumarbhritya / Balarog)";
 export const DOCTOR_PG_COLLEGE = "Institute of Teaching and Research in Ayurveda (ITRA)";
@@ -17,14 +19,15 @@ export const CLINIC_PHONE_DISPLAY = "+91 98607 75010";
 export const CLINIC_PHONE_HREF = "+919860775010";
 export const CLINIC_WHATSAPP = "919860775010";
 export const CLINIC_EMAIL = "drpriyankalikhar@gmail.com";
-export const CLINIC_ADDRESS_FULL = "Sanchar Nagar Extension, Kanadia Road, Indore, Madhya Pradesh 452016";
-export const CLINIC_AREA = "Sanchar Nagar Extension, Kanadia Road";
-export const CLINIC_CITY = "Indore";
-export const CLINIC_STATE = "Madhya Pradesh";
-export const CLINIC_PIN = "452016";
-export const CLINIC_COUNTRY = "IN";
+export const CLINIC_ADDRESS_FULL = CLINIC_LOCATION.address;
+export const CLINIC_AREA = CLINIC_LOCATION.street;
+export const CLINIC_CITY = CLINIC_LOCATION.city;
+export const CLINIC_STATE = CLINIC_LOCATION.region;
+export const CLINIC_PIN = CLINIC_LOCATION.postalCode;
+export const CLINIC_COUNTRY = CLINIC_LOCATION.country;
 export const CLINIC_HOURS = "Mon–Sat • 10 AM–2 PM & 5 PM–8 PM IST";
-export const CLINIC_MAPS_URL = "https://maps.app.goo.gl/vhRYqg63chcGXLrr6";
+export const CLINIC_MAPS_URL = CLINIC_DIRECTIONS_URL;
+export const CLINIC_MAP_EMBED_URL = MAP_EMBED_URL;
 export const DEFAULT_LOCALE = "en-IN";
 
 export const HOURS_SPEC = [
@@ -145,7 +148,7 @@ export function physicianJsonLd() {
     name: DOCTOR_NAME,
     url: `${SITE_URL}/about-doctor`,
     medicalSpecialty: "Pediatric",
-    identifier: DOCTOR_REG_NO,
+    identifier: { "@type": "PropertyValue", name: DOCTOR_REG_AUTHORITY, value: DOCTOR_REG_NO },
     description: DOCTOR_CREDS,
     alumniOf: [
       { "@type": "EducationalOrganization", name: DOCTOR_PG_COLLEGE },

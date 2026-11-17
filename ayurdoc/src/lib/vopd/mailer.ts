@@ -1,6 +1,6 @@
 /* VOPD emails. Reuses the shared Resend/SMTP transport from src/lib/email.ts. */
 import { sendSystemEmail } from "@/lib/email";
-import { formatClinicDateTime, VOPD_CONCERN_LABELS, type VopdConcernId } from "@/content/vopd";
+import { formatClinicDateTime, formatMinor, VOPD_CONCERN_LABELS, type VopdConcernId } from "@/content/vopd";
 import type { VopdBooking } from "@/db/schema";
 import { CLINIC_EMAIL, CLINIC_PHONE } from "./config";
 import { vopdDict } from "@/i18n/vopd";
@@ -40,7 +40,7 @@ function concernLabel(id: string): string {
 
 function feeLabel(booking: VopdBooking): string {
   if (booking.amountMinor == null) return "Enquiry only — fee confirmed by the clinic";
-  return `₹${(booking.amountMinor / 100).toLocaleString("en-IN")}`;
+  return formatMinor(booking.amountMinor, booking.currency === "USD" ? "USD" : "INR");
 }
 
 function mailLocale(booking: VopdBooking) {
@@ -53,12 +53,15 @@ function baseRows(booking: VopdBooking): [string, string][] {
   return [
     [d.pay.reference, booking.reference],
     [d.review.patient, `${booking.patientName} (${kind})`],
+    ["Gender", booking.gender || "Not provided"],
+    ["Consultation", booking.mode.toUpperCase()],
     [d.review.dob, booking.ageOrDob],
     ...(booking.guardianName ? [[d.review.guardian, booking.guardianName] as [string, string]] : []),
     [d.review.plan, `${booking.planName} · ${booking.durationMinutes} ${d.review.mins}`],
     [d.review.when, `${formatClinicDateTime(booking.slotStart.toISOString())} (IST)`],
     [d.review.category, concernLabel(booking.concernCategory)],
     [d.review.fee, feeLabel(booking)],
+    ["Payment method", booking.paymentMethod === "MANUAL_USD" ? "International transfer (manual)" : booking.paymentMethod],
   ];
 }
 
@@ -94,14 +97,14 @@ export async function sendPaymentSubmitted(booking: VopdBooking) {
   return sendSystemEmail({
     to: CLINIC_EMAIL,
     replyTo: booking.email || undefined,
-    subject: `VOPD payment submitted — ${booking.reference} — verify in bank/UPI`,
+    subject: `VOPD payment submitted — ${booking.reference} — verify in clinic account`,
     html: shell(
       "Payment reference submitted",
       "Manual verification required",
-      [...baseRows(booking), ["Payer name", booking.payerName || "—"], ["UTR", booking.upiReference || "—"], ["Status", `${booking.status} / ${booking.paymentStatus}`]],
+      [...baseRows(booking), ["Payer name", booking.payerName || "—"], ["Transaction reference", booking.upiReference || "—"], ["Status", `${booking.status} / ${booking.paymentStatus}`]],
       "This is NOT a verification. Check the clinic bank/UPI account, then verify in the admin console."
     ),
-    text: `Payment submitted for ${booking.reference}. UTR ${booking.upiReference}. Verify in the clinic account before confirming.`,
+    text: `Payment submitted for ${booking.reference}: ${booking.patientName}, ${booking.planName}, ${booking.concernCategory}, ${feeLabel(booking)}, ${booking.paymentMethod}, ${formatClinicDateTime(booking.slotStart.toISOString())}. Reference ${booking.upiReference}. Status: PENDING MANUAL VERIFICATION. Verify in the clinic account before confirming.`,
   });
 }
 
