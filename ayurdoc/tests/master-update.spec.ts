@@ -100,21 +100,45 @@ test.describe("availability and payment administration", () => {
     await login(request);
     const date = clinicDate(14);
     const weekday = new Date(`${date}T00:00:00Z`).getUTCDay();
-    const schedule = { weekday, closed: false, intervalMinutes: 30,
-      sessions: [{ start: "10:00", end: "12:00" }], breaks: [{ start: "10:30", end: "11:00" }] };
-    expect((await request.patch("/api/admin/vopd/schedule", { data: schedule })).status()).toBe(200);
-    let availability = await (await request.get(`/api/vopd/availability?date=${date}&plan=first`)).json();
-    expect(availability.slots.map((s: { label: string }) => s.label)).toEqual(["10:00 AM", "11:00 AM", "11:30 AM"]);
 
-    const holiday = clinicDate(15);
-    expect((await request.post("/api/admin/vopd/schedule", { data: { date: holiday, closed: true, sessions: [], breaks: [], intervalMinutes: 30, reason: "Test holiday" } })).status()).toBe(200);
-    availability = await (await request.get(`/api/vopd/availability?date=${holiday}&plan=first`)).json();
-    expect(availability.slots).toHaveLength(0);
+    // Capture the pre-existing weekly row so this test cannot leak narrower
+    // hours into the other suites that share this weekday.
+    const before = await (await request.get("/api/admin/vopd/schedule")).json();
+    const original = before?.weekly?.[weekday] ?? null;
 
-    const special = clinicDate(16);
-    expect((await request.post("/api/admin/vopd/schedule", { data: { date: special, closed: false, sessions: [{ start: "09:00", end: "10:00" }], breaks: [], intervalMinutes: 30, reason: "Test special hours" } })).status()).toBe(200);
-    availability = await (await request.get(`/api/vopd/availability?date=${special}&plan=first`)).json();
-    expect(availability.slots.map((s: { label: string }) => s.label)).toEqual(["9:00 AM", "9:30 AM"]);
+    let holiday = "";
+    let special = "";
+    try {
+      const schedule = { weekday, closed: false, intervalMinutes: 30,
+        sessions: [{ start: "10:00", end: "12:00" }], breaks: [{ start: "10:30", end: "11:00" }] };
+      expect((await request.patch("/api/admin/vopd/schedule", { data: schedule })).status()).toBe(200);
+      let availability = await (await request.get(`/api/vopd/availability?date=${date}&plan=first`)).json();
+      expect(availability.slots.map((s: { label: string }) => s.label)).toEqual(["10:00 AM", "11:00 AM", "11:30 AM"]);
+
+      holiday = clinicDate(15);
+      expect((await request.post("/api/admin/vopd/schedule", { data: { date: holiday, closed: true, sessions: [], breaks: [], intervalMinutes: 30, reason: "Test holiday" } })).status()).toBe(200);
+      availability = await (await request.get(`/api/vopd/availability?date=${holiday}&plan=first`)).json();
+      expect(availability.slots).toHaveLength(0);
+
+      special = clinicDate(16);
+      expect((await request.post("/api/admin/vopd/schedule", { data: { date: special, closed: false, sessions: [{ start: "09:00", end: "10:00" }], breaks: [], intervalMinutes: 30, reason: "Test special hours" } })).status()).toBe(200);
+      availability = await (await request.get(`/api/vopd/availability?date=${special}&plan=first`)).json();
+      expect(availability.slots.map((s: { label: string }) => s.label)).toEqual(["9:00 AM", "9:30 AM"]);
+    } finally {
+      // Remove the per-date overrides so later runs can book these days again.
+      for (const cleanup of [holiday, special]) {
+        await request.delete(`/api/admin/vopd/schedule?date=${cleanup}`);
+      }
+      // Put the weekday back exactly as it was found. When no override existed,
+      // restore the clinic's default hours so other suites keep their slots.
+      const restored = original?.configured
+        ? { closed: original.closed, intervalMinutes: original.intervalMinutes ?? 30,
+            sessions: original.sessions ?? [], breaks: original.breaks ?? [] }
+        : { closed: weekday === 0, intervalMinutes: 30,
+            sessions: weekday === 0 ? [] : [{ start: "10:00", end: "14:00" }, { start: "17:00", end: "20:00" }],
+            breaks: [] };
+      await request.patch("/api/admin/vopd/schedule", { data: { weekday, ...restored } });
+    }
   });
 
   test("payment submission stays pending; admin approval/rejection is explicit and duplicate-safe", async ({ request }) => {
@@ -202,6 +226,53 @@ test.describe("availability and payment administration", () => {
     expect((await request.get(`/api/admin/vopd/bookings/${booking.reference}`)).status()).toBe(200);
   });
 
+  test("confirmation email results are reported and audited for both recipients", async ({ request }) => {
+    await login(request);
+    const date = clinicDate(17);
+    const slot = await firstSlot(request, date);
+    const created = await (await request.post("/api/vopd/bookings", { headers: freshIp(), data: bookingPayload(slot!) })).json();
+    const reference = created.reference as string;
+
+    const form = new FormData();
+    form.set("payerName", "Email Report Test");
+    form.set("upiReference", "EMAILUTR999999");
+    await request.post(`/api/vopd/bookings/${reference}/payment`, { multipart: form });
+    await request.post(`/api/admin/vopd/bookings/${reference}/action`, { data: { action: "verify" } });
+
+    // Manual Meet link confirms the booking and notifies BOTH the patient and
+    // the clinic, reporting the real provider result instead of a vague success.
+    const setMeet = await (await request.post(`/api/admin/vopd/bookings/${reference}/action`, {
+      data: { action: "set-meet", meetUrl: "https://meet.google.com/abc-defg-hij" },
+    })).json();
+    expect(setMeet.ok).toBe(true);
+    expect(setMeet.booking.status).toBe("CONFIRMED");
+    const recipients = setMeet.outcome.results.map((r: { recipient: string }) => r.recipient).sort();
+    expect(recipients).toEqual(["clinic", "patient"]);
+    for (const result of setMeet.outcome.results) {
+      expect(typeof result.sent).toBe("boolean");
+      expect(typeof result.reason).toBe("string");
+      expect(result.reason.length).toBeGreaterThan(0);
+    }
+    expect(setMeet.outcome.message).toMatch(/patient/);
+    expect(setMeet.outcome.message).toMatch(/clinic/);
+
+    // Every attempt is visible in the audit trail, sent or failed.
+    const audit = setMeet.audit as { action: string; note: string }[];
+    const emailEntries = audit.filter((entry) => entry.action.startsWith("CONFIRMATION_EMAIL_"));
+    expect(emailEntries).toHaveLength(2);
+    for (const entry of emailEntries) {
+      expect(["CONFIRMATION_EMAIL_SENT", "CONFIRMATION_EMAIL_FAILED"]).toContain(entry.action);
+      expect(entry.note).toMatch(/confirmation email:/);
+    }
+
+    // Resending reports the outcome instead of failing silently.
+    const resend = await (await request.post(`/api/admin/vopd/bookings/${reference}/action`, { data: { action: "email-meet-link" } })).json();
+    expect(typeof resend.message).toBe("string");
+    expect(resend.message).toMatch(/patient/);
+    const resendAudit = (await (await request.get(`/api/admin/vopd/bookings/${reference}`)).json()).audit as { action: string }[];
+    expect(resendAudit.filter((e) => e.action.startsWith("CONFIRMATION_EMAIL_")).length).toBeGreaterThanOrEqual(4);
+  });
+
   test("closing a date after confirmation does not cancel the confirmed appointment", async ({ request }) => {
     await login(request);
     const date = clinicDate(21);
@@ -221,6 +292,9 @@ test.describe("availability and payment administration", () => {
     expect((await request.post("/api/admin/vopd/schedule", { data: { date, closed: true, sessions: [], breaks: [], intervalMinutes: 30, reason: "Post-confirmation closure test" } })).status()).toBe(200);
     const after = await (await request.get(`/api/admin/vopd/bookings/${created.reference}`)).json();
     expect(after.booking.status).toBe("CONFIRMED");
+    // Confirmed appointment survives the closure, and the closure is undone so
+    // the date is bookable again on the next run.
+    await request.delete(`/api/admin/vopd/schedule?date=${date}`);
   });
 });
 
