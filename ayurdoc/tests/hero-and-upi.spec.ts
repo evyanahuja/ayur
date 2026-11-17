@@ -43,7 +43,7 @@ test("UPI QR is server-generated; payment stays pending until admin verifies; ma
   const configBody = await configResponse.json();
   expect(configBody.config?.upi?.configured, `config status=${configResponse.status()}`).toBe(true);
 
-  const date = clinicDate(12);
+  const date = clinicDate(28);
   const availability = await (await request.get(`/api/vopd/availability?date=${date}&plan=first`)).json();
   const slot = availability.slots?.[0]?.startIso as string | undefined;
   expect(slot, "a free first-consultation slot must exist").toBeTruthy();
@@ -51,6 +51,7 @@ test("UPI QR is server-generated; payment stays pending until admin verifies; ma
   const createdRes = await request.post("/api/vopd/bookings", {
     data: {
       patientKind: "adult",
+      gender: "Male",
       patientName: "QR Flow Test",
       ageOrDob: "1988-02-10",
       phone: "+919999999971",
@@ -58,6 +59,7 @@ test("UPI QR is server-generated; payment stays pending until admin verifies; ma
       concernCategory: "digestive-disorders",
       symptoms: "Automated verification of the UPI QR and verification flow.",
       planId: "first",
+      currency: "INR",
       slotStartIso: slot,
       consent: true,
     },
@@ -125,6 +127,9 @@ test("payment step renders the scannable UPI QR with the demo warning", async ({
   const enquiry = page.locator("[data-patient-enquiry]");
   await enquiry.getByRole("radio", { name: /VOPD/ }).click();
   await enquiry.getByRole("button", { name: "Adult", exact: true }).click();
+  // The required-field asterisk is part of the label for adults, so target the
+  // control itself rather than an exact label-text match.
+  await enquiry.locator('select[name="childGender"], select[id*="gender"]').first().selectOption("Male");
   await enquiry.getByLabel("Patient's full name *").fill("QR UI Test");
   await enquiry.getByLabel("Date of birth *").fill("1988-02-10");
   await enquiry.getByLabel("Mobile number *").fill("+919999999972");
