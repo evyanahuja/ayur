@@ -120,6 +120,140 @@ Plan: ${planLabel(p.planInterest, p.currency) || "-"}
 Message: ${p.message || "-"}`;
 }
 
+// --- Shared delivery core -----------------------------------------------------
+// ONE place decides how mail leaves the server. Order: Resend (if a key is set),
+// then SMTP (e.g. a Gmail app password) as an automatic fallback. This matters
+// when there is no verified domain: Resend then only delivers to the account
+// owner, so patient emails are rejected and must fall through to SMTP.
+type DeliveryInput = { to: string; subject: string; html: string; text: string; replyTo?: string };
+type DeliveryResult =
+  | { sent: true; provider: "resend" | "smtp"; note?: string }
+  | { sent: false; reason: string; code: "recipient_missing" | "provider_missing" | "provider_rejected" | "provider_error" };
+
+const resendConfigured = () => Boolean(process.env.RESEND_API_KEY?.trim());
+const smtpConfigured = () =>
+  Boolean(process.env.SMTP_HOST?.trim() && process.env.SMTP_USER?.trim() && process.env.SMTP_PASS?.trim());
+
+/** Which provider(s) are available - surfaced in the admin console. */
+export function emailProviderStatus(): { resend: boolean; smtp: boolean } {
+  return { resend: resendConfigured(), smtp: smtpConfigured() };
+}
+
+function shorten(value: string, max = 180) {
+  const clean = value.replace(/\s+/g, " ").trim();
+  return clean.length > max ? `${clean.slice(0, max - 1)}...` : clean;
+}
+
+/** Gmail (and most hosted SMTP) rewrite or reject a From address that is not the
+ *  authenticated mailbox, so those always send from the SMTP login. Only the
+ *  display name is taken from FROM_EMAIL. Exported for unit testing. */
+export function smtpSenderFor(host: string, user: string, fromEmail: string): string {
+  const configured = fromEmail.trim();
+  const named = configured.match(/^\s*(.+?)\s*<[^>]+>\s*$/);
+  // Quotes, backslashes and line breaks are stripped so the display name can
+  // neither break the header nor inject extra headers.
+  const cleanName = (named?.[1] ?? "").replace(/["\\\r\n]/g, "").trim();
+  const name = cleanName || "BalChikitsa Ayurved Clinic";
+  const forcesLogin = /gmail|googlemail|office365|outlook/.test(host.toLowerCase());
+  const bareAddress = configured.match(/<([^>]+)>/)?.[1] || (configured.includes("@") ? configured : "");
+  const address = forcesLogin || !bareAddress ? user.trim() : bareAddress;
+  return `"${name}" <${address}>`;
+}
+
+const smtpFrom = () =>
+  smtpSenderFor(process.env.SMTP_HOST || "", process.env.SMTP_USER || "", process.env.FROM_EMAIL || "");
+
+async function deliverViaResend(input: DeliveryInput): Promise<DeliveryResult> {
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY!.trim()}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: process.env.FROM_EMAIL?.trim() || "BalChikitsa <onboarding@resend.dev>",
+        to: [input.to],
+        reply_to: input.replyTo || undefined,
+        subject: input.subject,
+        html: input.html,
+        text: input.text,
+      }),
+    });
+    const body = await response.text();
+    if (!response.ok) {
+      let detail = body;
+      try { detail = (JSON.parse(body) as { message?: string }).message || body; } catch { /* keep raw body */ }
+      console.error(`Resend rejected email to ${input.to} (${response.status}):`, body);
+      const sandbox = /verify a domain|own email|testing emails|not verified|domain is not/i.test(detail);
+      return {
+        sent: false,
+        code: "provider_rejected",
+        reason: `Resend (${response.status}): ${shorten(detail)}${sandbox ? " - Resend only delivers to the account owner until a domain is verified; configure SMTP (Gmail app password) instead." : ""}`,
+      };
+    }
+    return { sent: true, provider: "resend" };
+  } catch (error) {
+    console.error("Resend request failed:", error);
+    return { sent: false, code: "provider_error", reason: `Resend could not be reached: ${shorten(error instanceof Error ? error.message : String(error), 120)}` };
+  }
+}
+
+async function deliverViaSmtp(input: DeliveryInput): Promise<DeliveryResult> {
+  try {
+    const port = Number(process.env.SMTP_PORT || 587);
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST!.trim(),
+      port,
+      secure: port === 465,
+      auth: { user: process.env.SMTP_USER!.trim(), pass: process.env.SMTP_PASS },
+      connectionTimeout: 15_000,
+      greetingTimeout: 15_000,
+      socketTimeout: 20_000,
+    });
+    await transporter.sendMail({
+      from: smtpFrom(),
+      to: input.to,
+      replyTo: input.replyTo || undefined,
+      subject: input.subject,
+      text: input.text,
+      html: input.html,
+    });
+    return { sent: true, provider: "smtp" };
+  } catch (error) {
+    console.error("SMTP email failed:", error);
+    const raw = error instanceof Error ? error.message : String(error);
+    const authFailure = /535|invalid login|username and password|application-specific|auth/i.test(raw);
+    return {
+      sent: false,
+      code: "provider_error",
+      reason: `SMTP: ${shorten(raw, 140)}${authFailure ? " - for Gmail use a 16-character App Password (2-Step Verification must be on), not your normal password." : ""}`,
+    };
+  }
+}
+
+async function deliverEmail(input: DeliveryInput): Promise<DeliveryResult> {
+  const to = input.to?.trim();
+  if (!to) return { sent: false, code: "recipient_missing", reason: "No recipient email." };
+  const message = { ...input, to };
+
+  const failures: string[] = [];
+  let lastCode: "provider_rejected" | "provider_error" = "provider_error";
+
+  if (resendConfigured()) {
+    const result = await deliverViaResend(message);
+    if (result.sent) return result;
+    failures.push(result.reason);
+    lastCode = result.code === "provider_rejected" ? "provider_rejected" : "provider_error";
+    if (smtpConfigured()) console.warn("Resend failed; falling back to SMTP for", to);
+  }
+  if (smtpConfigured()) {
+    const result = await deliverViaSmtp(message);
+    if (result.sent) return failures.length ? { ...result, note: `Delivered by SMTP after: ${failures[0]}` } : result;
+    failures.push(result.reason);
+    lastCode = result.code === "provider_rejected" ? "provider_rejected" : "provider_error";
+  }
+  if (!failures.length) return { sent: false, code: "provider_missing", reason: "No email provider is configured." };
+  return { sent: false, code: lastCode, reason: failures.join(" | ") };
+}
+
 export async function sendDoctorNotification(
   payload: InquiryPayload,
   ref: string | null
@@ -135,96 +269,18 @@ export async function sendDoctorNotification(
   );
 
   if (!doctorEmail) {
-    return {
-      sent: false,
-      code: "recipient_missing",
-      reason: "Doctor notification recipient is not configured.",
-    };
+    return { sent: false, code: "recipient_missing", reason: "Doctor notification recipient is not configured." };
   }
 
-  const subject = `🌿 New Patient${referenceLabel(ref)}: ${payload.childName} (${payload.childAge}) — ${concernLabel(payload.concernCategory)}`;
-
-  if (process.env.RESEND_API_KEY?.trim()) {
-    try {
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.RESEND_API_KEY.trim()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: process.env.FROM_EMAIL?.trim() || "BalChikitsa <onboarding@resend.dev>",
-          to: [doctorEmail],
-          reply_to: payload.email || undefined,
-          subject,
-          html: buildHtml(payload, ref),
-          text: buildText(payload, ref),
-        }),
-      });
-      const responseText = await res.text();
-      if (!res.ok) {
-        console.error(`Resend rejected inquiry notification (${res.status}):`, responseText);
-        return {
-          sent: false,
-          code: "provider_rejected",
-          reason: "Email provider rejected the notification.",
-        };
-      }
-      console.log("Resend accepted inquiry notification:", responseText);
-      return { sent: true, provider: "resend", reason: "Email notification sent." };
-    } catch (error) {
-      console.error("Resend request failed:", error);
-      return {
-        sent: false,
-        code: "provider_error",
-        reason: "Email provider could not be reached.",
-      };
-    }
-  }
-
-  if (
-    process.env.SMTP_HOST?.trim() &&
-    process.env.SMTP_USER?.trim() &&
-    process.env.SMTP_PASS?.trim()
-  ) {
-    try {
-      const port = Number(process.env.SMTP_PORT || 587);
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST.trim(),
-        port,
-        secure: port === 465,
-        auth: {
-          user: process.env.SMTP_USER.trim(),
-          pass: process.env.SMTP_PASS,
-        },
-      });
-      const info = await transporter.sendMail({
-        from:
-          process.env.FROM_EMAIL?.trim() ||
-          `"BalChikitsa Website" <${process.env.SMTP_USER.trim()}>`,
-        to: doctorEmail,
-        replyTo: payload.email || undefined,
-        subject,
-        text: buildText(payload, ref),
-        html: buildHtml(payload, ref),
-      });
-      console.log("SMTP accepted inquiry notification:", info.messageId);
-      return { sent: true, provider: "smtp", reason: "Email notification sent." };
-    } catch (error) {
-      console.error("SMTP notification failed:", error);
-      return {
-        sent: false,
-        code: "provider_error",
-        reason: "SMTP could not send the notification.",
-      };
-    }
-  }
-
-  return {
-    sent: false,
-    code: "provider_missing",
-    reason: "No email provider is configured.",
-  };
+  const result = await deliverEmail({
+    to: doctorEmail,
+    replyTo: payload.email || undefined,
+    subject: `🌿 New Patient${referenceLabel(ref)}: ${payload.childName} (${payload.childAge}) — ${concernLabel(payload.concernCategory)}`,
+    html: buildHtml(payload, ref),
+    text: buildText(payload, ref),
+  });
+  if (!result.sent) return result;
+  return { sent: true, provider: result.provider, reason: result.note || "Email notification sent." };
 }
 
 // --- Parent confirmation email ------------------------------------------------
@@ -288,66 +344,14 @@ export async function sendParentConfirmation(
   ref: string | null
 ): Promise<ParentMailResult> {
   if (!payload.email) return { sent: false, reason: "no_parent_email" };
-  const subject = `🌿 Enquiry received — Ref ${ref || "pending"} — ${payload.childName}`;
-
-  if (process.env.RESEND_API_KEY?.trim()) {
-    try {
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.RESEND_API_KEY.trim()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: process.env.FROM_EMAIL?.trim() || "BalChikitsa <onboarding@resend.dev>",
-          to: [payload.email],
-          subject,
-          html: buildParentHtml(payload, ref),
-          text: buildParentText(payload, ref),
-        }),
-      });
-      if (!res.ok) {
-        const t = await res.text();
-        console.error(`Resend rejected parent confirmation (${res.status}):`, t);
-        return { sent: false, reason: "provider_rejected" };
-      }
-      return { sent: true, provider: "resend" };
-    } catch (e) {
-      console.error("Resend parent confirmation failed:", e);
-      return { sent: false, reason: "provider_error" };
-    }
-  }
-
-  if (
-    process.env.SMTP_HOST?.trim() &&
-    process.env.SMTP_USER?.trim() &&
-    process.env.SMTP_PASS?.trim()
-  ) {
-    try {
-      const port = Number(process.env.SMTP_PORT || 587);
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST.trim(),
-        port,
-        secure: port === 465,
-        auth: { user: process.env.SMTP_USER.trim(), pass: process.env.SMTP_PASS },
-      });
-      await transporter.sendMail({
-        from:
-          process.env.FROM_EMAIL?.trim() ||
-          `"BalChikitsa Website" <${process.env.SMTP_USER.trim()}>`,
-        to: payload.email,
-        subject,
-        text: buildParentText(payload, ref),
-        html: buildParentHtml(payload, ref),
-      });
-      return { sent: true, provider: "smtp" };
-    } catch (e) {
-      console.error("SMTP parent confirmation failed:", e);
-      return { sent: false, reason: "provider_error" };
-    }
-  }
-
-  return { sent: false, reason: "no_provider" };
+  const result = await deliverEmail({
+    to: payload.email,
+    subject: `🌿 Enquiry received — Ref ${ref || "pending"} — ${payload.childName}`,
+    html: buildParentHtml(payload, ref),
+    text: buildParentText(payload, ref),
+  });
+  if (!result.sent) return { sent: false, reason: result.reason };
+  return { sent: true, provider: result.provider };
 }
 
 /* --- Generic transactional transport (used by VOPD) --------------------------
@@ -366,60 +370,7 @@ export type SystemMailResult =
   | { sent: false; reason: string; code: "recipient_missing" | "provider_missing" | "provider_rejected" | "provider_error" };
 
 export async function sendSystemEmail(input: SystemMailInput): Promise<SystemMailResult> {
-  const to = input.to?.trim();
-  if (!to) return { sent: false, reason: "No recipient email.", code: "recipient_missing" };
-
-  if (process.env.RESEND_API_KEY?.trim()) {
-    try {
-      const response = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.RESEND_API_KEY.trim()}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: process.env.FROM_EMAIL?.trim() || "BalChikitsa <onboarding@resend.dev>",
-          to: [to],
-          reply_to: input.replyTo || undefined,
-          subject: input.subject,
-          html: input.html,
-          text: input.text,
-        }),
-      });
-      if (!response.ok) {
-        console.error(`Resend rejected system email (${response.status}):`, await response.text());
-        return { sent: false, reason: "Email provider rejected the message.", code: "provider_rejected" };
-      }
-      return { sent: true, provider: "resend" };
-    } catch (error) {
-      console.error("Resend system email failed:", error);
-      return { sent: false, reason: "Email provider could not be reached.", code: "provider_error" };
-    }
-  }
-
-  if (process.env.SMTP_HOST?.trim() && process.env.SMTP_USER?.trim() && process.env.SMTP_PASS?.trim()) {
-    try {
-      const port = Number(process.env.SMTP_PORT || 587);
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST.trim(),
-        port,
-        secure: port === 465,
-        auth: { user: process.env.SMTP_USER.trim(), pass: process.env.SMTP_PASS },
-      });
-      await transporter.sendMail({
-        from: process.env.FROM_EMAIL?.trim() || `"BalChikitsa Website" <${process.env.SMTP_USER.trim()}>`,
-        to,
-        replyTo: input.replyTo || undefined,
-        subject: input.subject,
-        text: input.text,
-        html: input.html,
-      });
-      return { sent: true, provider: "smtp" };
-    } catch (error) {
-      console.error("SMTP system email failed:", error);
-      return { sent: false, reason: "SMTP could not send the message.", code: "provider_error" };
-    }
-  }
-
-  return { sent: false, reason: "No email provider is configured.", code: "provider_missing" };
+  const result = await deliverEmail(input);
+  if (!result.sent) return result;
+  return { sent: true, provider: result.provider };
 }
