@@ -41,6 +41,7 @@ type BookingRow = {
   verifiedAt: string | null;
   verifiedBy: string | null;
   hasScreenshot: boolean;
+  confirmationEmailSentAt: string | null;
 };
 
 type AuditRow = { id: number; action: string; fromStatus: string | null; toStatus: string | null; actor: string; note: string | null; createdAt: string };
@@ -87,6 +88,7 @@ export function VopdAdminConsole() {
   const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
   const [section, setSection] = useState<"overview" | "appointments" | "plans" | "availability" | "holidays" | "payments" | "profile">("overview");
   const [summary, setSummary] = useState({ total: 0, pending: 0, confirmed: 0, verified_payments: 0, rejected: 0, completed: 0 });
+  const [emailProvider, setEmailProvider] = useState<string | null>(null);
   const [planDraft, setPlanDraft] = useState(emptyPlanDraft);
   const [calendar, setCalendar] = useState<{ configured: boolean; reachable: boolean; message: string } | null>(null);
   const [upiConfigured, setUpiConfigured] = useState(true);
@@ -118,6 +120,7 @@ export function VopdAdminConsole() {
       setCustomPlans(data.customPlans ?? []);
       setCalendar(data.calendar ?? null);
       setUpiConfigured(data.upiConfigured !== false);
+      setEmailProvider(data.emailProvider ?? null);
     } catch {
       setNotice("Network error while loading bookings.");
     } finally {
@@ -183,6 +186,7 @@ export function VopdAdminConsole() {
       const data = await response.json();
       if (!response.ok || !data.ok) setNotice(data.error || "Action failed.");
       else if (data.outcome?.message) setNotice(data.outcome.message);
+      else if (data.message) setNotice(data.message);
       else setNotice("Action completed.");
       await openBooking(selected.reference);
       await load();
@@ -380,6 +384,11 @@ export function VopdAdminConsole() {
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> UPI is not configured yet. Set VOPD_UPI_ID and VOPD_UPI_NAME — the patient payment QR (exact amount + booking reference) is then generated automatically. VOPD_UPI_QR_PATH is an optional static-image override.
           </p>
         )}
+        {!emailProvider && (
+          <p className="mt-4 flex items-start gap-2 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-[13px] text-red-900">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> No email provider is configured, so booking and confirmation emails cannot be sent. Set RESEND_API_KEY (plus FROM_EMAIL) or SMTP_HOST / SMTP_USER / SMTP_PASS in Netlify.
+          </p>
+        )}
         {calendar && (
           <p className={cn("mt-3 flex items-start gap-2 rounded-xl border px-4 py-3 text-[13px]", calendar.configured && calendar.reachable ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-amber-300 bg-amber-50 text-amber-900")}>
             <Video className="mt-0.5 h-4 w-4 shrink-0" /> {calendar.message}
@@ -496,6 +505,9 @@ export function VopdAdminConsole() {
                   ["UTR", selected.upiReference || "—"],
                   ["Verified by", selected.verifiedBy ? `${selected.verifiedBy} · ${selected.verifiedAt ? formatClinicDateTime(selected.verifiedAt) : ""}` : "—"],
                   ["Calendar", `${selected.calendarStatus}${selected.calendarError ? ` · ${selected.calendarError}` : ""}`],
+                  ["Confirmation email", selected.confirmationEmailSentAt
+                    ? `Sent · ${formatClinicDateTime(selected.confirmationEmailSentAt)}`
+                    : "Not sent yet — use Save & email link"],
                 ].map(([key, value]) => (
                   <div key={key} className="flex gap-2">
                     <dt className="min-w-[110px] text-forest-700">{key}</dt>
