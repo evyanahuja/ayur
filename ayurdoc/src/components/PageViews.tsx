@@ -739,25 +739,29 @@ export function AboutDoctorView() {
         crumbs={[{ label: p.hubs.homeCrumb, href: "/" }, { label: s.crumb }]}
       >
         <div className="rounded-3xl border border-forest-900/10 bg-white p-6 sm:p-8 grid md:grid-cols-[220px_1fr] gap-6 items-start">
-          <img src={IMAGES.doctorPortrait} alt={copy.portraitAlt} width={400} height={520} loading="eager" className="mx-auto w-44 h-56 md:mx-0 md:w-full md:h-64 object-cover object-top rounded-2xl shadow-md" />
+          <div className="mx-auto w-44 md:mx-0 md:w-full">
+            <img src={IMAGES.doctorPortrait} alt={copy.portraitAlt} width={400} height={520} loading="eager" className="w-full h-56 md:h-64 object-cover object-top rounded-2xl shadow-md" />
+            {/* The verified registration badge sits with the portrait so the
+                number is shown once, not repeated across the page. */}
+            <p className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-2 text-center text-[12px] font-semibold text-emerald-900">
+              <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-emerald-600" aria-hidden="true" /> {s.regBadgeLabel}
+            </p>
+          </div>
           <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="text-[13px] font-semibold tracking-wide text-saffron-700 uppercase">
-                {t.site.qualification}
-              </p>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[12px] font-semibold text-emerald-900">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> {s.regBadgeLabel}
-              </span>
-            </div>
+            <p className="text-[13px] font-semibold tracking-wide text-saffron-700 uppercase">
+              {t.site.qualification}
+            </p>
             <h2 className="mt-5 font-display text-[21px] text-forest-950">{copy.qualificationsTitle}</h2>
             <p className="mt-2 break-words text-[13px] text-forest-800"><strong>{copy.authorityLabel}:</strong> {SITE.registrationAuthority}</p>
             <ul className="mt-4 space-y-2.5 text-[14.5px] text-forest-900/85">
-              {s.qualsList.map((item) => (
-                <li key={item} className="flex gap-2.5">
-                  <Check className="w-4 h-4 mt-1 text-forest-600 shrink-0" />
-                  <span>{item}</span>
-                </li>
-              ))}
+              {s.qualsList
+                .filter((item) => !/63934/.test(item))
+                .map((item) => (
+                  <li key={item} className="flex gap-2.5">
+                    <Check className="w-4 h-4 mt-1 text-forest-600 shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
             </ul>
           </div>
         </div>
