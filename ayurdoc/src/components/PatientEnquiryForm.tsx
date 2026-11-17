@@ -436,8 +436,13 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="min-w-0">
-                  <label htmlFor={id("childGender")} className={labelCls}>{t.booking.gender}</label>
-                  <select id={id("childGender")} name="childGender" value={form.childGender}
+                  <label htmlFor={id("childGender")} className={labelCls}>
+                    {t.booking.gender}
+                    {form.patientKind === "adult" ? (
+                      <span aria-hidden="true" className="ml-0.5 text-clay-500">*</span>
+                    ) : null}
+                  </label>
+                  <select id={id("childGender")} name="childGender" aria-required={form.patientKind === "adult"} value={form.childGender}
                     onChange={(event) => {
                       const gender = event.target.value;
                       setForm((current) => ({ ...current, childGender: gender,
