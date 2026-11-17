@@ -452,7 +452,7 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
       </div>
 
       <h3 ref={headingRef} tabIndex={-1} className="font-display text-[21px] text-forest-950 outline-none sm:text-[23px]">
-        {created && step === 5 ? v.paymentHeading : (v.stepHeadings[step] ?? v.steps[step])}
+        {created && step === 5 ? (created.currency === "USD" ? v.paymentHeadingInternational : v.paymentHeading) : (v.stepHeadings[step] ?? v.steps[step])}
       </h3>
 
       <input
