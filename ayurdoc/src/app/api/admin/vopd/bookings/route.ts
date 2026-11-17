@@ -31,5 +31,10 @@ export async function GET(request: Request) {
     customPlans,
     calendar,
     upiConfigured: isUpiConfigured(),
+    emailProvider: process.env.RESEND_API_KEY?.trim()
+      ? "resend"
+      : process.env.SMTP_HOST?.trim() && process.env.SMTP_USER?.trim() && process.env.SMTP_PASS?.trim()
+        ? "smtp"
+        : null,
   });
 }
