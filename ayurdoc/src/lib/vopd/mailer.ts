@@ -139,6 +139,37 @@ export async function sendConfirmation(booking: VopdBooking) {
   return result;
 }
 
+/** Clinic-side confirmation. The doctor never received one before: only the
+ *  patient was notified when an appointment became CONFIRMED. */
+export async function sendAdminConfirmation(booking: VopdBooking) {
+  const meet = booking.meetUrl;
+  const d = vopdDict(mailLocale(booking));
+  const rows: [string, string][] = [
+    ...baseRows(booking),
+    ["Status", `${booking.status} · ${booking.paymentStatus}`],
+    ...(meet ? [["Meet link", meet] as [string, string]] : []),
+    ["Verified by", booking.verifiedBy || "—"],
+  ];
+  return sendSystemEmail({
+    to: CLINIC_EMAIL,
+    replyTo: booking.email || undefined,
+    subject: `Appointment confirmed — ${booking.reference} — ${booking.planName}`,
+    html: shell(
+      `Appointment confirmed — ${booking.reference}`,
+      "Patient notification sent",
+      rows,
+      meet
+        ? "The patient has been emailed the appointment details and the Google Meet link. Add this appointment to your calendar if it is not already there."
+        : "No Meet link is attached yet — add one to confirm the patient has join details.",
+      meet ? { label: "Open Google Meet", url: meet } : undefined
+    ),
+    text: [
+      `Appointment confirmed — ${booking.reference}`,
+      ...rows.map(([key, value]) => `${key}: ${value}`),
+    ].join("\n"),
+  });
+}
+
 export async function sendMeetLink(booking: VopdBooking) {
   if (!booking.email || !booking.meetUrl) return { sent: false as const, reason: "missing_email_or_link" };
   const d = vopdDict(mailLocale(booking));

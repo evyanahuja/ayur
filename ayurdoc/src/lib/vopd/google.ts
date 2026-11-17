@@ -44,6 +44,7 @@ export async function createCalendarEvent(booking: VopdBooking): Promise<Calenda
   const endIso = new Date(booking.slotStart.getTime() + booking.durationMinutes * 60_000).toISOString();
   const concern = VOPD_CONCERN_LABELS[booking.concernCategory as VopdConcernId] ?? booking.concernCategory;
   const patientLabel = booking.patientKind === "child" ? `${booking.patientName} (child)` : booking.patientName;
+  const attendees = booking.email ? [{ email: booking.email.trim(), displayName: patientLabel }] : [];
 
   const body = {
     summary: `VOPD · ${patientLabel} · ${booking.reference}`,
@@ -65,24 +66,41 @@ export async function createCalendarEvent(booking: VopdBooking): Promise<Calenda
       },
     },
     extendedProperties: { private: { vopdReference: booking.reference } },
+    // Without attendees Google sends no invite email at all. The contact on the
+    // booking is added as the guest so they receive the invite + Meet link.
+    ...(attendees.length ? { attendees } : {}),
   };
 
-  const response = await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?conferenceDataVersion=1&sendUpdates=none`,
-    {
+  // sendUpdates=all mails the invite to attendees; without attendees there is
+  // nobody to notify, so we keep the request quiet in that case.
+  const sendUpdates = attendees.length ? "all" : "none";
+  const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?conferenceDataVersion=1&sendUpdates=${sendUpdates}`;
+  const send = (payloadBody: object) =>
+    fetch(url, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    }
-  );
+      body: JSON.stringify(payloadBody),
+    });
 
-  const payload = (await response.json().catch(() => ({}))) as {
+  let response = await send(body);
+
+  let payload = (await response.json().catch(() => ({}))) as {
     id?: string;
     hangoutLink?: string;
     htmlLink?: string;
     conferenceData?: { entryPoints?: { entryPointType?: string; uri?: string }[] };
     error?: { message?: string };
   };
+
+  // An unwell-formed guest must never block the confirmation itself: fall back
+  // to creating the event without attendees (the patient then gets our own
+  // confirmation email with the Meet link instead).
+  if (!response.ok && attendees.length && /attendee|invalid|permission/i.test(payload.error?.message || "")) {
+    const { attendees: _drop, ...withoutAttendees } = body;
+    console.error("Google Calendar rejected attendees, retrying without guests:", payload.error?.message);
+    response = await send(withoutAttendees);
+    payload = (await response.json().catch(() => ({}))) as typeof payload;
+  }
 
   if (!response.ok || !payload.id) {
     throw new Error(`Google Calendar rejected the event: ${payload.error?.message || response.status}`);
