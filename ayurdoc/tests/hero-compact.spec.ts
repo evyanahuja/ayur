@@ -29,7 +29,10 @@ for (const language of languages) {
       await expect(hero.locator(".credential-card")).toHaveCount(2);
       await expect(hero.locator('[data-credential="qualification"]')).toHaveCount(0);
       await expect(hero.locator("dl")).toHaveCount(0);
-      await expect(hero.locator(".hero-registration")).toContainText("63934");
+      // The hero keeps the credentials line; the registration number itself is
+      // shown once, on the About Doctor page, under the portrait.
+      await expect(hero.locator(".hero-registration")).toContainText("BAMS");
+      await expect(hero.locator(".hero-registration")).not.toContainText("63934");
       await expect(hero.locator('a[href="#book"]')).toBeVisible();
       await expect(hero.locator('a[href="#method"]')).toBeVisible();
 
