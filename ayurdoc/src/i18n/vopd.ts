@@ -49,6 +49,7 @@ export type VopdDict = {
   stepHeadings: string[];
   stepCounter: string;
   paymentHeading: string;
+  paymentHeadingInternational: string;
   unavailable: string;
   patient: {
     who: string; child: string; adult: string;
@@ -113,6 +114,7 @@ const en: VopdDict = {
   ],
   stepCounter: "Step {current} of {total}",
   paymentHeading: "Complete UPI Payment",
+  paymentHeadingInternational: "Complete International Payment",
   unavailable: "Online slot reservation is temporarily unavailable. Please call {phone} or message on WhatsApp.",
   patient: {
     who: "Consultation is for", child: "Child", adult: "Adult",
@@ -245,6 +247,7 @@ const hi: VopdDict = {
   ],
   stepCounter: "चरण {current} / {total}",
   paymentHeading: "UPI भुगतान पूरा करें",
+  paymentHeadingInternational: "अंतरराष्ट्रीय भुगतान पूरा करें",
   unavailable: "ऑनलाइन स्लॉट बुकिंग अभी उपलब्ध नहीं है। कृपया {phone} पर कॉल करें या WhatsApp करें।",
   patient: {
     who: "परामर्श किसके लिए है", child: "बच्चा", adult: "वयस्क",
@@ -377,6 +380,7 @@ const mr: VopdDict = {
   ],
   stepCounter: "टप्पा {current} / {total}",
   paymentHeading: "UPI पेमेंट पूर्ण करा",
+  paymentHeadingInternational: "आंतरराष्ट्रीय पेमेंट पूर्ण करा",
   unavailable: "ऑनलाइन स्लॉट बुकिंग तात्पुरती अनुपलब्ध आहे. कृपया {phone} वर कॉल करा किंवा WhatsApp करा.",
   patient: {
     who: "सल्ला कोणासाठी आहे", child: "मूल", adult: "प्रौढ",
@@ -509,6 +513,7 @@ const gu: VopdDict = {
   ],
   stepCounter: "પગલું {current} / {total}",
   paymentHeading: "UPI પેમેન્ટ પૂર્ણ કરો",
+  paymentHeadingInternational: "આંતરરાષ્ટ્રીય ચુકવણી પૂર્ણ કરો",
   unavailable: "ઓનલાઇન સ્લોટ બુકિંગ હાલ ઉપલબ્ધ નથી. કૃપા કરીને {phone} પર કૉલ કરો અથવા WhatsApp કરો.",
   patient: {
     who: "પરામર્શ કોના માટે છે", child: "બાળક", adult: "પુખ્ત",
