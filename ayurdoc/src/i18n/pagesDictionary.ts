@@ -292,7 +292,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
       terms: "Terms of Use",
       aboutDoctor: "Doctor Credentials",
       madeWith: "Made with",
-      forKids: "for thriving kids",
+      forKids: "for healthier tomorrow",
       disclaimer: "Educational content only — not emergency medical advice. Ayurvedic care is complementary and coordinated with your paediatrician. Outcomes vary by child; timelines describe typical patterns, not guarantees.",
     },
     seoBlocks: {
@@ -635,7 +635,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
       terms: "उपयोग की शर्तें",
       aboutDoctor: "डॉक्टर की योग्यता",
       madeWith: "स्नेह से निर्मित",
-      forKids: "स्वस्थ और खुशहाल बचपन के लिए",
+      forKids: "स्वस्थ कल के लिए",
       disclaimer: "केवल शैक्षिक जानकारी — आपातकालीन चिकित्सा सलाह का विकल्प नहीं। आयुर्वेदिक देखभाल बालरोग विशेषज्ञ के साथ समन्वय में दी जाती है। परिणाम प्रत्येक बच्चे की प्रकृति व निरंतरता पर निर्भर करते हैं।",
     },
     seoBlocks: {
@@ -978,7 +978,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
       terms: "वापराच्या अटी",
       aboutDoctor: "डॉक्टरांची पात्रता",
       madeWith: "प्रेमाने निर्मिले",
-      forKids: "सुदृढ व आनंदी बालपणासाठी",
+      forKids: "निरोगी उद्यासाठी",
       disclaimer: "फक्त शैक्षणिक माहिती — आपत्कालीन वैद्यकीय सल्ल्याचा पर्याय नाही. आयुर्वेदिक काळजी बालरोगतज्ज्ञांच्या समन्वयाने दिली जाते. परिणाम प्रत्येक मुलाच्या प्रकृतीवर व सातत्यावर अवलंबून असतात.",
     },
     seoBlocks: {
@@ -1321,7 +1321,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
       terms: "ઉપયોગની શરતો",
       aboutDoctor: "ડૉક્ટરની લાયકાત",
       madeWith: "પ્રેમથી નિર્મિત",
-      forKids: "સ્વસ્થ અને ખીલતા બાળપણ માટે",
+      forKids: "સ્વસ્થ આવતીકાલ માટે",
       disclaimer: "ફક્ત શૈક્ષણિક માહિતી — કટોકટીની તબીબી સલાહનો વિકલ્પ નથી. આયુર્વેદિક સંભાળ બાળરોગ નિષ્ણાત સાથે સંકલનમાં આપવામાં આવે છે. પરિણામો દરેક બાળકની પ્રકૃતિ અને નિયમિતતા પર આધાર રાખે છે.",
     },
     seoBlocks: {
