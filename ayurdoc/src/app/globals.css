@@ -584,15 +584,16 @@ html[lang="hi"] .truncate, html[lang="mr"] .truncate, html[lang="gu"] .truncate 
   }
 
   /* Keep the homepage compact without clipping content or shrinking tap targets.
-     Only the portrait responds to laptop height; copy and translated cards stay
-     in normal flow, and the stacked mobile layout can grow naturally. */
+     Portrait heights match the original design (360 / 420 / 460px); copy and
+     translated cards stay in normal flow and the stacked mobile layout grows
+     naturally. */
   .hero-portrait-image {
-    height: 320px;
+    height: 360px;
   }
 
   @media (min-width: 640px) {
     .hero-portrait-image {
-      height: 380px;
+      height: 420px;
     }
   }
 
@@ -601,8 +602,10 @@ html[lang="hi"] .truncate, html[lang="mr"] .truncate, html[lang="gu"] .truncate 
       padding: 24px 28px;
     }
 
+    /* Original portrait height, independent of viewport height, so the
+       photo is never cropped shorter on laptop screens. */
     .hero-portrait-image {
-      height: clamp(300px, calc(100svh - 300px), 420px);
+      height: 460px;
     }
   }
 
