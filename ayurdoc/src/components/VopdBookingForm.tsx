@@ -452,7 +452,7 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
       </div>
 
       <h3 ref={headingRef} tabIndex={-1} className="font-display text-[21px] text-forest-950 outline-none sm:text-[23px]">
-        {created && step === 5 ? (created.currency === "USD" ? v.paymentHeadingInternational : v.paymentHeading) : (v.stepHeadings[step] ?? v.steps[step])}
+        {created && step === 5 ? v.paymentHeading : (v.stepHeadings[step] ?? v.steps[step])}
       </h3>
 
       <input
@@ -606,9 +606,15 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
 
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
-              <label htmlFor={id("gender")} className={labelCls}>{v.patient.gender}</label>
+              <label htmlFor={id("gender")} className={labelCls}>
+                {v.patient.gender}
+                {patient.patientKind === "adult" ? (
+                  <span aria-hidden="true" className="ml-0.5 text-clay-500">*</span>
+                ) : null}
+              </label>
               <select
                 id={id("gender")}
+                aria-required={patient.patientKind === "adult"}
                 value={patient.gender}
                 onChange={(event) => {
                   const gender = event.target.value;
