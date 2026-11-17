@@ -41,6 +41,7 @@ async function createBooking(
     headers: freshIp(),
     data: {
       patientKind: "adult",
+      gender: "Male",
       patientName: "VOPD Test Patient",
       ageOrDob: "1990-01-01",
       phone: "+919999999991",
@@ -51,6 +52,7 @@ async function createBooking(
       symptoms: "Test symptoms for automated verification of booking flow.",
       duration: "2 weeks",
       planId: "first",
+      currency: "INR",
       slotStartIso: slot,
       consent: true,
       ...overrides,
@@ -96,7 +98,7 @@ test.describe("VOPD domain", () => {
     const overlap = await request.post("/api/vopd/bookings", {
       headers: freshIp(),
       data: {
-        patientKind: "adult", patientName: "VOPD Overlap", ageOrDob: "1990-01-01", phone: "+919999999992",
+        patientKind: "adult", gender: "Male", patientName: "VOPD Overlap", ageOrDob: "1990-01-01", phone: "+919999999992",
         concernCategory: "other", symptoms: "Overlapping appointment test payload.", planId: "first",
         slotStartIso: first, consent: true,
       },
@@ -113,17 +115,17 @@ test.describe("VOPD domain", () => {
     const one = await request.post("/api/vopd/bookings", {
       headers: freshIp(),
       data: {
-        patientKind: "adult", patientName: "VOPD Test Followup A", ageOrDob: "1981-01-01", phone: "+919999999993",
+        patientKind: "adult", gender: "Male", patientName: "VOPD Test Followup A", ageOrDob: "1981-01-01", phone: "+919999999993",
         concernCategory: "joint-bone-disorders", symptoms: "Follow-up booking test payload for twenty minute slot.",
-        planId: "followup", slotStartIso: first, consent: true,
+        planId: "followup", currency: "INR", slotStartIso: first, consent: true,
       },
     });
     const two = await request.post("/api/vopd/bookings", {
       headers: freshIp(),
       data: {
-        patientKind: "adult", patientName: "VOPD Test Followup B", ageOrDob: "1980-01-01", phone: "+919999999994",
+        patientKind: "adult", gender: "Male", patientName: "VOPD Test Followup B", ageOrDob: "1980-01-01", phone: "+919999999994",
         concernCategory: "joint-bone-disorders", symptoms: "Second follow-up booking payload for the next slot.",
-        planId: "followup", slotStartIso: second, consent: true,
+        planId: "followup", currency: "INR", slotStartIso: second, consent: true,
       },
     });
     expect(one.status()).toBe(201);
@@ -138,7 +140,7 @@ test.describe("VOPD domain", () => {
     const past = await request.post("/api/vopd/bookings", {
       headers: freshIp(),
       data: {
-        patientKind: "adult", patientName: "Past Slot", ageOrDob: "1990-01-01", phone: "+919999999995",
+        patientKind: "adult", gender: "Male", patientName: "Past Slot", ageOrDob: "1990-01-01", phone: "+919999999995",
         concernCategory: "other", symptoms: "Past appointment booking attempt payload.", planId: "first",
         slotStartIso: "2020-01-06T04:30:00.000Z", consent: true,
       },
@@ -149,7 +151,7 @@ test.describe("VOPD domain", () => {
       data: {
         patientKind: "child", patientName: "Child", ageOrDob: "2020-01-01", phone: "+919999999996",
         concernCategory: "childrens-health", symptoms: "Child booking without guardian details test.",
-        planId: "first", slotStartIso: clinicDate(10) + "T04:30:00.000Z", consent: true,
+        planId: "first", currency: "INR", slotStartIso: clinicDate(10) + "T04:30:00.000Z", consent: true,
       },
     });
     expect(childMissingGuardian.status()).toBe(400);
@@ -273,7 +275,7 @@ test.describe("VOPD multilingual", () => {
   ];
 
   test("booking API stores the visitor locale", async ({ request }) => {
-    const created = await createBooking(request, { locale: "hi" }, 21);
+    const created = await createBooking(request, { locale: "hi" }, 24);
     expect(created.status).toBe(201);
     const reference = created.body.reference as string;
     const publicView = await (await request.get(`/api/vopd/bookings/${reference}`)).json();
@@ -302,6 +304,7 @@ test.describe("VOPD multilingual", () => {
       await expect(enquiry.getByLabel(d.patient.dob)).toHaveAttribute("type", "date");
 
       await enquiry.getByRole("button", { name: d.patient.adult, exact: true }).click();
+      await enquiry.getByLabel(d.patient.gender).selectOption("Male");
       await expect(enquiry.getByLabel(d.patient.childName)).toHaveCount(0);
       await expect(enquiry.getByLabel(d.patient.guardian)).toHaveCount(0);
       await expect(enquiry.getByLabel(d.patient.adultName)).toBeVisible();
@@ -346,6 +349,7 @@ test.describe("VOPD multilingual", () => {
     const gu = VOPD_I18N.gu;
     await enquiry.getByRole("radio", { name: new RegExp(gu.selector.vopdTitle) }).click();
     await enquiry.getByRole("button", { name: gu.patient.adult, exact: true }).click();
+    await enquiry.getByLabel(gu.patient.gender).selectOption("Male");
     await enquiry.getByLabel(gu.patient.adultName).fill("Locale Test");
     await enquiry.getByLabel(gu.patient.dob).fill("1990-01-01");
     await enquiry.getByLabel(gu.patient.phoneAdult).fill("+919999999999");
@@ -382,6 +386,7 @@ test.describe("VOPD interface", () => {
     await expect(enquiry.getByLabel(/Child's full name/)).toBeVisible();
 
     await enquiry.getByRole("button", { name: "Adult", exact: true }).click();
+    await enquiry.getByLabel(d.patient.gender).selectOption("Male");
     await expect(enquiry.getByLabel(/Parent \/ Guardian full name/)).toHaveCount(0);
     await expect(enquiry.getByLabel(/Patient's full name/)).toBeVisible();
 

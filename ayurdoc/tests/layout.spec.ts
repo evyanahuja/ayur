@@ -100,7 +100,7 @@ for (const width of [320, 375, 390, 430, 640, 768, 820, 1024, 1280, 1440, 1920])
       const hasOverflow = await button.evaluate((el) => el.scrollWidth > el.clientWidth + 1);
       expect(hasOverflow).toBe(false);
     }
-    await checkCards(page, "top", 3);
+    await checkCards(page, "top", 2);
     await checkCards(page, "doctor", 2);
     expect(errors).toEqual([]);
   });
@@ -121,16 +121,16 @@ test("gold border does not override fixed or absolute utility positioning", asyn
   }
 });
 
-test("longer edited qualifications and languages stay readable", async ({ page }) => {
+test("longer edited care descriptions and languages stay readable", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 1000 });
   await openPage(page);
-  await page.locator('[data-credential="qualification"] .credential-card__title').evaluate((el) => {
-    el.textContent = "MD · Kaumarbhritya (Balarog) Specialist";
+  await page.locator('#top [data-credential="approach"] .credential-card__title').evaluate((el) => {
+    el.textContent = "Individual assessment and personalised Ayurvedic care";
   });
   await page.locator('[data-credential="languages"] .credential-card__subtitle').evaluate((el) => {
     el.textContent = "Hindi • Marathi • English • Gujarati";
   });
-  await checkCards(page, "top", 3);
+  await checkCards(page, "top", 2);
   await checkCards(page, "doctor", 2);
 });
 
@@ -138,7 +138,7 @@ test("hero action links still navigate to booking and the method section", async
   await openPage(page);
   await page.locator('.hero-actions a[href="#book"]').click();
   await expect(page).toHaveURL(/#book$/);
-  await expect(page.getByRole("form", { name: "Patient enquiry form" })).toBeVisible();
+  await expect(page.locator("#book").getByRole("form", { name: "Book a Consultation" })).toBeVisible();
   await page.goto("/");
   await expect(page.locator(".hero-actions")).toHaveCSS("opacity", "1");
   await page.locator('.hero-actions a[href="#method"]').click();

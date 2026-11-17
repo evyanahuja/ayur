@@ -14,7 +14,7 @@
     "@types/qrcode": "^1.5.6",
     "dotenv": "17.3.1",
     "drizzle-orm": "0.45.2",
-    "lucide-react": "^1.73.0",
+    "lucide-react": "^1.74.0",
     "next": "16.4.2",
     "nodemailer": "^10.6.0",
     "pg": "8.20.0",
