@@ -8,8 +8,10 @@ export const patientInquiries = pgTable("patient_inquiries", {
   email: varchar("email", { length: 160 }),
   childName: varchar("child_name", { length: 120 }).notNull(),
   childAge: varchar("child_age", { length: 40 }).notNull(),
-  childGender: varchar("child_gender", { length: 20 }),
-  concernCategory: varchar("concern_category", { length: 40 }).notNull().default("general"),
+    childGender: varchar("child_gender", { length: 20 }),
+    patientKind: varchar("patient_kind", { length: 8 }).notNull().default("child"),
+    patientGender: varchar("patient_gender", { length: 20 }),
+    concernCategory: varchar("concern_category", { length: 40 }).notNull().default("general"),
   symptoms: text("symptoms"),
   preferredMode: varchar("preferred_mode", { length: 20 }).notNull().default("online"),
   preferredDate: varchar("preferred_date", { length: 40 }),
@@ -50,6 +52,7 @@ export const vopdBookings = pgTable(
     planName: varchar("plan_name", { length: 120 }).notNull(),
     amountMinor: integer("amount_minor"),
     currency: varchar("currency", { length: 3 }).notNull().default("INR"),
+    paymentMethod: varchar("payment_method", { length: 32 }).notNull().default("UPI"),
     durationMinutes: integer("duration_minutes").notNull(),
     followUpCount: integer("follow_up_count").notNull().default(0),
     followUpMinutes: integer("follow_up_minutes").notNull().default(0),
@@ -163,3 +166,38 @@ export const vopdConsultationPlans = pgTable(
 
 export type VopdConsultationPlanRow = typeof vopdConsultationPlans.$inferSelect;
 export type NewVopdConsultationPlanRow = typeof vopdConsultationPlans.$inferInsert;
+
+/** Optional per-weekday overrides. Missing rows use the established Mon–Sat
+ *  10–14 and 17–20 schedule, Sunday closed. Times are clinic-local HH:mm. */
+export const vopdWeeklyAvailability = pgTable("vopd_weekly_availability", {
+  weekday: integer("weekday").primaryKey(), // 0 = Sunday
+  closed: boolean("closed").notNull().default(false),
+  sessionsJson: text("sessions_json").notNull().default("[]"),
+  breaksJson: text("breaks_json").notNull().default("[]"),
+  intervalMinutes: integer("interval_minutes").notNull().default(30),
+  updatedBy: varchar("updated_by", { length: 120 }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** A closed date (holiday) or a one-day replacement schedule. Existing
+ *  vopd_blocked_slots remain effective and are never removed by this table. */
+export const vopdDateAvailability = pgTable("vopd_date_availability", {
+  date: date("date").primaryKey(),
+  closed: boolean("closed").notNull().default(false),
+  sessionsJson: text("sessions_json").notNull().default("[]"),
+  breaksJson: text("breaks_json").notNull().default("[]"),
+  intervalMinutes: integer("interval_minutes").notNull().default(30),
+  reason: varchar("reason", { length: 200 }),
+  updatedBy: varchar("updated_by", { length: 120 }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Editable copy only. Verified credentials remain in the existing code and
+ *  registration number is never editable via the content API. */
+export const doctorProfileTranslations = pgTable("doctor_profile_translations", {
+  language: varchar("language", { length: 5 }).primaryKey(),
+  introduction: text("introduction").notNull(),
+  careParagraphsJson: text("care_paragraphs_json").notNull(),
+  updatedBy: varchar("updated_by", { length: 120 }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});

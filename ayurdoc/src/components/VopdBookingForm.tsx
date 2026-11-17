@@ -7,11 +7,11 @@ import {
   ArrowLeft, ArrowRight, Baby, Calendar, CalendarCheck, Check, Clock, Copy, CreditCard,
   Loader2, Lock, MessageCircle, Moon, Phone, Sun, Upload, User,
 } from "lucide-react";
-import { PLANS, SITE } from "@/content/site";
+import { SITE } from "@/content/site";
 import { HEALTH_CATEGORIES } from "@/content/categories";
 import {
   clinicTodayIso, computeAgeFromDob, formatDobDisplay, isValidDobString,
-  VOPD_CONCERN_IDS, VOPD_CONCERN_LABELS, type PatientKind, type VopdConcernId,
+  allowedConcerns, isAllowedConcern, formatMinor, VOPD_CONCERN_LABELS, type PatientKind, type VopdConcernId,
   type VopdConfig, type VopdPlan,
 } from "@/content/vopd";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -19,6 +19,7 @@ import { useExpansion } from "@/i18n/expansion";
 import { localizeCategory } from "@/i18n/categoriesTranslations";
 import { formatShortClinicDate, formatVopdDateTime, vopdDict, vopdFill } from "@/i18n/vopd";
 import { useRegionCurrency } from "@/lib/useRegionCurrency";
+import { BOOKING_EXTRA } from "@/i18n/bookingExtras";
 import { cn } from "@/lib/cn";
 
 type AvailabilitySlot = { startIso: string; label: string; session?: "morning" | "evening" };
@@ -38,6 +39,7 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
   const { lang } = useLanguage();
   const f = useExpansion(lang).form;
   const v = vopdDict(lang);
+  const extra = BOOKING_EXTRA[lang];
   const currency = useRegionCurrency();
   const prefix = `vopd-${useId().replace(/:/g, "")}`;
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -45,7 +47,7 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
   const [step, setStep] = useState(0);
   const [patient, setPatient] = useState(emptyPatient);
   const [concern, setConcern] = useState({
-    category: "", symptoms: "", duration: "", previousDiagnosis: "", currentTreatment: "", message: "",
+    category: "general", symptoms: "", duration: "", previousDiagnosis: "", currentTreatment: "", message: "",
   });
   const [planId, setPlanId] = useState(initialPlanId || "first");
   const [todayIso, setTodayIso] = useState(() => clinicTodayIso());
@@ -58,6 +60,7 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
   const [slotCode, setSlotCode] = useState("");
   const [slotMessage, setSlotMessage] = useState("");
+  const [slotHours, setSlotHours] = useState("");
   const [nextOpenDate, setNextOpenDate] = useState<string | null>(null);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [slotStartIso, setSlotStartIso] = useState("");
@@ -102,10 +105,7 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
       .then((response) => response.json())
       .then((data) => {
         if (cancelled || !data?.ok) return;
-        const incoming = (data.plans as VopdPlan[]).map((plan) => ({
-          ...plan,
-          usdPrice: plan.usdPrice ?? PLANS.find((entry) => entry.id === plan.id)?.usdPrice,
-        }));
+        const incoming = data.plans as VopdPlan[];
         setPlans(incoming);
         if (incoming.length && !incoming.some((p) => p.id === planId)) {
           setPlanId(incoming[0].id);
@@ -145,6 +145,7 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
         setSlotMessage(data.error || v.genericError);
       } else {
         setSlots(Array.isArray(data.slots) ? data.slots : []);
+        setSlotHours(typeof data.hoursLabel === "string" ? data.hoursLabel : "");
         setSlotCode(typeof data.code === "string" ? data.code : "");
         setSlotMessage(typeof data.message === "string" ? data.message : "");
         setNextOpenDate(typeof data.nextAvailableDate === "string" ? data.nextAvailableDate : null);
@@ -208,13 +209,15 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
       if (!isValidDobString(patient.ageOrDob.trim(), todayIso)) invalid.ageOrDob = true;
       if (!/^[+\d][\d\s\-()]{6,18}$/.test(patient.phone.trim())) invalid.phone = true;
       if (patient.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(patient.email.trim())) invalid.email = true;
+      if (patient.patientKind === "adult" && !["Male", "Female"].includes(patient.gender)) invalid.gender = true;
     }
     if (current === 1) {
-      if (!concern.category) invalid.category = true;
+      if (!isAllowedConcern(concern.category, patient.patientKind, patient.gender)) invalid.category = true;
       if (concern.symptoms.trim().length < 5) invalid.symptoms = true;
     }
     if (current === 3 && !slotStartIso) invalid.slot = true;
     if (current === 4 && !consent) invalid.consent = true;
+    if (current === 4 && selectedPlan?.requiresPayment && currency === "USD" && !selectedPlan.amountMinorUsd) invalid.currency = true;
     setErrors(invalid);
     return Object.keys(invalid).length === 0;
   };
@@ -258,6 +261,7 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
           currentTreatment: concern.currentTreatment || undefined,
           message: concern.message || undefined,
           planId: activePlanId,
+          currency,
           slotStartIso,
           consent: true,
           locale: lang,
@@ -340,20 +344,21 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
     setStep(0);
   }
 
-  const categoryOptions = VOPD_CONCERN_IDS.map((value) => {
-    if (["panchakarma", "general", "other"].includes(value)) {
-      return { value, label: VOPD_CONCERN_LABELS[value as VopdConcernId] };
-    }
+  const categoryOptions = allowedConcerns(patient.patientKind, patient.gender).map((value) => {
+    if (value === "general") return { value, label: extra.general };
+    if (value === "other") return { value, label: extra.other };
+    if (value === "panchakarma") return { value, label: extra.panchakarma };
     const raw = HEALTH_CATEGORIES.find((category) => category.slug === value);
     return { value, label: raw ? localizeCategory(raw, lang).title : VOPD_CONCERN_LABELS[value as VopdConcernId] };
   });
   const categoryLabel = (value: string) => categoryOptions.find((option) => option.value === value)?.label ?? value;
 
-  const feeLabel = selectedPlan
-    ? selectedPlan.amountMinor != null
-      ? `₹${(selectedPlan.amountMinor / 100).toLocaleString("en-IN")}`
-      : v.plan.feeOnConfirm
-    : "";
+  const planFee = (plan: VopdPlan): string => {
+    if (!plan.requiresPayment) return v.plan.feeOnConfirm;
+    const amount = currency === "USD" ? plan.amountMinorUsd : plan.amountMinor;
+    return amount != null && amount > 0 ? formatMinor(amount, currency) : extra.currencyMissing;
+  };
+  const feeLabel = selectedPlan ? planFee(selectedPlan) : "";
   const statusLabel = (st: string) => v.status[st] ?? st;
   const waHref = `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(
     created ? `${v.pay.reference}: ${created.reference} (${created.planName})` : v.pay.whatsapp
@@ -478,7 +483,10 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
                   key={value}
                   type="button"
                   aria-pressed={patient.patientKind === value}
-                  onClick={() => setPatient((current) => ({ ...current, patientKind: value, gender: "" }))}
+                  onClick={() => {
+                    setPatient((current) => ({ ...current, patientKind: value, gender: "" }));
+                    setConcern((current) => isAllowedConcern(current.category, value, "") ? current : { ...current, category: "general" });
+                  }}
                   className={cn(
                     "flex items-center justify-center gap-2 rounded-2xl border-2 px-4 py-3 text-sm font-semibold transition-colors",
                     patient.patientKind === value
@@ -602,7 +610,12 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
               <select
                 id={id("gender")}
                 value={patient.gender}
-                onChange={(event) => setPatient((c) => ({ ...c, gender: event.target.value }))}
+                onChange={(event) => {
+                  const gender = event.target.value;
+                  setPatient((current) => ({ ...current, gender }));
+                  setConcern((current) => isAllowedConcern(current.category, patient.patientKind, gender) ? current : { ...current, category: "general" });
+                  setErrors((current) => ({ ...current, gender: false }));
+                }}
                 className={inputCls()}
               >
                 <option value="">{v.patient.select}</option>
@@ -617,8 +630,9 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
                     <option value="Male">{v.patient.male}</option>
                   </>
                 )}
-                <option value="Other">{v.patient.other}</option>
+                {patient.patientKind === "child" && <option value="Other">{v.patient.other}</option>}
               </select>
+              {err("gender", extra.genderRequired)}
             </div>
             <div>
               <label htmlFor={id("city")} className={labelCls}>{v.patient.city}</label>
@@ -764,15 +778,9 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
                   </span>
                   <span className="shrink-0 text-right">
                     <span className="block font-display text-[19px] text-forest-950">
-                      {plan.amountMinor != null
-                        ? `₹${(plan.amountMinor / 100).toLocaleString("en-IN")}`
-                        : v.plan.feeOnConfirm}
+                      {planFee(plan)}
                     </span>
-                    {plan.amountMinor != null && currency === "USD" && plan.usdPrice && (
-                      <span className="block text-[11px] text-forest-700/70">
-                        {vopdFill(v.plan.usdNote, { usd: plan.usdPrice })}
-                      </span>
-                    )}
+
                     <span className="mt-0.5 inline-block rounded-full bg-saffron-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-forest-900">
                       {vopdFill(v.plan.minutes, { n: plan.bookingMinutes })}
                     </span>
@@ -847,7 +855,7 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
               <p className="flex items-center gap-1.5 font-semibold text-forest-950">
                 <Clock className="h-3.5 w-3.5 text-saffron-700" aria-hidden /> {v.slot.hours}
               </p>
-              <p className="mt-0.5">{v.slot.hoursValue}</p>
+              <p className="mt-0.5">{slotHours || v.slot.hoursValue}</p>
               <p className="mt-0.5 text-[11.5px] text-forest-700/75">
                 {vopdFill(v.slot.sessionNote, { n: selectedPlan?.bookingMinutes ?? 30 })}
               </p>
@@ -991,6 +999,7 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
               <dd className="text-right font-semibold text-forest-950">{feeLabel}</dd>
             </div>
           </dl>
+          {errors.currency && <p role="alert" className="mt-2 text-sm font-medium text-red-700">{extra.currencyMissing}</p>}
 
           <label className="flex items-start gap-3 text-[13px] leading-relaxed text-forest-900/85">
             <input
@@ -1035,7 +1044,7 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
               <dt className="text-forest-700">{v.pay.fee}</dt>
               <dd className="text-right font-semibold text-forest-950">
                 {created.amountMinor != null
-                  ? `₹${(created.amountMinor / 100).toLocaleString("en-IN")}`
+                  ? formatMinor(created.amountMinor, created.currency === "USD" ? "USD" : "INR")
                   : v.plan.feeOnConfirm}
               </dd>
             </div>
@@ -1066,14 +1075,20 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
             <>
               <div className="rounded-2xl border border-saffron-500/30 bg-cream-100 p-4">
                 <p className="flex items-center gap-2 font-semibold text-forest-950">
-                  <CreditCard className="h-4 w-4 text-saffron-700" /> {v.pay.upiTitle}
+                  <CreditCard className="h-4 w-4 text-saffron-700" /> {created.currency === "USD" ? extra.internationalTitle : v.pay.upiTitle}
                 </p>
-                {config?.upi.configured ? (
+                {created.currency === "USD" ? (
+                  <div className="mt-3 space-y-2 text-[13px] leading-relaxed text-forest-900">
+                    <p>{extra.internationalHelp}</p>
+                    {config?.usdPaymentInstructions && <p className="rounded-lg bg-white p-3">{config.usdPaymentInstructions}</p>}
+                    <a className="font-semibold underline" href={waHref} target="_blank" rel="noopener noreferrer">{v.pay.whatsapp}</a>
+                  </div>
+                ) : config?.upi.configured ? (
                   <div className="mt-3 grid gap-4 sm:grid-cols-[168px_1fr]">
                     <div className="rounded-xl border border-forest-900/10 bg-white p-2">
                       <Image
                         src={config.upi.qrImagePath || `/api/vopd/bookings/${created.reference}/upi-qr`}
-                        alt={`UPI QR code — pay ${created.amountMinor != null ? `₹${(created.amountMinor / 100).toLocaleString("en-IN")}` : "the consultation fee"} to ${config.upi.beneficiaryName} with reference ${created.reference}`}
+                        alt={`UPI QR code — pay ${created.amountMinor != null ? formatMinor(created.amountMinor, "INR") : "the consultation fee"} to ${config.upi.beneficiaryName} with reference ${created.reference}`}
                         width={168}
                         height={168}
                         className="h-auto w-full rounded-lg object-contain"
@@ -1086,7 +1101,7 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
                       <p className="mt-1"><span className="font-semibold">{v.pay.upiId}:</span> {config.upi.upiId}</p>
                       <p className="mt-1">
                         <span className="font-semibold">{v.pay.amount}:</span>{" "}
-                        {created.amountMinor != null ? `₹${(created.amountMinor / 100).toLocaleString("en-IN")}` : "—"}
+                        {created.amountMinor != null ? formatMinor(created.amountMinor, "INR") : "—"}
                       </p>
                       <p className="mt-1"><span className="font-semibold">{v.pay.mention}:</span> {created.reference}</p>
                       <p className="mt-2 text-[12px] text-forest-700/80">{v.pay.scanHint}</p>
@@ -1099,7 +1114,7 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
                     <a className="font-semibold underline" href={waHref} target="_blank" rel="noopener noreferrer">WhatsApp</a>
                   </div>
                 )}
-                {config?.upi.configured && config.upi.demo && (
+                {created.currency === "INR" && config?.upi.configured && config.upi.demo && (
                   <p className="mt-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[12px] font-medium text-amber-900">
                     {v.pay.demoNote}
                   </p>
@@ -1127,7 +1142,7 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
                       {err("payerName", v.pay.ePayer)}
                     </div>
                     <div>
-                      <label htmlFor={id("upiReference")} className={labelCls}>{v.pay.utr}</label>
+                      <label htmlFor={id("upiReference")} className={labelCls}>{created.currency === "USD" ? extra.transactionReference : v.pay.utr}</label>
                       <input
                         id={id("upiReference")}
                         value={payment.upiReference}
@@ -1136,7 +1151,7 @@ export function VopdBookingForm({ initialPlanId }: Props = {}) {
                         className={inputCls(errors.upiReference)}
                         aria-invalid={errors.upiReference || undefined}
                       />
-                      {err("upiReference", v.pay.eUtr)}
+                      {err("upiReference", created.currency === "USD" ? extra.referenceError : v.pay.eUtr)}
                     </div>
                   </div>
                   <div>

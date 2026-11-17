@@ -37,11 +37,15 @@ async function confirmWithCalendar(reference: string, admin: string) {
     const event = await createCalendarEvent(booking);
     const confirmed = await recordCalendarResult(reference, admin, event);
     if (confirmed) {
-      const mail = await sendConfirmation(confirmed);
-      if (mail.sent) {
-        await import("@/db").then(({ db }) => import("@/db/schema").then(({ vopdBookings }) => import("drizzle-orm").then(({ eq }) =>
-          db.update(vopdBookings).set({ confirmationEmailSentAt: new Date() }).where(eq(vopdBookings.reference, reference))
-        )));
+      try {
+        const mail = await sendConfirmation(confirmed);
+        if (mail.sent) {
+          await import("@/db").then(({ db }) => import("@/db/schema").then(({ vopdBookings }) => import("drizzle-orm").then(({ eq }) =>
+            db.update(vopdBookings).set({ confirmationEmailSentAt: new Date() }).where(eq(vopdBookings.reference, reference))
+          )));
+        }
+      } catch (emailError) {
+        console.error("Confirmation email failed; booking remains confirmed:", emailError);
       }
     }
     return {
@@ -75,7 +79,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ ref
 
   try {
     if (action === "verify") {
-      const booking = await verifyPayment(reference, admin);
+      await verifyPayment(reference, admin);
       const outcome = await confirmWithCalendar(reference, admin);
       const latest = await getBooking(reference);
       return NextResponse.json({ ok: true, outcome, booking: latest, audit: await getAuditTrail(reference) });
@@ -114,8 +118,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ ref
         return NextResponse.json({ ok: false, error: "Enter a valid https://meet.google.com/... link." }, { status: 400 });
       }
       const booking = await setManualMeetUrl(reference, meetUrl, admin);
-      const mail = await sendMeetLink(booking);
-      return NextResponse.json({ ok: true, booking, emailSent: mail.sent, audit: await getAuditTrail(reference) });
+      let emailSent = false;
+      try { emailSent = (await sendMeetLink(booking)).sent; }
+      catch (emailError) { console.error("Meet email failed; booking remains confirmed:", emailError); }
+      return NextResponse.json({ ok: true, booking, emailSent, audit: await getAuditTrail(reference) });
     }
     if (action === "email-meet-link") {
       const booking = await getBooking(reference);

@@ -14,7 +14,7 @@ export function Pricing() {
   const { t } = useLanguage();
   const currency = useRegionCurrency();
   const [mode, setMode] = useState<"online" | "clinic">("online");
-  const [customPlans, setCustomPlans] = useState<VopdPlan[]>([]);
+  const [publishedPlans, setPublishedPlans] = useState<VopdPlan[] | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -22,34 +22,34 @@ export function Pricing() {
       .then((res) => res.json())
       .then((data) => {
         if (cancelled || !data?.ok || !Array.isArray(data.plans)) return;
-        setCustomPlans(
-          (data.plans as VopdPlan[]).filter((p) => p.isCustom && p.active !== false && p.showOnPricing !== false)
-        );
+        setPublishedPlans(data.plans as VopdPlan[]);
       })
       .catch(() => { /* keep static plans */ });
     return () => { cancelled = true; };
   }, []);
 
-  const builtinCards = PLANS.map((p, i) => {
+  const builtinCards = PLANS.flatMap((p, i) => {
+    const saved = publishedPlans?.find((item) => item.id === p.id);
+    if (publishedPlans && (!saved || saved.showOnPricing === false)) return [];
     const localized = t.pricing.plans[i];
-    return {
+    return [{
       id: p.id,
-      displayPrice: currency === "USD" ? p.usdPrice : p.price,
-      displayStrike: currency === "USD" ? p.usdStrike : p.strike,
-      name: localized?.name ?? p.name,
-      hindi: localized?.sub ?? p.hindi,
-      period: localized?.period ?? p.period,
-      desc: localized?.desc ?? p.desc,
-      features: localized?.features ?? p.features,
+      displayPrice: saved ? (currency === "USD" ? saved.usdPrice || "USD fee unavailable" : saved.priceLabel) : (currency === "USD" ? p.usdPrice : p.price),
+      displayStrike: saved ? (currency === "USD" ? saved.usdStrike : saved.strikeLabel) : (currency === "USD" ? p.usdStrike : p.strike),
+      name: saved?.name ?? localized?.name ?? p.name,
+      hindi: saved?.subtitle ?? localized?.sub ?? p.hindi,
+      period: saved?.period ?? localized?.period ?? p.period,
+      desc: saved?.description ?? localized?.desc ?? p.desc,
+      features: saved?.inclusions ?? localized?.features ?? p.features,
       cta: localized?.cta ?? p.cta,
       icon: p.icon,
-      featured: p.featured,
-    };
+      featured: saved?.featured ?? p.featured,
+    }];
   });
 
-  const dynamicCards = customPlans.map((cp) => ({
+  const dynamicCards = (publishedPlans ?? []).filter((plan) => plan.isCustom && plan.showOnPricing !== false).map((cp) => ({
     id: cp.id,
-    displayPrice: currency === "USD" && cp.usdPrice ? cp.usdPrice : cp.priceLabel,
+    displayPrice: currency === "USD" ? cp.usdPrice || "USD fee unavailable" : cp.priceLabel,
     displayStrike: currency === "USD" ? cp.usdStrike : cp.strikeLabel,
     name: cp.name,
     hindi: cp.subtitle || `${cp.bookingMinutes} mins`,

@@ -11,6 +11,7 @@ import {
   ClipboardList, SearchCheck, LineChart, Droplets, HandHeart, MoonStar,
   UtensilsCrossed, HeartHandshake, ShieldCheck, Video, Building2, Crown,
 } from "lucide-react";
+import { CLINIC_LOCATION, CLINIC_DIRECTIONS_URL } from "./clinicLocation";
 
 /* -----------------------------------------------------------------------------
  * 1) BRAND, DOCTOR & CONTACT DETAILS  👈 CHANGE THESE FIRST
@@ -18,6 +19,7 @@ import {
 export const SITE = {
   doctorName: "Dr. Priyanka Likhar",
   registrationNumber: "63934",
+  registrationAuthority: "Madhya Pradesh Ayurveda, Unani & Naturopathy Board",
   pgDegree: "MD — Pediatrician (Kaumarbhritya / Balarog)",
   pgCollege: "Institute of Teaching and Research in Ayurveda",
   ugDegree: "BAMS",
@@ -39,8 +41,8 @@ export const SITE = {
 
   // 📍 Address
   addressShort: "BalChikitsa Ayurved Clinic + Online worldwide",
-  addressFull: "Sanchar Nagar Extension, Kanadia Road, Indore M.P. 452016",
-  googleMapsUrl: "https://maps.app.goo.gl/vhRYqg63chcGXLrr6", // optional: paste your Google Maps link
+  addressFull: CLINIC_LOCATION.address,
+  googleMapsUrl: CLINIC_DIRECTIONS_URL,
 
   // 🕐 Timings & languages
   hours: "Mon–Sat • 10 AM–2 PM & 5 PM–8 PM IST",
@@ -67,12 +69,12 @@ export const SEO = {
   description:
     "Individualised Ayurvedic care in Indore for children, adults and senior citizens: pediatric health, Panchakarma, skin, digestive, women's, men's and joint concerns. Dr. Priyanka Likhar (BAMS, MD Kaumarbhritya).",
   locale: "en_IN",
-  street: "Sanchar Nagar Extension, Kanadia Road",
-  city: "Indore",
-  region: "Madhya Pradesh",
-  postalCode: "452016",
-  country: "IN",
-  geo: { lat: 22.7196, lng: 75.9131 },
+  street: CLINIC_LOCATION.street,
+  city: CLINIC_LOCATION.city,
+  region: CLINIC_LOCATION.region,
+  postalCode: CLINIC_LOCATION.postalCode,
+  country: CLINIC_LOCATION.country,
+  geo: CLINIC_LOCATION.coordinates,
   priceRange: "₹300–₹4,999",
   openingHours: [
     { days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], opens: "10:00", closes: "14:00" },

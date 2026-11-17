@@ -8,12 +8,16 @@ import {
 import { formatClinicDateTime, formatMinor, type VopdPlan } from "@/content/vopd";
 import { SectionMandalas } from "./ScrollMandala";
 import { cn } from "@/lib/cn";
+import { AdminAvailabilityEditor } from "./AdminAvailabilityEditor";
+import { AdminDoctorProfileEditor } from "./AdminDoctorProfileEditor";
 
 type BookingRow = {
   reference: string;
   patientKind: string;
   patientName: string;
   guardianName: string | null;
+  gender: string | null;
+  paymentMethod: string;
   ageOrDob?: string;
   phone: string;
   email: string | null;
@@ -57,6 +61,7 @@ const STATUS_STYLES: Record<string, string> = {
 const emptyPlanDraft = {
   name: "",
   subtitle: "",
+  period: "",
   priceInr: "",
   priceUsd: "",
   durationMinutes: "30",
@@ -79,6 +84,9 @@ export function VopdAdminConsole() {
   const [builtinPlans, setBuiltinPlans] = useState<VopdPlan[]>([]);
   const [customPlans, setCustomPlans] = useState<VopdPlan[]>([]);
   const [showPlanForm, setShowPlanForm] = useState(false);
+  const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
+  const [section, setSection] = useState<"overview" | "appointments" | "plans" | "availability" | "holidays" | "payments" | "profile">("overview");
+  const [summary, setSummary] = useState({ total: 0, pending: 0, confirmed: 0, verified_payments: 0, rejected: 0, completed: 0 });
   const [planDraft, setPlanDraft] = useState(emptyPlanDraft);
   const [calendar, setCalendar] = useState<{ configured: boolean; reachable: boolean; message: string } | null>(null);
   const [upiConfigured, setUpiConfigured] = useState(true);
@@ -104,6 +112,7 @@ export function VopdAdminConsole() {
       if (!data.ok) { setNotice(data.error || "Could not load bookings."); return; }
       setAuthed(true);
       setRows(data.bookings ?? []);
+      setSummary(data.summary ?? { total: 0, pending: 0, confirmed: 0, verified_payments: 0, rejected: 0, completed: 0 });
       setBlocked(data.blocked ?? []);
       setBuiltinPlans(data.builtinPlans ?? []);
       setCustomPlans(data.customPlans ?? []);
@@ -212,19 +221,34 @@ export function VopdAdminConsole() {
     }
   }
 
+  function editPlan(plan: VopdPlan) {
+    setEditingPlanId(plan.id);
+    setPlanDraft({
+      name: plan.name, subtitle: plan.subtitle || "", period: plan.period || "",
+      priceInr: plan.amountMinor != null ? (plan.amountMinor / 100).toString() : "",
+      priceUsd: plan.amountMinorUsd != null ? (plan.amountMinorUsd / 100).toString() : "",
+      durationMinutes: String(plan.bookingMinutes), followUpCount: String(plan.followUpCount),
+      followUpMinutes: String(plan.followUpMinutes || 20), requiresPayment: plan.requiresPayment,
+      showOnPricing: plan.showOnPricing !== false, featured: Boolean(plan.featured),
+      description: plan.description, features: plan.inclusions.join("\n"),
+    });
+    setShowPlanForm(true);
+  }
+
   async function addPlan(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
     setNotice("");
     try {
-      const response = await fetch("/api/admin/vopd/plans", {
-        method: "POST",
+      const response = await fetch(editingPlanId ? `/api/admin/vopd/plans/${encodeURIComponent(editingPlanId)}` : "/api/admin/vopd/plans", {
+        method: editingPlanId ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: planDraft.name,
           subtitle: planDraft.subtitle || undefined,
-          priceInr: planDraft.requiresPayment ? planDraft.priceInr : null,
-          priceUsd: planDraft.requiresPayment && planDraft.priceUsd ? planDraft.priceUsd : null,
+          period: planDraft.period || undefined,
+          ...(planDraft.requiresPayment && planDraft.priceInr ? { priceInr: planDraft.priceInr } : {}),
+          ...(planDraft.requiresPayment && planDraft.priceUsd ? { priceUsd: planDraft.priceUsd } : {}),
           durationMinutes: Number(planDraft.durationMinutes) || 30,
           followUpCount: Number(planDraft.followUpCount) || 0,
           followUpMinutes: Number(planDraft.followUpMinutes) || 20,
@@ -240,8 +264,9 @@ export function VopdAdminConsole() {
         setNotice(data.error || "Could not create plan.");
         return;
       }
-      setNotice(`Added consultation plan "${data.plan.name}". It is now live on the Consultation Plan list.`);
+      setNotice(`${editingPlanId ? "Updated" : "Added"} consultation plan "${data.plan.name}". Existing appointment prices are unchanged.`);
       setPlanDraft(emptyPlanDraft);
+      setEditingPlanId(null);
       setShowPlanForm(false);
       await load();
     } catch {
@@ -270,13 +295,13 @@ export function VopdAdminConsole() {
   }
 
   async function removePlan(plan: VopdPlan) {
-    if (!confirm(`Remove custom plan "${plan.name}" from the Consultation Plan list? Past bookings keep their recorded plan details.`)) return;
+    if (!confirm(`Deactivate "${plan.name}"? Past bookings and their recorded prices will be preserved.`)) return;
     setBusy(true);
     try {
       const response = await fetch(`/api/admin/vopd/plans/${encodeURIComponent(plan.id)}`, { method: "DELETE" });
       const data = await response.json();
       if (data.ok) {
-        setNotice(`Removed consultation plan "${plan.name}".`);
+        setNotice(`Deactivated consultation plan "${plan.name}". Historical bookings remain intact.`);
         await load();
       }
     } finally {
@@ -285,10 +310,8 @@ export function VopdAdminConsole() {
   }
 
   const counts = useMemo(() => {
-    const pending = rows.filter((row) => row.status === "PAYMENT_VERIFICATION_PENDING").length;
-    const confirmed = rows.filter((row) => row.status === "CONFIRMED").length;
-    return { pending, confirmed, shown: rows.length };
-  }, [rows]);
+    return { pending: summary.pending, confirmed: summary.confirmed, shown: rows.length };
+  }, [rows, summary]);
 
   if (!authed) {
     return (
@@ -364,6 +387,37 @@ export function VopdAdminConsole() {
         )}
         {notice && <p role="status" className="mt-3 rounded-xl border border-forest-900/15 bg-white px-4 py-3 text-[13px] text-forest-900">{notice}</p>}
 
+        <nav aria-label="Admin sections" className="mt-5 flex flex-wrap gap-2 rounded-2xl bg-white p-2 shadow-sm">
+          {([
+            ["overview", "Overview"], ["appointments", "Appointments"], ["plans", "Plans & pricing"],
+            ["availability", "Clinic availability"], ["holidays", "Holidays & days off"],
+            ["payments", "Payments & history"], ["profile", "Doctor profile"],
+          ] as const).map(([key, label]) => (
+            <button key={key} type="button" aria-current={section === key ? "page" : undefined}
+              onClick={() => { setSection(key); if (key === "appointments") setFilter("all"); if (key === "payments") setFilter("PAYMENT_VERIFICATION_PENDING"); }}
+              className={cn("rounded-full px-3 py-2 text-xs font-semibold transition-colors", section === key ? "bg-forest-950 text-white" : "text-forest-900 hover:bg-cream-100")}>
+              {label}
+            </button>
+          ))}
+        </nav>
+        {section === "overview" && (
+          <section className="mt-5">
+            <h2 className="font-display text-xl text-forest-950">Dashboard overview</h2>
+            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+              {([ ["Appointments", summary.total], ["Awaiting verification", summary.pending], ["Confirmed", summary.confirmed],
+                ["Verified payments", summary.verified_payments], ["Rejected", summary.rejected], ["Completed", summary.completed] ] as const)
+                .map(([label, count]) => <div key={label} className="rounded-xl border border-forest-900/10 bg-white p-4">
+                  <p className="text-[11px] font-semibold text-forest-700">{label}</p><p className="mt-2 font-display text-2xl text-forest-950">{count}</p>
+                </div>)}
+            </div>
+            <p className="mt-3 text-sm text-forest-700">Use Payments & history to verify submitted payments. Email alerts remain active; no paid messaging provider has been added.</p>
+          </section>
+        )}
+        {section === "availability" && <AdminAvailabilityEditor view="weekly" />}
+        {section === "profile" && <AdminDoctorProfileEditor />}
+        {section === "holidays" && <AdminAvailabilityEditor view="dates" />}
+
+        {(section === "appointments" || section === "payments") && (<>
         <div className="mt-5 flex flex-wrap items-end gap-3">
           <div>
             <label htmlFor="filter" className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-forest-800">Status</label>
@@ -400,7 +454,7 @@ export function VopdAdminConsole() {
                   <td className="px-3 py-2">
                     {row.planName}
                     <span className="block text-[11px] text-forest-700">
-                      {row.amountMinor != null ? formatMinor(row.amountMinor, "INR") : "Fee on confirmation"} · {row.durationMinutes} mins
+                      {row.amountMinor != null ? formatMinor(row.amountMinor, row.currency === "USD" ? "USD" : "INR") : "Fee on confirmation"} · {row.durationMinutes} mins
                     </span>
                   </td>
                   <td className="px-3 py-2">{formatClinicDateTime(row.slotStart)}</td>
@@ -428,14 +482,15 @@ export function VopdAdminConsole() {
               </div>
               <dl className="mt-3 grid gap-x-6 gap-y-1.5 text-[13px] sm:grid-cols-2">
                 {[
-                  ["Patient", `${selected.patientName} (${selected.patientKind})`],
+                  ["Patient", `${selected.patientName} (${selected.patientKind}${selected.gender ? ` · ${selected.gender}` : ""})`],
                   ["Date of birth", selected.ageOrDob || "—"],
                   ["Parent / Guardian", selected.guardianName || "—"],
                   ["Phone", selected.phone],
                   ["Email", selected.email || "—"],
                   ["Category", selected.concernCategory],
                   ["Plan", `${selected.planName} · ${selected.durationMinutes} mins${selected.followUpCount ? ` + ${selected.followUpCount} follow-ups` : ""}`],
-                  ["Fee", selected.amountMinor != null ? formatMinor(selected.amountMinor, "INR") : "Fee on confirmation"],
+                  ["Fee", selected.amountMinor != null ? formatMinor(selected.amountMinor, selected.currency === "USD" ? "USD" : "INR") : "Fee on confirmation"],
+                  ["Payment method", selected.paymentMethod],
                   ["Slot (IST)", formatClinicDateTime(selected.slotStart)],
                   ["Payer", selected.payerName || "—"],
                   ["UTR", selected.upiReference || "—"],
@@ -543,8 +598,9 @@ export function VopdAdminConsole() {
           </section>
         )}
 
+        </>)}
         {/* CONSULTATION PLANS MANAGER — add plans anytime and sync to VOPD, OPD & Pricing */}
-        <section className="mt-6 rounded-2xl border border-forest-900/10 bg-white p-5">
+        {section === "plans" && <section className="mt-6 rounded-2xl border border-forest-900/10 bg-white p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="flex items-center gap-2 font-display text-[20px] text-forest-950">
@@ -556,7 +612,7 @@ export function VopdAdminConsole() {
             </div>
             <button
               type="button"
-              onClick={() => setShowPlanForm((v) => !v)}
+              onClick={() => { setEditingPlanId(null); setPlanDraft(emptyPlanDraft); setShowPlanForm((v) => !v); }}
               className="inline-flex items-center gap-1.5 rounded-full bg-forest-950 px-4 py-2 text-[12.5px] font-semibold text-cream-50 hover:bg-forest-900"
             >
               <Plus className="h-4 w-4 text-saffron-300" /> {showPlanForm ? "Close form" : "Add consultation plan"}
@@ -602,10 +658,11 @@ export function VopdAdminConsole() {
 
               <div className="grid gap-3 sm:grid-cols-4">
                 <div>
-                  <label className="block text-[10.5px] font-semibold uppercase tracking-[0.12em] text-forest-800">Fee (INR ₹)</label>
+                  <label className="block text-[10.5px] font-semibold uppercase tracking-[0.12em] text-forest-800">India fee (INR ₹) *</label>
                   <input
                     type="number"
-                    min={1}
+                    min={0.01}
+                    step="0.01"
                     disabled={!planDraft.requiresPayment}
                     required={planDraft.requiresPayment}
                     value={planDraft.priceInr}
@@ -615,11 +672,13 @@ export function VopdAdminConsole() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10.5px] font-semibold uppercase tracking-[0.12em] text-forest-800">USD display (optional)</label>
+                  <label className="block text-[10.5px] font-semibold uppercase tracking-[0.12em] text-forest-800">International fee (USD $) *</label>
                   <input
                     type="number"
-                    min={1}
+                    min={0.01}
+                    step="0.01"
                     disabled={!planDraft.requiresPayment}
+                    required={planDraft.requiresPayment}
                     value={planDraft.priceUsd}
                     onChange={(e) => setPlanDraft((d) => ({ ...d, priceUsd: e.target.value }))}
                     placeholder="e.g. 150"
@@ -676,6 +735,10 @@ export function VopdAdminConsole() {
                 </div>
               </div>
 
+              <label className="block text-xs font-semibold text-forest-800">Period / plan details
+                <input value={planDraft.period} onChange={(e) => setPlanDraft((d) => ({ ...d, period: e.target.value }))}
+                  className="mt-1 block w-full rounded-xl border border-forest-900/15 bg-white px-3 py-2 text-sm" />
+              </label>
               <div className="flex flex-wrap items-center gap-5 text-[12.5px] text-forest-900">
                 <label className="inline-flex items-center gap-2">
                   <input
@@ -684,7 +747,7 @@ export function VopdAdminConsole() {
                     onChange={(e) => setPlanDraft((d) => ({ ...d, requiresPayment: e.target.checked }))}
                     className="accent-forest-900"
                   />
-                  Collect UPI payment online
+                  Collect payment for paid consultations
                 </label>
                 <label className="inline-flex items-center gap-2">
                   <input
@@ -709,7 +772,7 @@ export function VopdAdminConsole() {
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => setShowPlanForm(false)}
+                  onClick={() => { setShowPlanForm(false); setEditingPlanId(null); }}
                   className="rounded-full border border-forest-900/15 bg-white px-4 py-2 text-[12.5px] font-semibold text-forest-800"
                 >
                   Cancel
@@ -719,7 +782,7 @@ export function VopdAdminConsole() {
                   disabled={busy}
                   className="rounded-full bg-forest-950 px-5 py-2 text-[12.5px] font-semibold text-cream-50 disabled:opacity-60"
                 >
-                  Save &amp; Publish Plan
+                  {editingPlanId ? "Save plan changes" : "Save & publish plan"}
                 </button>
               </div>
             </form>
@@ -733,9 +796,13 @@ export function VopdAdminConsole() {
                   <span className="rounded-full bg-forest-900/10 px-2 py-0.5 text-[10px] font-semibold text-forest-800">Default</span>
                 </div>
                 <p className="mt-1 font-semibold text-saffron-700">
-                  {plan.priceLabel} · {plan.bookingMinutes} mins
+                  {plan.priceLabel} / {plan.usdPrice || "USD not set"} · {plan.bookingMinutes} mins
                 </p>
                 <p className="mt-1 text-forest-800/75">{plan.description}</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button type="button" onClick={() => editPlan(plan)} className="rounded-full border border-forest-900/20 px-3 py-1 text-xs font-semibold">Edit</button>
+                  <button type="button" onClick={() => void togglePlanActive(plan)} className="rounded-full border border-forest-900/20 px-3 py-1 text-xs font-semibold">{plan.active === false ? "Activate" : "Deactivate"}</button>
+                </div>
               </div>
             ))}
             {customPlans.map((plan) => (
@@ -753,11 +820,12 @@ export function VopdAdminConsole() {
                   </span>
                 </div>
                 <p className="mt-1 font-semibold text-saffron-700">
-                  {plan.priceLabel} · {plan.bookingMinutes} mins
+                  {plan.priceLabel} / {plan.usdPrice || "USD not set"} · {plan.bookingMinutes} mins
                   {plan.followUpCount > 0 ? ` + ${plan.followUpCount} follow-ups` : ""}
                 </p>
                 <p className="mt-1 text-forest-800/75">{plan.description}</p>
                 <div className="mt-2.5 flex items-center gap-2">
+                  <button type="button" disabled={busy} onClick={() => editPlan(plan)} className="rounded-full border border-forest-900/20 px-3 py-1 text-[11px] font-semibold">Edit</button>
                   <button
                     type="button"
                     disabled={busy}
@@ -773,16 +841,16 @@ export function VopdAdminConsole() {
                     onClick={() => void removePlan(plan)}
                     className="inline-flex items-center gap-1 rounded-full border border-red-200 px-3 py-1 text-[11px] font-semibold text-red-700 hover:bg-red-50"
                   >
-                    <Trash2 className="h-3 w-3" /> Remove
+                    <Trash2 className="h-3 w-3" /> Archive
                   </button>
                 </div>
               </div>
             ))}
           </div>
-        </section>
+        </section>}
 
-        <section className="mt-6 rounded-2xl border border-forest-900/10 bg-white p-5">
-          <h2 className="font-display text-[19px] text-forest-950">Blocked dates</h2>
+        {section === "holidays" && <section className="mt-6 rounded-2xl border border-forest-900/10 bg-white p-5">
+          <h2 className="font-display text-[19px] text-forest-950">Legacy blocked dates</h2>
           <p className="text-[12.5px] text-forest-700">Blocked dates disappear from public VOPD slot availability.</p>
           <div className="mt-2.5 flex flex-wrap gap-2">
             <input type="date" value={blockDateValue} onChange={(event) => setBlockDateValue(event.target.value)} className="rounded-xl border border-forest-900/15 px-3 py-2 text-sm" />
@@ -798,9 +866,9 @@ export function VopdAdminConsole() {
                 <button onClick={() => void unblock(row.id)} className="font-semibold text-red-700">Remove</button>
               </li>
             ))}
-            {blocked.length === 0 && <li className="text-forest-700">No blocked dates.</li>}
+            {blocked.length === 0 && <li className="text-forest-700">No legacy blocked dates.</li>}
           </ul>
-        </section>
+        </section>}
       </div>
     </main>
   );

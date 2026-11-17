@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -44,6 +44,8 @@ import { ARTICLES, type Article } from "@/content/articles";
 import { LOCAL_PAGES, type LocalPage } from "@/content/local";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePagesDict } from "@/i18n/pagesDictionary";
+import { ABOUT_DOCTOR_COPY } from "@/i18n/aboutDoctor";
+import type { Language } from "@/i18n/config";
 import { useExpansion } from "@/i18n/expansion";
 import {
   trText,
@@ -713,6 +715,19 @@ export function AboutDoctorView() {
   const { lang, t } = useLanguage();
   const p = usePagesDict(lang);
   const s = p.staticPages.about;
+  const [overrides, setOverrides] = useState<Partial<Record<Language, { introduction: string; careParagraphs: string[] }>>>({});
+  const copy = { ...ABOUT_DOCTOR_COPY[lang], ...overrides[lang] };
+  useEffect(() => {
+    let active = true;
+    fetch("/api/doctor-profile", { cache: "no-store" }).then((response) => response.json())
+      .then((data) => { if (active && data?.ok) setOverrides(data.translations || {}); })
+      .catch(() => { /* translated defaults remain available */ });
+    return () => { active = false; };
+  }, []);
+  useEffect(() => {
+    document.querySelector('meta[name="description"]')?.setAttribute("content", s.seoDesc);
+    document.querySelector('meta[property="og:description"]')?.setAttribute("content", s.seoDesc);
+  }, [s.seoDesc]);
 
   return (
     <>
@@ -720,11 +735,11 @@ export function AboutDoctorView() {
       <StaticShell
         eyebrow={s.eyebrow}
         h1={s.h1}
-        intro={s.intro}
+        intro={copy.introduction}
         crumbs={[{ label: p.hubs.homeCrumb, href: "/" }, { label: s.crumb }]}
       >
         <div className="rounded-3xl border border-forest-900/10 bg-white p-6 sm:p-8 grid md:grid-cols-[220px_1fr] gap-6 items-start">
-          <img src={IMAGES.doctorPortrait} alt={t.site.doctorName} width={400} height={520} loading="eager" className="mx-auto w-44 h-56 md:mx-0 md:w-full md:h-64 object-cover object-top rounded-2xl shadow-md" />
+          <img src={IMAGES.doctorPortrait} alt={copy.portraitAlt} width={400} height={520} loading="eager" className="mx-auto w-44 h-56 md:mx-0 md:w-full md:h-64 object-cover object-top rounded-2xl shadow-md" />
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-[13px] font-semibold tracking-wide text-saffron-700 uppercase">
@@ -734,6 +749,8 @@ export function AboutDoctorView() {
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> {s.regBadgeLabel}
               </span>
             </div>
+            <h2 className="mt-5 font-display text-[21px] text-forest-950">{copy.qualificationsTitle}</h2>
+            <p className="mt-2 break-words text-[13px] text-forest-800"><strong>{copy.authorityLabel}:</strong> {SITE.registrationAuthority}</p>
             <ul className="mt-4 space-y-2.5 text-[14.5px] text-forest-900/85">
               {s.qualsList.map((item) => (
                 <li key={item} className="flex gap-2.5">
@@ -744,6 +761,13 @@ export function AboutDoctorView() {
             </ul>
           </div>
         </div>
+
+        <section>
+          <h2 className="font-display text-[24px] text-forest-950">{copy.careTitle}</h2>
+          <div className="mt-4 space-y-4 max-w-3xl text-[15px] leading-[1.85] text-forest-900/85">
+            {copy.careParagraphs.map((paragraph, index) => <p key={`${lang}-${index}`}>{paragraph}</p>)}
+          </div>
+        </section>
 
         <section>
           <h2 className="font-display text-[24px] text-forest-950">{s.scopeHeading}</h2>

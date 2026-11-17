@@ -25,6 +25,7 @@ import {
   CLINIC_ADDRESS_FULL,
   CLINIC_EMAIL,
   CLINIC_MAPS_URL,
+  CLINIC_MAP_EMBED_URL,
   CLINIC_PHONE_DISPLAY,
   CLINIC_PHONE_HREF,
   waLink,
@@ -307,7 +308,6 @@ export function HomeFaq() {
 export function ClinicLocation() {
   const { lang } = useLanguage();
   const h = useExpansion(lang).home;
-  const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(CLINIC_ADDRESS_FULL)}&output=embed`;
 
   return (
     <section id="clinic" aria-labelledby="clinic-h" className="mandala-section relative overflow-hidden scroll-mt-28 py-12 sm:py-14">
@@ -368,7 +368,7 @@ export function ClinicLocation() {
           <div className="overflow-hidden rounded-3xl border border-forest-900/10 bg-white shadow-luxe">
             <iframe
               title={h.mapTitle}
-              src={mapSrc}
+              src={CLINIC_MAP_EMBED_URL}
               width="100%"
               height="380"
               loading="lazy"

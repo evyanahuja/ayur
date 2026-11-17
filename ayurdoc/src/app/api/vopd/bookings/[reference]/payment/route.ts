@@ -63,7 +63,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ ref
 
   try {
     const booking = await submitPayment(reference, parsed.value, screenshot);
-    void sendPaymentSubmitted(booking);
+    await Promise.allSettled([sendPaymentSubmitted(booking)]); // notification failures never affect saved payment
     return NextResponse.json({
       ok: true,
       reference: booking.reference,

@@ -116,6 +116,8 @@ export type VopdConfig = {
     instructions: string[];
   };
   google: { configured: boolean };
+  /** Public instructions for arranging a manual USD transfer; never a card/UPI conversion. */
+  usdPaymentInstructions: string;
 };
 
 export const VOPD_DEFAULTS = {
@@ -173,6 +175,28 @@ export const VOPD_CONCERN_LABELS: Record<VopdConcernId, string> = {
 
 export function isVopdConcernId(value: unknown): value is VopdConcernId {
   return typeof value === "string" && (VOPD_CONCERN_IDS as readonly string[]).includes(value);
+}
+
+/** One shared eligibility policy for browser, OPD enquiry, and VOPD API.
+ *  Neutral skin, digestive, respiratory and neurological concerns suit children
+ *  and adults; senior/joint/metabolic/Panchakarma are adult-only in this list. */
+const CHILD_CATEGORIES: ReadonlySet<VopdConcernId> = new Set([
+  "childrens-health", "skin-hair-conditions", "digestive-disorders",
+  "respiratory-conditions", "neurological-conditions", "general", "other",
+]);
+
+export function allowedConcerns(patientKind: PatientKind, gender?: string): VopdConcernId[] {
+  return VOPD_CONCERN_IDS.filter((category) => {
+    if (patientKind === "child") return CHILD_CATEGORIES.has(category);
+    if (category === "childrens-health") return false;
+    if (category === "womens-health") return gender === "Female";
+    if (category === "mens-health") return gender === "Male";
+    return true;
+  });
+}
+
+export function isAllowedConcern(category: unknown, patientKind: PatientKind, gender?: string): category is VopdConcernId {
+  return isVopdConcernId(category) && allowedConcerns(patientKind, gender).includes(category);
 }
 
 export function formatMinor(amountMinor: number, currency: "INR" | "USD"): string {

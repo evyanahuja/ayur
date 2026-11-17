@@ -5,25 +5,31 @@ import Link from "next/link";
 import { Building2, CheckCircle2, Loader2, MessageCircle, PartyPopper, Send, Sparkles, Stethoscope, Video } from "lucide-react";
 import { VopdBookingForm } from "@/components/VopdBookingForm";
 import { PLANS, SITE } from "@/content/site";
-import { clinicTodayIso, computeAgeFromDob, isValidDobString, type VopdPlan } from "@/content/vopd";
+import { allowedConcerns, clinicTodayIso, computeAgeFromDob, isValidDobString, VOPD_CONCERN_LABELS, isAllowedConcern, type VopdPlan } from "@/content/vopd";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useExpansion } from "@/i18n/expansion";
 import { vopdDict } from "@/i18n/vopd";
 import { cn } from "@/lib/cn";
 import { useRegionCurrency } from "@/lib/useRegionCurrency";
+import { BOOKING_EXTRA } from "@/i18n/bookingExtras";
+import { HEALTH_CATEGORIES } from "@/content/categories";
+import { localizeCategory } from "@/i18n/categoriesTranslations";
 
 export type ConsultationMode = "online" | "in_clinic";
 
 const initial = {
   parentName: "", phone: "", email: "", childName: "", childAge: "", childGender: "",
+  patientKind: "child",
   concernCategory: "general", symptoms: "", preferredMode: "in_clinic" as ConsultationMode,
   preferredDate: "", preferredTime: "", planInterest: "first", message: "", website: "",
   consent: false,
 };
-const CONCERNS = ["skin", "neurodevelopmental", "growth", "respiratory", "allergy_immunity", "lifestyle", "general", "other"];
+// Legacy enquiry categories remain accepted. New selections use the shared
+// patient-aware VOPD category policy so OPD and VOPD cannot diverge.
+const LEGACY_CONCERNS = ["skin", "neurodevelopmental", "growth", "respiratory", "allergy_immunity", "lifestyle", "general", "other"];
 const BUILTIN_PLAN_KEYS = ["first", "followup", "suvarna", "unsure"];
 const REQUIRED = ["parentName", "phone", "childName", "childAge"] as const;
-type ErrorField = (typeof REQUIRED)[number] | "email" | "consent";
+type ErrorField = (typeof REQUIRED)[number] | "email" | "consent" | "childGender" | "concernCategory";
 type Errors = Partial<Record<ErrorField | "form", boolean>>;
 type Receipt = { ref: string | null; emailSent: boolean; childName: string };
 type Props = {
@@ -57,7 +63,7 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
   // separate field inside the OPD form, exactly as before.
   const [consultType, setConsultType] = useState<"opd" | "vopd">("opd");
   const [selectedPlanId, setSelectedPlanId] = useState("first");
-  const [customPlans, setCustomPlans] = useState<VopdPlan[]>([]);
+  const [publishedPlans, setPublishedPlans] = useState<VopdPlan[]>([]);
   const mode = preferredMode ?? form.preferredMode;
   const Heading = headingLevel === 3 ? "h3" : "h2";
 
@@ -68,6 +74,8 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
     if (name === "parentName") return f.contactNameError;
     if (name === "childName") return f.patientNameError;
     if (name === "childAge") return v.patient.eDob;
+    if (name === "childGender") return BOOKING_EXTRA[lang].genderRequired;
+    if (name === "concernCategory") return v.concern.eCategory;
     return t.booking.errors[name];
   };
 
@@ -80,7 +88,7 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
         if (cancelled || !data?.ok) return;
         if (typeof data.today === "string") setToday(data.today);
         if (Array.isArray(data.plans)) {
-          setCustomPlans((data.plans as VopdPlan[]).filter((p) => p.isCustom && p.active !== false));
+          setPublishedPlans((data.plans as VopdPlan[]).filter((p) => p.active !== false));
         }
       })
       .catch(() => { /* ignore */ });
@@ -136,6 +144,8 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
     if (fields.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email)) invalid.email = true;
     if (fields.childName.length < 2) invalid.childName = true;
     if (!isValidDobString(fields.childAge, today)) invalid.childAge = true;
+    if (fields.patientKind === "adult" && !["Male", "Female"].includes(fields.childGender)) invalid.childGender = true;
+    if (!isAllowedConcern(fields.concernCategory, fields.patientKind === "adult" ? "adult" : "child", fields.childGender)) invalid.concernCategory = true;
     if (!fields.consent) invalid.consent = true;
     setErrors(invalid);
     if (Object.keys(invalid).length) { focusError(); return; }
@@ -153,7 +163,7 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
       const data = await response.json();
       if (!response.ok || data.ok !== true || (data.dbSaved !== true && data.emailSent !== true)) {
         const mapped: Errors = {};
-        for (const key of [...REQUIRED, "email", "consent"] as ErrorField[]) {
+        for (const key of [...REQUIRED, "email", "consent", "childGender", "concernCategory"] as ErrorField[]) {
           if (data.errors?.[key]) mapped[key] = true;
         }
         setErrors(Object.keys(mapped).length ? mapped : { form: true });
@@ -206,32 +216,26 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
     </div>
   );
 
-  // Merge built-in plans + any active admin-added consultation plans
-  const combinedPlanOptions: { value: string; label: string }[] = [
-    ...BUILTIN_PLAN_KEYS.slice(0, 2).map((key, index) => {
-      const baseLabel = t.booking.planOptions[index] ?? key;
-      const plan = PLANS.find((entry) => entry.id === key);
-      return {
-        value: key,
-        label: plan ? withLivePrice(baseLabel, currency === "USD" ? plan.usdPrice : plan.price) : baseLabel,
-      };
-    }),
-    ...customPlans.map((cp) => {
-      const fee = cp.amountMinor != null
-        ? currency === "USD" && cp.usdPrice
-          ? cp.usdPrice
-          : cp.priceLabel
-        : "";
-      return {
-        value: cp.id,
-        label: fee ? `${cp.name} (${cp.bookingMinutes} mins) — ${fee}` : `${cp.name} (${cp.bookingMinutes} mins)`,
-      };
-    }),
-    ...BUILTIN_PLAN_KEYS.slice(2).map((key, idx) => ({
-      value: key,
-      label: t.booking.planOptions[idx + 2] ?? key,
-    })),
-  ];
+  const sourcePlans = publishedPlans.length ? publishedPlans : BUILTIN_PLAN_KEYS.flatMap((key) => {
+    const plan = PLANS.find((entry) => entry.id === key);
+    return plan ? [{ id: key, name: plan.name, bookingMinutes: key === "followup" ? 20 : 30,
+      amountMinor: key === "first" ? 40000 : key === "followup" ? 30000 : null,
+      amountMinorUsd: key === "first" ? 7500 : key === "followup" ? 5000 : null,
+      priceLabel: plan.price, usdPrice: plan.usdPrice, requiresPayment: key === "first" || key === "followup" }] : [];
+  });
+  const combinedPlanOptions = sourcePlans.map((cp, index) => {
+    const baseLabel = cp.id === "first" || cp.id === "followup" ? t.booking.planOptions[index] ?? cp.name : cp.name;
+    const amount = cp.requiresPayment ? (currency === "USD" ? cp.amountMinorUsd : cp.amountMinor) : null;
+    const fee = amount != null ? new Intl.NumberFormat(currency === "USD" ? "en-US" : "en-IN", { style: "currency", currency, maximumFractionDigits: amount % 100 ? 2 : 0 }).format(amount / 100) : "";
+    return { value: cp.id, label: fee ? withLivePrice(baseLabel, fee) : baseLabel };
+  });
+  const categoryOptions = allowedConcerns(form.patientKind === "adult" ? "adult" : "child", form.childGender).map((value) => {
+    if (value === "general") return { value, label: BOOKING_EXTRA[lang].general };
+    if (value === "other") return { value, label: BOOKING_EXTRA[lang].other };
+    if (value === "panchakarma") return { value, label: BOOKING_EXTRA[lang].panchakarma };
+    const category = HEALTH_CATEGORIES.find((entry) => entry.slug === value);
+    return { value, label: category ? localizeCategory(category, lang).title : VOPD_CONCERN_LABELS[value] };
+  });
 
   const computedDobAge = form.childAge ? computeAgeFromDob(form.childAge, today) : null;
   const submitLabel = t.booking.submit.replace("{doctor}", t.site.shortDoctorName);
@@ -388,6 +392,18 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
                 <Sparkles className="h-4 w-4 shrink-0 text-saffron-600" />
                 {f.patientSection}
               </p>
+              <fieldset className="grid grid-cols-2 gap-2" aria-label={v.patient.who}>
+                {(["child", "adult"] as const).map((kind) => (
+                  <button key={kind} type="button" aria-pressed={form.patientKind === kind}
+                    onClick={() => {
+                      setForm((current) => ({ ...current, patientKind: kind, childGender: "",
+                        concernCategory: isAllowedConcern(current.concernCategory, kind, "") ? current.concernCategory : "general" }));
+                    }}
+                    className={cn("rounded-xl border px-3 py-2 text-sm font-semibold", form.patientKind === kind ? "border-forest-900 bg-forest-950 text-white" : "border-forest-900/20 bg-white text-forest-900")}>
+                    {kind === "child" ? v.patient.child : v.patient.adult}
+                  </button>
+                ))}
+              </fieldset>
               <div className="grid gap-4 sm:grid-cols-2">
                 {input("childName", f.patientName, f.patientNamePh, { autoComplete: "off" })}
                 <div className="min-w-0">
@@ -421,19 +437,26 @@ export function PatientEnquiryForm({ preferredMode, onModeChange, headingLevel =
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="min-w-0">
                   <label htmlFor={id("childGender")} className={labelCls}>{t.booking.gender}</label>
-                  <select id={id("childGender")} name="childGender" value={form.childGender} onChange={(event) => set("childGender", event.target.value)} className={inputCls()}>
+                  <select id={id("childGender")} name="childGender" value={form.childGender}
+                    onChange={(event) => {
+                      const gender = event.target.value;
+                      setForm((current) => ({ ...current, childGender: gender,
+                        concernCategory: isAllowedConcern(current.concernCategory, current.patientKind === "adult" ? "adult" : "child", gender) ? current.concernCategory : "general" }));
+                      setErrors((current) => ({ ...current, childGender: false }));
+                    }} className={inputCls(errors.childGender)} aria-invalid={errors.childGender || undefined}>
                     <option value="">{f.genderSelect}</option>
-                    <option value="Female">{f.genderFemale}</option>
-                    <option value="Male">{f.genderMale}</option>
-                    <option value="Girl">{f.genderGirl}</option>
-                    <option value="Boy">{f.genderBoy}</option>
-                    <option value="Other">{f.genderPreferNot}</option>
+                    {form.patientKind === "adult" ? <>
+                      <option value="Female">{f.genderFemale}</option><option value="Male">{f.genderMale}</option>
+                    </> : <>
+                      <option value="Girl">{f.genderGirl}</option><option value="Boy">{f.genderBoy}</option><option value="Other">{f.genderPreferNot}</option>
+                    </>}
                   </select>
+                  {errorText("childGender")}
                 </div>
                 <div className="min-w-0">
                   <label htmlFor={id("concernCategory")} className={labelCls}>{t.booking.concern}</label>
                   <select id={id("concernCategory")} name="concernCategory" value={form.concernCategory} onChange={(event) => set("concernCategory", event.target.value)} className={inputCls()} required>
-                    {CONCERNS.map((value, index) => <option key={value} value={value}>{t.booking.concerns[index]}</option>)}
+                    {categoryOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                   </select>
                 </div>
               </div>

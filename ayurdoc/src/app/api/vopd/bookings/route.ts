@@ -3,6 +3,7 @@ import { isDatabaseConfigured } from "@/db";
 import { createBooking, VopdConflictError } from "@/lib/vopd/store";
 import { validateBooking } from "@/lib/vopd/validation";
 import { sendAcknowledgement, sendAdminNewBooking } from "@/lib/vopd/mailer";
+import { resolveRequestCurrency } from "@/lib/geo";
 
 export const dynamic = "force-dynamic";
 
@@ -40,13 +41,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, reference: null }, { status: 201 });
   }
 
-  const parsed = await validateBooking(body);
+  const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  const currency = resolveRequestCurrency(new Headers(request.headers), payload.currency);
+  const parsed = await validateBooking({ ...payload, currency });
   if (!parsed.ok) return NextResponse.json({ ok: false, errors: parsed.errors }, { status: 400 });
 
   try {
     const booking = await createBooking(parsed.value);
     // Notifications are best-effort; the booking is already persisted.
-    void Promise.allSettled([sendAcknowledgement(booking), sendAdminNewBooking(booking)]);
+    await Promise.allSettled([sendAcknowledgement(booking), sendAdminNewBooking(booking)]);
     return NextResponse.json(
       {
         ok: true,

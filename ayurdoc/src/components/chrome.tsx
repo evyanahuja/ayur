@@ -311,7 +311,7 @@ export function SiteFooter() {
           <p className="mt-3 text-[13.5px] leading-relaxed text-white/65 max-w-sm">{p.footer.bio}</p>
           <p className="mt-3 flex items-start gap-2 text-[12px] leading-relaxed text-emerald-300/90 max-w-sm">
             <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-            <span>{p.footer.regBadge}</span>
+            <span>{p.footer.regBadge}<span className="mt-1 block text-emerald-200/85">{SITE.registrationAuthority}</span></span>
           </p>
           <div className="mt-4">
             <SocialLinks />

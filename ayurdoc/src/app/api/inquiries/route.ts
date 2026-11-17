@@ -4,8 +4,9 @@ import { patientInquiries } from "@/db/schema";
 import { planLabel, sendDoctorNotification, sendParentConfirmation } from "@/lib/email";
 import { getResolvedVopdPlan } from "@/lib/vopd/config";
 import { ensureVopdSchema } from "@/lib/vopd/store";
-import { computeAgeFromDob, isValidDobString } from "@/content/vopd";
+import { computeAgeFromDob, isValidDobString, isVopdConcernId, isAllowedConcern } from "@/content/vopd";
 import { todayInClinic } from "@/lib/vopd/slots";
+import { resolveRequestCurrency } from "@/lib/geo";
 import { desc, count } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -60,6 +61,7 @@ export async function POST(req: Request) {
     const dobAge = isValidDobString(isoDob, todayInClinic()) ? computeAgeFromDob(isoDob, todayInClinic()) : null;
     const childAge = dobAge ? `${isoDob} (${dobAge.short})` : rawChildAge;
     const childGender = sanitize(body.childGender, 20);
+    const patientKind = body.patientKind === "adult" ? "adult" : "child";
     const concernCategory = sanitize(body.concernCategory, 40) || "general";
     const symptoms = sanitize(body.symptoms, 2000);
     const preferredMode = sanitize(body.preferredMode, 20) || "online";
@@ -67,7 +69,7 @@ export async function POST(req: Request) {
     const preferredTime = sanitize(body.preferredTime, 40);
     const planInterest = sanitize(body.planInterest, 60);
     const message = sanitize(body.message, 2000);
-    const currency = sanitize(body.currency, 3) === "USD" ? "USD" : "INR";
+    const currency = resolveRequestCurrency(new Headers(req.headers), sanitize(body.currency, 3));
 
     // Validation
     const errors: Record<string, string> = {};
@@ -81,7 +83,11 @@ export async function POST(req: Request) {
     if (!rawChildAge || (!isValidDobString(isoDob, todayInClinic()) && !legacyAgeOk)) {
       errors.childAge = "Please select a valid date of birth";
     }
-    if (!concernCategory) errors.concernCategory = "Please choose a concern";
+    const legacyCategories = ["skin", "neurodevelopmental", "growth", "respiratory", "allergy_immunity", "lifestyle", "general", "other"];
+    if (patientKind === "adult" && !["Male", "Female"].includes(childGender)) errors.childGender = "Choose Male or Female for an adult enquiry.";
+    if (isVopdConcernId(concernCategory) ? !isAllowedConcern(concernCategory, patientKind, childGender) : !legacyCategories.includes(concernCategory)) {
+      errors.concernCategory = "Choose a consultation category appropriate for the patient type and gender.";
+    }
     if (body.consent !== true) errors.consent = "Please confirm consent so we can process your enquiry.";
 
     // Honeypot anti-spam: bots that fill the hidden field receive a harmless success response.
@@ -113,6 +119,8 @@ export async function POST(req: Request) {
             childName,
             childAge,
             childGender: childGender || null,
+            patientKind,
+            patientGender: childGender || null,
             concernCategory,
             symptoms: symptoms || null,
             preferredMode,

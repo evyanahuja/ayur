@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { isDatabaseConfigured } from "@/db";
 import { requireAdmin } from "@/lib/vopd/admin";
-import { getVopdPlans } from "@/lib/vopd/config";
-import { createCustomPlan, listCustomPlans, VopdConflictError } from "@/lib/vopd/store";
+import { getAdminVopdPlans } from "@/lib/vopd/config";
+import { createCustomPlan, ensureVopdSchema, VopdConflictError } from "@/lib/vopd/store";
 import { validateCustomPlan } from "@/lib/vopd/validation";
 
 export const dynamic = "force-dynamic";
@@ -12,8 +12,9 @@ export async function GET() {
   if (!admin) return NextResponse.json({ ok: false, error: "Unauthorised." }, { status: 401 });
   if (!isDatabaseConfigured()) return NextResponse.json({ ok: false, error: "Database is not configured." }, { status: 503 });
 
-  const [builtin, custom] = await Promise.all([Promise.resolve(getVopdPlans()), listCustomPlans()]);
-  return NextResponse.json({ ok: true, builtin, custom });
+  await ensureVopdSchema();
+  const plans = await getAdminVopdPlans();
+  return NextResponse.json({ ok: true, builtin: plans.filter((plan) => !plan.isCustom), custom: plans.filter((plan) => plan.isCustom) });
 }
 
 export async function POST(request: Request) {

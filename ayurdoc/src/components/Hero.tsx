@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { CalendarCheck, Play, Leaf, BadgeCheck, Stethoscope, HeartHandshake, ArrowRight, ShieldCheck } from "lucide-react";
+import { CalendarCheck, Play, Leaf, BadgeCheck, HeartHandshake, ArrowRight, ShieldCheck } from "lucide-react";
 import { SITE, IMAGES } from "@/content/site";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useExpansion } from "@/i18n/expansion";
@@ -23,7 +23,7 @@ export function Hero() {
   return (
     <section
       id="top"
-      className="mandala-section bg-gradient-to-b from-[#fffdf8] via-white to-cream-50/50 relative overflow-hidden pt-[96px] sm:pt-[112px] lg:pt-[108px] pb-10 sm:pb-14 lg:pb-16"
+      className="home-hero mandala-section bg-gradient-to-b from-[#fffdf8] via-white to-cream-50/50 relative overflow-hidden pt-[96px] sm:pt-[112px] lg:pt-[104px] pb-8 lg:pb-6"
     >
       <SectionMandalas id="hero" hero />
 
@@ -39,7 +39,7 @@ export function Hero() {
               <span className="hero-specialty-copy">{t.hero.badgeSub}</span>
             </div>
 
-            <h1 className="hero-headline mt-5 sm:mt-6 font-display font-light leading-[1.05] text-forest-950">
+            <h1 className="hero-headline mt-4 sm:mt-5 font-display font-light leading-[1.05] text-forest-950">
               <LineReveal
                 lines={[
                   <>{h.line1}</>,
@@ -67,14 +67,14 @@ export function Hero() {
             </h1>
 
             <p
-              className={`mt-4 sm:mt-5 text-[15px] sm:text-[16.5px] lg:text-[16px] leading-[1.7] text-forest-900/82 max-w-xl transition-all duration-1000 delay-[700ms] ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}
+              className={`mt-4 text-[15px] sm:text-[16px] leading-[1.65] text-forest-900/82 max-w-xl transition-all duration-1000 delay-[700ms] ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}
             >
               {h.subheadingPre} <strong className="text-forest-950 font-semibold">{t.site.doctorName}</strong>
               {h.subheadingPost}
             </p>
 
             <div
-              className={`hero-actions mt-6 sm:mt-7 transition-opacity duration-1000 delay-[820ms] ${mounted ? "opacity-100" : "opacity-0"}`}
+              className={`hero-actions mt-5 transition-opacity duration-1000 delay-[820ms] ${mounted ? "opacity-100" : "opacity-0"}`}
             >
               <a href="#book" className="hero-action hero-action--primary btn-shine group">
                 <span className="hero-action__icon" aria-hidden="true">
@@ -92,27 +92,13 @@ export function Hero() {
             </div>
 
             <div
-              className={`mt-6 sm:mt-7 flex flex-wrap items-center gap-x-6 gap-y-4 transition-all duration-1000 delay-[940ms] ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}
+              className={`hero-registration mt-5 flex items-start transition-all duration-1000 delay-[940ms] ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}
             >
-              <div className="flex items-center gap-2.5 text-[13px] font-medium text-forest-800 tracking-wide">
-                <ShieldCheck className="w-[18px] h-[18px] shrink-0 text-forest-600" />
+              <div className="flex items-start gap-2.5 text-[12px] sm:text-[13px] font-medium leading-relaxed text-forest-800">
+                <ShieldCheck className="mt-0.5 w-[18px] h-[18px] shrink-0 text-forest-600" />
                 {t.site.qualification}
               </div>
             </div>
-
-            <dl
-              className={`mt-6 sm:mt-7 grid grid-cols-3 max-w-md rounded-2xl glass gold-hairline p-1.5 transition-all duration-1000 delay-[1060ms] ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}
-            >
-              {h.miniStats.map((s, i) => (
-                <div
-                  key={s.v}
-                  className={`text-center px-2 py-3.5 rounded-xl hover:bg-white/70 transition-colors duration-500 ${i < 2 ? "border-r border-saffron-500/15" : ""}`}
-                >
-                  <dt className="font-display font-normal text-[22px] sm:text-[26px] text-forest-950 leading-none">{s.k}</dt>
-                  <dd className="text-[10.5px] sm:text-[11px] text-forest-700/60 font-medium mt-1.5 tracking-wide">{s.v}</dd>
-                </div>
-              ))}
-            </dl>
           </div>
 
           <div
@@ -134,7 +120,7 @@ export function Hero() {
                     height={900}
                     sizes="(min-width: 1024px) 440px, (min-width: 640px) 420px, calc(100vw - 2rem)"
                     priority
-                    className="w-full h-[360px] sm:h-[420px] lg:h-[460px] object-cover object-top"
+                    className="hero-portrait-image w-full object-cover object-top"
                   />
                   <div
                     className="absolute inset-x-0 bottom-0 h-40 sm:h-44 bg-gradient-to-t from-forest-950 via-forest-950/45 to-transparent"
@@ -162,12 +148,6 @@ export function Hero() {
             <CredentialGrid
               label={t.hero.credGridLabel}
               items={[
-                {
-                  id: "qualification",
-                  icon: <Stethoscope className="w-[18px] h-[18px]" />,
-                  title: t.hero.credQualTitle,
-                  subtitle: t.hero.credQualSub,
-                },
                 {
                   id: "approach",
                   icon: <HeartHandshake className="w-[18px] h-[18px]" />,

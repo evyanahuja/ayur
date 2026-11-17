@@ -23,8 +23,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ ref
     return NextResponse.json({ ok: false, error: "UPI payment is not configured." }, { status: 404 });
   }
   const booking = await getBooking(reference);
-  if (!booking || booking.amountMinor == null) {
-    return NextResponse.json({ ok: false, error: "No payable booking found for this reference." }, { status: 404 });
+  if (!booking || booking.amountMinor == null || booking.currency !== "INR" || booking.paymentMethod !== "UPI") {
+    return NextResponse.json({ ok: false, error: "UPI QR is available only for INR bookings." }, { status: 404 });
   }
 
   const vpa = process.env.VOPD_UPI_ID?.trim() || "";
