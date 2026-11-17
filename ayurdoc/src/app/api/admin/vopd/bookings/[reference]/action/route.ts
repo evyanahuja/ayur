@@ -15,14 +15,77 @@ import {
   verifyPayment,
 } from "@/lib/vopd/store";
 import { createCalendarEvent, googleConfigured } from "@/lib/vopd/google";
-import { sendConfirmation, sendMeetLink } from "@/lib/vopd/mailer";
+import { sendAdminConfirmation, sendConfirmation, sendMeetLink } from "@/lib/vopd/mailer";
+import { db } from "@/db";
+import { vopdAuditLog, vopdBookings } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
 const ACTIONS = ["verify", "reject", "cancel", "complete", "reschedule", "set-meet", "retry-calendar", "email-meet-link"] as const;
 type Action = (typeof ACTIONS)[number];
 
-async function confirmWithCalendar(reference: string, admin: string) {
+type MailSummary = { recipient: "patient" | "clinic"; sent: boolean; reason: string };
+type MailOutcome = { ok: boolean; message: string; results: MailSummary[] };
+
+/** Sends the patient confirmation and the clinic confirmation together.
+ *  Emails are strictly best-effort: a provider outage never changes the
+ *  booking status, but the result is returned and written to the audit trail
+ *  so a silent failure is impossible. */
+async function notifyConfirmation(
+  reference: string,
+  admin: string,
+  send: (booking: NonNullable<Awaited<ReturnType<typeof getBooking>>>) => Promise<{ sent: boolean; reason?: string; code?: string }>
+): Promise<MailOutcome> {
+  const booking = await getBooking(reference);
+  if (!booking) return { ok: false, message: "Booking not found.", results: [] };
+
+  const results: MailSummary[] = [];
+
+  if (booking.email) {
+    const patient = await send(booking).catch((error) => ({
+      sent: false,
+      reason: error instanceof Error ? error.message : "Unexpected email error.",
+    }));
+    results.push({ recipient: "patient", sent: patient.sent, reason: patient.sent ? "sent" : patient.reason || "unknown" });
+    if (patient.sent) {
+      await db.update(vopdBookings).set({ confirmationEmailSentAt: new Date() }).where(eq(vopdBookings.reference, reference));
+    }
+  } else {
+    results.push({ recipient: "patient", sent: false, reason: "Booking has no patient email address." });
+  }
+
+  const clinic = await sendAdminConfirmation(booking).catch((error) => ({
+    sent: false,
+    reason: error instanceof Error ? error.message : "Unexpected email error.",
+  }));
+  results.push({ recipient: "clinic", sent: clinic.sent, reason: clinic.sent ? "sent" : clinic.reason || "unknown" });
+
+  for (const result of results) {
+    await db.insert(vopdAuditLog).values({
+      reference,
+      action: result.sent ? "CONFIRMATION_EMAIL_SENT" : "CONFIRMATION_EMAIL_FAILED",
+      actor: admin,
+      note: `${result.recipient === "clinic" ? "Clinic" : "Patient"} confirmation email: ${result.reason}`,
+    }).catch((error) => console.error("Could not audit confirmation email:", error));
+  }
+
+  const failed = results.filter((result) => !result.sent);
+  const patientResult = results.find((result) => result.recipient === "patient");
+  const clinicResult = results.find((result) => result.recipient === "clinic");
+  const message = failed.length === 0
+    ? "Confirmation emails sent to the patient and the clinic."
+    : `Email ${failed.length === 1 ? "issue" : "issues"} — patient: ${patientResult?.reason ?? "n/a"}, clinic: ${clinicResult?.reason ?? "n/a"}. Booking is confirmed regardless.`;
+  return { ok: failed.length === 0, message, results };
+}
+
+async function confirmWithCalendar(reference: string, admin: string): Promise<{
+  confirmed: boolean;
+  calendar: string;
+  meetUrl?: string | null;
+  message: string;
+  email?: MailOutcome;
+}> {
   const booking = await getBooking(reference);
   if (!booking) return { confirmed: false, calendar: "NOT_FOUND", message: "Booking not found." };
   if (!googleConfigured()) {
@@ -36,25 +99,18 @@ async function confirmWithCalendar(reference: string, admin: string) {
   try {
     const event = await createCalendarEvent(booking);
     const confirmed = await recordCalendarResult(reference, admin, event);
-    if (confirmed) {
-      try {
-        const mail = await sendConfirmation(confirmed);
-        if (mail.sent) {
-          await import("@/db").then(({ db }) => import("@/db/schema").then(({ vopdBookings }) => import("drizzle-orm").then(({ eq }) =>
-            db.update(vopdBookings).set({ confirmationEmailSentAt: new Date() }).where(eq(vopdBookings.reference, reference))
-          )));
-        }
-      } catch (emailError) {
-        console.error("Confirmation email failed; booking remains confirmed:", emailError);
-      }
-    }
+    const email = confirmed ? await notifyConfirmation(reference, admin, sendConfirmation) : undefined;
     return {
       confirmed: true,
       calendar: "CREATED",
       meetUrl: event.meetUrl,
-      message: event.meetUrl
-        ? "Payment verified. Calendar event and Google Meet link created; confirmation email attempted."
-        : "Payment verified and Calendar event created, but Google returned no Meet link. Add a manual Meet link.",
+      message: [
+        event.meetUrl
+          ? "Calendar event and Google Meet link created."
+          : "Calendar event created, but Google returned no Meet link.",
+        email ? email.message : "No confirmation email was sent because the calendar step did not complete.",
+      ].join(" "),
+      ...(email ? { email } : {}),
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown Calendar error";
@@ -118,18 +174,28 @@ export async function POST(request: Request, { params }: { params: Promise<{ ref
         return NextResponse.json({ ok: false, error: "Enter a valid https://meet.google.com/... link." }, { status: 400 });
       }
       const booking = await setManualMeetUrl(reference, meetUrl, admin);
-      let emailSent = false;
-      try { emailSent = (await sendMeetLink(booking)).sent; }
-      catch (emailError) { console.error("Meet email failed; booking remains confirmed:", emailError); }
-      return NextResponse.json({ ok: true, booking, emailSent, audit: await getAuditTrail(reference) });
+      const email = await notifyConfirmation(reference, admin, sendMeetLink);
+      return NextResponse.json({
+        ok: true,
+        booking,
+        emailSent: email.results.some((result) => result.recipient === "patient" && result.sent),
+        outcome: { message: email.message, results: email.results },
+        audit: await getAuditTrail(reference),
+      });
     }
     if (action === "email-meet-link") {
       const booking = await getBooking(reference);
       if (!booking || booking.status !== "CONFIRMED" || !booking.meetUrl) {
         return NextResponse.json({ ok: false, error: "A confirmed booking with a Meet link is required." }, { status: 409 });
       }
-      const mail = await sendMeetLink(booking);
-      return NextResponse.json({ ok: mail.sent, emailSent: mail.sent });
+      const email = await notifyConfirmation(reference, admin, sendMeetLink);
+      return NextResponse.json({
+        ok: email.ok,
+        emailSent: email.results.some((result) => result.recipient === "patient" && result.sent),
+        error: email.ok ? undefined : email.message,
+        message: email.message,
+        results: email.results,
+      });
     }
     return NextResponse.json({ ok: false, error: "Unsupported action." }, { status: 400 });
   } catch (error) {
