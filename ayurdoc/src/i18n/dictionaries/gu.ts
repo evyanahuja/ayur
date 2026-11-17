@@ -412,7 +412,7 @@ export const gu: Dictionary = {
     doctorName: "ડૉ. પ્રિયંકા લિખાર",
     shortDoctorName: "ડૉ. પ્રિયંકા",
     clinicName: "બાળચિકિત્સા આયુર્વેદ ક્લિનિક",
-    qualification: "BAMS • MD (બાળરોગ નિષ્ણાત — કૌમારભૃત્ય) • નોંધણી નં. 63934",
+    qualification: "BAMS • MD (બાળરોગ નિષ્ણાત — કૌમારભૃત્ય)",
     shortCreds: "MD (બાળરોગ) • BAMS • નોંધણી 63934",
     hours: "સોમ–શનિ • સવારે 10–બપોરે 2 અને સાંજે 5–8 IST",
     hoursNote: "સાંજ + પ્રવાસી ભારતીય (NRI) અનુકૂળ ઓનલાઇન સ્લોટ",
