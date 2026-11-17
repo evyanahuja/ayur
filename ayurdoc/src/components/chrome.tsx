@@ -411,7 +411,7 @@ export function SiteFooter() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-[12px] text-white/45">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 sm:pr-24 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-[12px] text-white/45">
           <p>
             © {year} {t.site.doctorName} • {t.site.clinicName}. {p.footer.rights}
           </p>
@@ -426,11 +426,13 @@ export function SiteFooter() {
               {p.footer.terms}
             </Link>
           </p>
-          <p className="flex items-center gap-1.5">
-            {p.footer.madeWith} <Heart className="w-3.5 h-3.5 text-rose-400" fill="currentColor" /> {p.footer.forKids}
+          <p className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 text-center">
+            <span>{p.footer.madeWith}</span>
+            <Heart className="h-3.5 w-3.5 shrink-0 text-rose-400" fill="currentColor" aria-hidden="true" />
+            <span>{p.footer.forKids}</span>
           </p>
         </div>
-        <p className="mx-auto max-w-7xl px-4 sm:px-6 pb-6 text-[11px] leading-relaxed text-white/40">{p.footer.disclaimer}</p>
+        <p className="mx-auto max-w-7xl px-4 pb-28 pr-20 text-[11px] leading-relaxed text-white/40 sm:px-6 sm:pb-28 sm:pr-20">{p.footer.disclaimer}</p>
       </div>
     </footer>
   );
