@@ -86,24 +86,25 @@ function buildHtml(p: InquiryPayload, ref: string | null) {
   const message = escapeHtml(p.message);
 
   return `
-  <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fffdf8;border:1px solid #e7e0cf;border-radius:16px;overflow:hidden">
-    <div style="background:#0e2b21;color:#fdf0d3;padding:24px 28px">
+  <style>@media only screen and (max-width:480px){.bc-wrap{width:100%!important}.bc-pad{padding:18px 16px!important}.bc-hd{padding:20px 16px!important}.bc-row td{display:block!important;width:100%!important;padding:2px 0!important}.bc-row td.bc-k{padding-top:8px!important}}</style>
+  <div class="bc-wrap" style="font-family:Arial,sans-serif;width:100%;max-width:600px;margin:0 auto;background:#fffdf8;border:1px solid #e7e0cf;border-radius:16px;overflow:hidden">
+    <div class="bc-hd" style="background:#0e2b21;color:#fdf0d3;padding:24px 28px;word-break:break-word;overflow-wrap:anywhere">
       <p style="margin:0;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#f4bc4f">New Patient Inquiry${ref ? ` &middot; Reference <strong>${ref}</strong>` : ""}</p>
-      <h2 style="margin:8px 0 0;font-size:22px">🌿 ${parentName} — for ${childName} (${childAge})</h2>
+      <h2 style="margin:8px 0 0;font-size:22px;line-height:1.3;word-break:break-word;overflow-wrap:anywhere">🌿 ${parentName} — for ${childName} (${childAge})</h2>
       <p style="margin:6px 0 0;font-size:14px;color:#d2e2c9">${concern} • ${p.preferredMode === "online" ? "Online Consultation" : "In-Clinic Visit"}</p>
     </div>
-    <div style="padding:24px 28px;color:#1a2b23">
-      <table style="width:100%;font-size:14px;border-collapse:collapse">
-        <tr><td style="padding:8px 0;color:#6b7d73;width:150px">Parent</td><td><strong>${parentName}</strong> — ${phone}</td></tr>
-        <tr><td style="padding:8px 0;color:#6b7d73">Parent Email</td><td>${email}</td></tr>
-        <tr><td style="padding:8px 0;color:#6b7d73">Child</td><td><strong>${childName}</strong>, ${childAge}${childGender ? ` • ${childGender}` : ""}</td></tr>
-        <tr><td style="padding:8px 0;color:#6b7d73">Concern</td><td>${concern}</td></tr>
-        <tr><td style="padding:8px 0;color:#6b7d73">Symptoms</td><td>${symptoms}</td></tr>
-        <tr><td style="padding:8px 0;color:#6b7d73">Preferred Slot</td><td>${preferredDate} ${preferredTime ? `• ${preferredTime}` : ""}</td></tr>
-        <tr><td style="padding:8px 0;color:#6b7d73">Plan Interest</td><td>${planInterest}</td></tr>
+    <div class="bc-pad" style="padding:24px 28px;color:#1a2b23">
+      <table style="width:100%;max-width:100%;font-size:14px;border-collapse:collapse;table-layout:fixed">
+        <tr class="bc-row"><td class="bc-k" style="padding:8px 8px 8px 0;color:#6b7d73;width:34%;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">Parent</td><td style="padding:8px 0;vertical-align:top;word-break:break-word;overflow-wrap:anywhere"><strong>${parentName}</strong> — ${phone}</td></tr>
+        <tr class="bc-row"><td class="bc-k" style="padding:8px 8px 8px 0;color:#6b7d73;width:34%;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">Parent Email</td><td style="padding:8px 0;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">${email}</td></tr>
+        <tr class="bc-row"><td class="bc-k" style="padding:8px 8px 8px 0;color:#6b7d73;width:34%;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">Child</td><td style="padding:8px 0;vertical-align:top;word-break:break-word;overflow-wrap:anywhere"><strong>${childName}</strong>, ${childAge}${childGender ? ` • ${childGender}` : ""}</td></tr>
+        <tr class="bc-row"><td class="bc-k" style="padding:8px 8px 8px 0;color:#6b7d73;width:34%;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">Concern</td><td style="padding:8px 0;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">${concern}</td></tr>
+        <tr class="bc-row"><td class="bc-k" style="padding:8px 8px 8px 0;color:#6b7d73;width:34%;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">Symptoms</td><td style="padding:8px 0;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">${symptoms}</td></tr>
+        <tr class="bc-row"><td class="bc-k" style="padding:8px 8px 8px 0;color:#6b7d73;width:34%;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">Preferred Slot</td><td style="padding:8px 0;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">${preferredDate} ${preferredTime ? `• ${preferredTime}` : ""}</td></tr>
+        <tr class="bc-row"><td class="bc-k" style="padding:8px 8px 8px 0;color:#6b7d73;width:34%;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">Plan Interest</td><td style="padding:8px 0;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">${planInterest}</td></tr>
       </table>
-      ${message ? `<div style="margin-top:16px;background:#fff9ec;border:1px solid #f0dfb8;border-radius:12px;padding:14px 16px"><p style="margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#a85e14">Message from parent</p><p style="margin:0;font-size:14px;line-height:1.6">${message}</p></div>` : ""}
-      <p style="margin:20px 0 0;font-size:12px;color:#6b7d73">Received via drpriyankalikhar.in landing page • Reply directly or call ${phone}</p>
+      ${message ? `<div style="margin-top:16px;background:#fff9ec;border:1px solid #f0dfb8;border-radius:12px;padding:14px 16px"><p style="margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#a85e14">Message from parent</p><p style="margin:0;font-size:14px;line-height:1.6;word-break:break-word;overflow-wrap:anywhere">${message}</p></div>` : ""}
+      <p style="margin:20px 0 0;font-size:12px;color:#6b7d73;word-break:break-word;overflow-wrap:anywhere">Received via drpriyankalikhar.in landing page • Reply directly or call ${phone}</p>
     </div>
   </div>`;
 }
@@ -241,19 +242,20 @@ function buildParentHtml(p: InquiryPayload, ref: string | null) {
     (p.preferredTime ? ` &middot; ${escapeHtml(p.preferredTime)}` : "");
   const refRow = ref ? escapeHtml(ref) : "&mdash;";
   return `
-  <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fffdf8;border:1px solid #e7e0cf;border-radius:16px;overflow:hidden">
-    <div style="background:#0e2b21;color:#fdf0d3;padding:24px 28px">
+  <style>@media only screen and (max-width:480px){.bc-wrap{width:100%!important}.bc-pad{padding:18px 16px!important}.bc-hd{padding:20px 16px!important}.bc-row td{display:block!important;width:100%!important;padding:2px 0!important}.bc-row td.bc-k{padding-top:8px!important}}</style>
+  <div class="bc-wrap" style="font-family:Arial,sans-serif;width:100%;max-width:600px;margin:0 auto;background:#fffdf8;border:1px solid #e7e0cf;border-radius:16px;overflow:hidden">
+    <div class="bc-hd" style="background:#0e2b21;color:#fdf0d3;padding:24px 28px;word-break:break-word;overflow-wrap:anywhere">
       <p style="margin:0;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#f4bc4f">We received your enquiry${ref ? ` &middot; Ref <strong>${refRow}</strong>` : ""}</p>
-      <h2 style="margin:8px 0 0;font-size:22px">Thank you, ${parentName} 🌿</h2>
+      <h2 style="margin:8px 0 0;font-size:22px;line-height:1.3;word-break:break-word;overflow-wrap:anywhere">Thank you, ${parentName} 🌿</h2>
       <p style="margin:6px 0 0;font-size:14px;color:#d2e2c9">Dr. Priyanka Likhar &middot; MD Kaumarbhritya</p>
     </div>
-    <div style="padding:24px 28px;color:#1a2b23;font-size:14px;line-height:1.6">
+    <div class="bc-pad" style="padding:24px 28px;color:#1a2b23;font-size:14px;line-height:1.6;word-break:break-word;overflow-wrap:anywhere">
       <p style="margin:0 0 14px">We&rsquo;ve sent your enquiry to the clinic. Expect a personal call or WhatsApp within 24 hours (usually the same day, Mon&ndash;Sat).</p>
-      <table style="width:100%;font-size:14px;border-collapse:collapse;background:#fff9ec;border:1px solid #f0dfb8;border-radius:12px;padding:10px 14px">
-        <tr><td style="padding:6px 0;color:#6b7d73;width:140px">Reference</td><td><strong>${refRow}</strong></td></tr>
-        <tr><td style="padding:6px 0;color:#6b7d73">Child</td><td><strong>${childName}</strong>, ${childAge}</td></tr>
-        <tr><td style="padding:6px 0;color:#6b7d73">Preferred slot</td><td>${slot}</td></tr>
-        <tr><td style="padding:6px 0;color:#6b7d73">Plan of interest</td><td>${plan}</td></tr>
+      <table style="width:100%;max-width:100%;font-size:14px;border-collapse:collapse;table-layout:fixed;background:#fff9ec;border:1px solid #f0dfb8;border-radius:12px">
+        <tr class="bc-row"><td class="bc-k" style="padding:6px 8px 6px 14px;color:#6b7d73;width:34%;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">Reference</td><td style="padding:6px 14px 6px 0;vertical-align:top;word-break:break-word;overflow-wrap:anywhere"><strong>${refRow}</strong></td></tr>
+        <tr class="bc-row"><td class="bc-k" style="padding:6px 8px 6px 14px;color:#6b7d73;width:34%;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">Child</td><td style="padding:6px 14px 6px 0;vertical-align:top;word-break:break-word;overflow-wrap:anywhere"><strong>${childName}</strong>, ${childAge}</td></tr>
+        <tr class="bc-row"><td class="bc-k" style="padding:6px 8px 6px 14px;color:#6b7d73;width:34%;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">Preferred slot</td><td style="padding:6px 14px 6px 0;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">${slot}</td></tr>
+        <tr class="bc-row"><td class="bc-k" style="padding:6px 8px 6px 14px;color:#6b7d73;width:34%;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">Plan of interest</td><td style="padding:6px 14px 6px 0;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">${plan}</td></tr>
       </table>
       <p style="margin:18px 0 0">If urgent, please WhatsApp us and <strong>mention this reference</strong> so we can match you to your enquiry instantly.</p>
       <p style="margin:18px 0 0;font-size:12px;color:#6b7d73">With care, Dr. Priyanka Likhar &middot; BalChikitsa</p>
