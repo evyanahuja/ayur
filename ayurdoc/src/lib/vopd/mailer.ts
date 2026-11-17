@@ -19,16 +19,21 @@ function esc(value: string | null | undefined): string {
 }
 
 function shell(title: string, subtitle: string, rows: [string, string][], note: string, cta?: { label: string; url: string }): string {
-  return `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:${CREAM};border:1px solid #e7e0cf;border-radius:16px;overflow:hidden">
-  <div style="background:${BRAND};color:#fdf0d3;padding:22px 26px">
+  // Email-client-safe layout: percentage label column, explicit word wrapping and
+  // a mobile media query that stacks each row, so nothing is clipped on phones.
+  const cellKey = "padding:6px 8px 6px 0;color:#6b7d73;width:34%;vertical-align:top;word-break:break-word;overflow-wrap:anywhere";
+  const cellVal = "padding:6px 0;vertical-align:top;word-break:break-word;overflow-wrap:anywhere";
+  return `<style>@media only screen and (max-width:480px){.bc-wrap{width:100%!important}.bc-pad{padding:18px 16px!important}.bc-hd{padding:20px 16px!important}.bc-row td{display:block!important;width:100%!important;padding:2px 0!important}.bc-row td.bc-k{padding-top:8px!important}}</style>
+  <div class="bc-wrap" style="font-family:Arial,sans-serif;width:100%;max-width:600px;margin:0 auto;background:${CREAM};border:1px solid #e7e0cf;border-radius:16px;overflow:hidden">
+  <div class="bc-hd" style="background:${BRAND};color:#fdf0d3;padding:22px 26px;word-break:break-word;overflow-wrap:anywhere">
     <p style="margin:0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:${GOLD}">${esc(subtitle)}</p>
-    <h2 style="margin:8px 0 0;font-size:21px">${esc(title)}</h2>
+    <h2 style="margin:8px 0 0;font-size:21px;line-height:1.3;word-break:break-word;overflow-wrap:anywhere">${esc(title)}</h2>
   </div>
-  <div style="padding:22px 26px;color:#1a2b23;font-size:14px;line-height:1.6">
-    <table style="width:100%;border-collapse:collapse">${rows
-      .map(([k, v]) => `<tr><td style="padding:6px 0;color:#6b7d73;width:150px">${esc(k)}</td><td><strong>${esc(v)}</strong></td></tr>`)
+  <div class="bc-pad" style="padding:22px 26px;color:#1a2b23;font-size:14px;line-height:1.6;word-break:break-word;overflow-wrap:anywhere">
+    <table style="width:100%;max-width:100%;border-collapse:collapse;table-layout:fixed">${rows
+      .map(([k, v]) => `<tr class="bc-row"><td class="bc-k" style="${cellKey}">${esc(k)}</td><td style="${cellVal}"><strong>${esc(v)}</strong></td></tr>`)
       .join("")}</table>
-    ${cta ? `<p style="margin:20px 0 0"><a href="${esc(cta.url)}" style="background:${BRAND};color:#fdf0d3;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:bold">${esc(cta.label)}</a></p>` : ""}
+    ${cta ? `<p style="margin:20px 0 0"><a href="${esc(cta.url)}" style="display:inline-block;max-width:100%;background:${BRAND};color:#fdf0d3;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:bold;word-break:break-word;overflow-wrap:anywhere">${esc(cta.label)}</a></p>` : ""}
     <p style="margin:18px 0 0">${esc(note)}</p>
     <p style="margin:16px 0 0;font-size:12px;color:#6b7d73">Dr. Priyanka Likhar · BalChikitsa Ayurved Clinic · ${esc(CLINIC_PHONE)}</p>
   </div></div>`;
