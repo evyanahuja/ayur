@@ -412,7 +412,7 @@ export const mr: Dictionary = {
     doctorName: "डॉ. प्रियंका लिखार",
     shortDoctorName: "डॉ. प्रियंका",
     clinicName: "बालचिकित्सा आयुर्वेद क्लिनिक",
-    qualification: "BAMS • MD (बालरोगतज्ज्ञ — कौमारभृत्य) • नोंदणी क्र. 63934",
+    qualification: "BAMS • MD (बालरोगतज्ज्ञ — कौमारभृत्य)",
     shortCreds: "MD (बालरोग) • BAMS • नोंदणी 63934",
     hours: "सोम–शनि • सकाळी 10–दुपारी 2 व संध्याकाळी 5–8 IST",
     hoursNote: "संध्याकाळ + प्रवासी भारतीय (NRI) अनुकूल ऑनलाइन स्लॉट",
