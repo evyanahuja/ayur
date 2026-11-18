@@ -103,7 +103,7 @@ export const TREATMENTS_EXTRA: TreatmentPage[] = [
       "Practical Ayurvedic diet, daily routine and seasonal living advice, adapted to your constitution and health conditions. Consult Dr. Priyanka Likhar in Indore or online.",
     category: "Consultation",
     intro:
-      "Ayurveda places diet (Ahara) and daily living (Vihara) at the centre of health. The most useful Ayurvedic advice is practical: meals timed to your digestion, home-cooked food suited to the season, a routine that supports sleep and energy, and habits that fit your work and family life. At BalChikitsa Ayurved Clinic, diet and lifestyle plans are built around Indian home cooking and tailored to age, Prakriti, digestion, medical conditions and medicines. Plans are reviewed over time and coordinated with any special diet your doctor has advised.",
+      "Ayurveda places diet (Ahara) and daily living (Vihara) at the centre of health. The most useful Ayurvedic advice is practical: meals timed to your digestion, home-cooked food suited to the season, a routine that supports sleep and energy, and habits that fit your work and family life. At Prakriti Ayurveda Clinic, diet and lifestyle plans are built around Indian home cooking and tailored to age, Prakriti, digestion, medical conditions and medicines. Plans are reviewed over time and coordinated with any special diet your doctor has advised.",
     sections: [
       {
         h: "Core principles, explained simply",
