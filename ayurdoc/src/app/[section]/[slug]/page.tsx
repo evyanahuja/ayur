@@ -95,7 +95,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: "Page Not Found | BalChikitsa Ayurved Clinic",
+    title: "Page Not Found | Prakriti Ayurveda Clinic",
     robots: { index: false, follow: false },
   };
 }
