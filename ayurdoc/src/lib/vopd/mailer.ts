@@ -18,7 +18,7 @@ function esc(value: string | null | undefined): string {
     .replaceAll("'", "&#039;");
 }
 
-function shell(title: string, subtitle: string, rows: [string, string][], note: string, cta?: { label: string; url: string }): string {
+function shell(title: string, subtitle: string, rows: [string, string][], note: string, cta?: { label: string; url: string }, extraNote?: string): string {
   // Email-client-safe layout: percentage label column, explicit word wrapping and
   // a mobile media query that stacks each row, so nothing is clipped on phones.
   const cellKey = "padding:6px 8px 6px 0;color:#6b7d73;width:34%;vertical-align:top;word-break:break-word;overflow-wrap:anywhere";
@@ -35,6 +35,7 @@ function shell(title: string, subtitle: string, rows: [string, string][], note: 
       .join("")}</table>
     ${cta ? `<p style="margin:20px 0 0"><a href="${esc(cta.url)}" style="display:inline-block;max-width:100%;background:${BRAND};color:#fdf0d3;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:bold;word-break:break-word;overflow-wrap:anywhere">${esc(cta.label)}</a></p>` : ""}
     <p style="margin:18px 0 0">${esc(note)}</p>
+    ${extraNote ? `<p style="margin:12px 0 0;padding:12px 14px;background:#fff9ec;border:1px solid #f0dfb8;border-radius:12px;font-size:13px;line-height:1.55">${esc(extraNote)}</p>` : ""}
     <p style="margin:16px 0 0;font-size:12px;color:#6b7d73">Dr. Priyanka Likhar · BalChikitsa Ayurved Clinic · ${esc(CLINIC_PHONE)}</p>
   </div></div>`;
 }
@@ -113,10 +114,13 @@ export async function sendPaymentSubmitted(booking: VopdBooking) {
   });
 }
 
-export async function sendConfirmation(booking: VopdBooking) {
+export async function sendConfirmation(booking: VopdBooking, options: { calendarSender?: string | null } = {}) {
   if (!booking.email) return { sent: false as const, reason: "no_patient_email" };
   const meet = booking.meetUrl;
   const d = vopdDict(mailLocale(booking));
+  // Only mention a calendar invite when one was really created, and name the
+  // exact address it comes from so the parent can recognise it.
+  const inviteNote = options.calendarSender ? d.emails.calendarInviteNote.replaceAll("{sender}", options.calendarSender) : undefined;
   const result = await sendSystemEmail({
     to: booking.email,
     replyTo: CLINIC_EMAIL,
@@ -132,9 +136,10 @@ export async function sendConfirmation(booking: VopdBooking) {
           : []),
       ],
       meet ? d.emails.confirmNote : d.emails.confirmNoMeet,
-      meet ? { label: d.emails.meetCta, url: meet } : undefined
+      meet ? { label: d.emails.meetCta, url: meet } : undefined,
+      inviteNote
     ),
-    text: [d.emails.confirmTitle, ...baseRows(booking).map(([key, value]) => `${key}: ${value}`), meet ? `${d.pay.meeting}: ${meet}` : d.emails.confirmNoMeet].join("\n"),
+    text: [d.emails.confirmTitle, ...baseRows(booking).map(([key, value]) => `${key}: ${value}`), meet ? `${d.pay.meeting}: ${meet}` : d.emails.confirmNoMeet, ...(inviteNote ? ["", inviteNote] : [])].join("\n"),
   });
   return result;
 }
