@@ -26,7 +26,7 @@ export const SITE = {
   ugCollege: "Dr. Vandanatai J. Dhone Gramin Ayurved College, Patur",
   qualification: "BAMS • MD (Pediatrician — Kaumarbhritya) • Reg. No. 63934",
   shortCreds: "MD (Pediatrics) • BAMS • Reg. 63934",
-  clinicName: "BalChikitsa Ayurved Clinic",
+  clinicName: "Prakriti Ayurveda Clinic",
 
   // 📞 Phone — displayed on site
   phoneDisplay: "+91 98607 75010",
@@ -40,7 +40,7 @@ export const SITE = {
   email: "drpriyankalikhar@gmail.com",
 
   // 📍 Address
-  addressShort: "BalChikitsa Ayurved Clinic + Online worldwide",
+  addressShort: "Prakriti Ayurveda Clinic + Online worldwide",
   addressFull: CLINIC_LOCATION.address,
   googleMapsUrl: CLINIC_DIRECTIONS_URL,
 
@@ -268,10 +268,10 @@ export const METHOD_STEPS = [
   },
   {
     icon: SearchCheck, n: "02", title: "Root-Cause Mapping", time: "Day 1–2",
-    desc: "We identify the real driver — weak Agni, Ama (toxins), low Ojas, Vata aggravation or faulty routine — with clear explanation to parents.",
+    desc: "We identify the real driver — weak Agni, Ama (toxins), low Ojas, Vata aggravation, or faulty routine — with a clear explanation to parents.",
   },
   {
-    icon: Leaf, n: "03", title: "Personalised BalChikitsa Plan", time: "Week 1 onwards",
+    icon: Leaf, n: "03", title: "Personalised Prakriti Ayurveda Plan", time: "Week 1 onwards",
     desc: "Child-safe herbs, tasty formulations, food chart, dinacharya, plus therapies like Abhyanga or Suvarnaprashan where needed.",
   },
   {
