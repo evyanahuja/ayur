@@ -16,7 +16,7 @@ export async function generateMetadata({
   const { category } = await params;
   const c = findCategory(category.toLowerCase());
   if (!c) {
-    return { title: "Page Not Found | BalChikitsa Ayurved Clinic", robots: { index: false, follow: false } };
+    return { title: "Page Not Found | Prakriti Ayurveda Clinic", robots: { index: false, follow: false } };
   }
   const url = canonical(`/health-concerns/${c.slug}`);
   return {
