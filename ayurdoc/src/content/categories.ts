@@ -1,5 +1,5 @@
 /* Health-concern categories. Each renders a landing page at /health-concerns/<slug>.
-   Pure data (no React) so pages, navigation, homepage and sitemap can all import it.
+   Pure data (no React), so pages, navigation, homepage, and sitemap can all import it.
    Medical content in these pages is general and conservative; it is labelled for
    physician review on each page and must be checked by Dr. Priyanka Likhar. */
 
@@ -192,7 +192,7 @@ export const HEALTH_CATEGORIES: HealthCategory[] = [
     seoDescription:
       "Ayurvedic consultation in Indore for recurrent cough, cold, allergic rhinitis and asthma-related concerns. Works alongside inhaler and medical treatment.",
     intro:
-      "Recurrent coughs, colds, a blocked nose, sneezing and wheezing affect children and adults alike, and they can disrupt school, work and sleep. Some are simple viral infections, while others are allergic rhinitis, sinusitis or asthma, each needing a different plan. Asthma in particular needs regular medical review and an inhaler plan that must never be stopped on your own. Ayurvedic care at BalChikitsa Ayurved Clinic focuses on understanding triggers, immunity, digestion and environment, and supports the person alongside appropriate medical care.",
+      "Recurrent coughs, colds, a blocked nose, sneezing and wheezing affect children and adults alike, and they can disrupt school, work and sleep. Some are simple viral infections, while others are allergic rhinitis, sinusitis or asthma, each needing a different plan. Asthma in particular needs regular medical review and an inhaler plan that must never be stopped on your own. Ayurvedic care at Prakriti Ayurveda Clinic focuses on understanding triggers, immunity, digestion and environment, and supports the person alongside appropriate medical care.",
     approach: [
       "Detailed history of cough and cold patterns: frequency, season, triggers, night symptoms, and previous medicines and tests.",
       "Assessment of allergy triggers, environment (dust, smoke, pollution), sleep and diet, which are relevant in traditional respiratory care.",
@@ -363,7 +363,7 @@ export const HEALTH_CATEGORIES: HealthCategory[] = [
     seoDescription:
       "Confidential Ayurvedic consultation in Indore for men's concerns including stress, sleep, hair fall, digestion, urinary symptoms and general wellness, with medical referral when needed.",
     intro:
-      "Men often delay seeking help for health concerns, including stress, sleep problems, hair loss, digestive symptoms, urinary changes and sexual health. Many of these have treatable medical causes, such as thyroid disease, diabetes, prostate enlargement or low testosterone, and deserve proper evaluation. An Ayurvedic consultation at BalChikitsa Ayurved Clinic offers a private, unhurried conversation about lifestyle, diet, work stress, sleep and physical health, along with individualised supportive care. Where a urologist, andrologist or other specialist is needed, Dr. Priyanka Likhar will say so.",
+      "Men often delay seeking help for health concerns, including stress, sleep problems, hair loss, digestive symptoms, urinary changes and sexual health. Many of these have treatable medical causes, such as thyroid disease, diabetes, prostate enlargement or low testosterone, and deserve proper evaluation. An Ayurvedic consultation at Prakriti Ayurveda Clinic offers a private, unhurried conversation about lifestyle, diet, work stress, sleep and physical health, along with individualised supportive care. Where a urologist, andrologist or other specialist is needed, Dr. Priyanka Likhar will say so.",
     approach: [
       "A confidential history covering stress, work pattern, sleep, diet, activity, substance use and the specific concern.",
       "Assessment of digestion, energy and stress levels using traditional concepts such as Agni, Vata and Ojas, alongside medical history.",
@@ -405,7 +405,7 @@ export const HEALTH_CATEGORIES: HealthCategory[] = [
     seoDescription:
       "Ayurvedic lifestyle and diet support in Indore for prediabetes, type 2 diabetes, thyroid disorders, weight management and fatty liver, alongside medical monitoring.",
     intro:
-      "Diabetes, prediabetes, thyroid disorders, high blood pressure, high cholesterol, fatty liver and obesity are long-term conditions. They are best managed through regular medical monitoring, medicines where prescribed, and sustained lifestyle change. Ayurveda describes many of these through metabolic concepts such as Medas (fat tissue), Agni and Kapha. A consultation at BalChikitsa Ayurved Clinic focuses on diet, activity, sleep and stress, and on helping people stay on their prescribed treatment. Medicines for diabetes, thyroid or blood pressure must not be changed or stopped without a doctor.",
+      "Diabetes, prediabetes, thyroid disorders, high blood pressure, high cholesterol, fatty liver and obesity are long-term conditions. They are best managed through regular medical monitoring, medicines where prescribed, and sustained lifestyle change. Ayurveda describes many of these through metabolic concepts such as Medas (fat tissue), Agni and Kapha. A consultation at Prakriti Ayurveda Clinic focuses on diet, activity, sleep and stress, and on helping people stay on their prescribed treatment. Medicines for diabetes, thyroid or blood pressure must not be changed or stopped without a doctor.",
     approach: [
       "Review of weight history, blood test reports, medicines, diet pattern, activity and sleep.",
       "Practical Indian meal planning focusing on portions, fibre, timing and home-cooked food, with gradual changes.",
