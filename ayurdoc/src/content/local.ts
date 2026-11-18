@@ -21,10 +21,10 @@ export const LOCAL_PAGES: LocalPage[] = [
   {
     slug: "ayurvedic-doctor-indore",
     title: "Ayurvedic Doctor in Indore",
-    h1: "Ayurvedic Doctor in Indore — BalChikitsa Ayurved Clinic",
+    h1: "Ayurvedic Doctor in Indore — Prakriti Ayurveda Clinic",
     seoTitle: "Ayurvedic Doctor in Indore | Dr. Priyanka Likhar, BAMS MD",
     seoDescription: "Consult Dr. Priyanka Likhar (BAMS, MD Kaumarbhritya) in Indore — child health, skin, digestion, immunity. Address, timings, fees & online consult.",
-    intro: "Looking for an Ayurvedic doctor in Indore who takes children seriously? Dr. Priyanka Likhar (Reg. No. 63934 • MD — Pediatrician / Kaumarbhritya from Institute of Teaching and Research in Ayurveda; BAMS from Dr. Vandanatai J. Dhone Gramin Ayurved College, Patur) consults at BalChikitsa Ayurved Clinic, Sanchar Nagar Extension, Kanadia Road — with structured 30 mins assessments, written plans, and follow-ups in Hindi, Marathi, English and Gujarati.",
+    intro: "Looking for an Ayurvedic doctor in Indore who takes children seriously? Dr. Priyanka Likhar (Reg. No. 63934 • MD — Pediatrician / Kaumarbhritya from Institute of Teaching and Research in Ayurveda; BAMS from Dr. Vandanatai J. Dhone Gramin Ayurved College, Patur) consults at Prakriti Ayurveda Clinic, Sanchar Nagar Extension, Kanadia Road — with structured 30 mins assessments, written plans, and follow-ups in Hindi, Marathi, English and Gujarati.",
     bullets: [
       "Verified credentials: Reg. No. 63934 • MD (Pediatrician — Kaumarbhritya, ITRA) • BAMS (Dr. Vandanatai J. Dhone Gramin Ayurved College, Patur)",
       "30 mins first consultation: Prakriti, Agni, growth, diet, sleep and routine mapped",
@@ -86,7 +86,7 @@ export const LOCAL_PAGES: LocalPage[] = [
     h1: "Child Healthcare in Indore: Ayurvedic Paediatric Consultation",
     seoTitle: "Child Healthcare in Indore | Ayurvedic Child Consultation",
     seoDescription: "Bachchon ke doctor in Indore — growth, appetite, skin, cold-cough, sleep & development support. Clinic + online. Book a consultation.",
-    intro: "Bachchon ke doctor in Indore dhoondh rahe hain? BalChikitsa Ayurved Clinic focuses on children's health through Ayurveda's child specialty (Kaumarbhritya/Balarog): growth and appetite, skin, recurrent infections, digestion, sleep and developmental support — coordinated with your paediatrician, never competing with them.",
+    intro: "Bachchon ke doctor in Indore dhoondh rahe hain? Prakriti Ayurveda Clinic focuses on children's health through Ayurveda's child specialty (Kaumarbhritya/Balarog): growth and appetite, skin, recurrent infections, digestion, sleep and developmental support — coordinated with your paediatrician, never competing with them.",
     bullets: [
       "Growth & appetite: weight, height curves, anaemia, picky eating",
       "Skin: eczema, rashes, fungal patterns — steroid-conscious protocols",
@@ -129,7 +129,7 @@ export const LOCAL_PAGES: LocalPage[] = [
     title: "Suvarnaprashan in Indore",
     h1: "Suvarnaprashan in Indore: Monthly Drops & Consultation",
     seoTitle: "Suvarnaprashan in Indore | Customized Drops & Consultation",
-    seoDescription: "Customized Suvarnaprashan in Indore — Pushya schedule, age suitability, safety and cost. Book assessment at BalChikitsa Clinic, Kanadia Road.",
+    seoDescription: "Customized Suvarnaprashan in Indore — Pushya schedule, age suitability, safety and cost. Book assessment at Prakriti Ayurveda Clinic, Kanadia Road.",
     intro: "Bachchon ke liye Suvarnaprashan in Indore — monthly Pushya Nakshatra administration with proper assessment, labelled quality-verified drops, and tracked reviews. Start with a consultation to confirm suitability, dose and schedule for your child.",
     bullets: ["Customized dose by age/weight/pattern — not one-drop-fits-all", "Pushya-day camps + daily-course options as assessed", "Labelled, batch-tracked preparation — see the label at your visit", "Illness/growth/digestion diary reviews every 4–8 weeks"],
     areasServed: ["Kanadia", "Vijay Nagar", "Palasia", "Rajendra Nagar", "All Indore + online guidance (drops administered per advice)"],
