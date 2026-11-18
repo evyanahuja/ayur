@@ -89,10 +89,10 @@ export async function generateMetadata({
 
   if (key === "about-doctor") return buildMeta(en.staticPages.about.seoTitle, en.staticPages.about.seoDesc, "/about-doctor");
   if (key === "child-health") return buildMeta("Child Health Hub | Growth, Immunity, Behaviour & Nutrition", en.hubs.childHealthIntro, "/child-health");
-  if (key === "conditions") return buildMeta("Child Health Conditions Library (A–Z) | BalChikitsa Indore", en.hubs.conditionsIntro, "/conditions");
+  if (key === "conditions") return buildMeta("Child Health Conditions Library (A–Z) | Prakriti Ayurveda Clinic Indore", en.hubs.conditionsIntro, "/conditions");
   if (key === "treatments") return buildMeta("Treatments & Services | Suvarnaprashan, Panchakarma, Consultation", en.hubs.treatmentsIntro, "/treatments");
   if (key === "articles") return buildMeta("Health Articles Library | Child & Family Health Guides", en.hubs.articlesIntro, "/articles");
-  if (key === "faq") return buildMeta("Frequently Asked Questions | BalChikitsa Ayurved Clinic", en.hubs.faqIntro, "/faq");
+  if (key === "faq") return buildMeta("Frequently Asked Questions | Prakriti Ayurveda Clinic", en.hubs.faqIntro, "/faq");
   if (key === "contact") return buildMeta(en.staticPages.contact.seoTitle, en.staticPages.contact.seoDesc, "/contact");
   if (key === "privacy-policy") return buildMeta(en.staticPages.privacy.seoTitle, en.staticPages.privacy.seoDesc, "/privacy-policy");
   if (key === "terms") return buildMeta(en.staticPages.terms.seoTitle, en.staticPages.terms.seoDesc, "/terms");
@@ -102,7 +102,7 @@ export async function generateMetadata({
   if (loc) return buildMeta(loc.seoTitle, loc.seoDescription, `/${loc.slug}`);
 
   return {
-    title: "Page Not Found | BalChikitsa Ayurved Clinic",
+    title: "Page Not Found | Prakriti Ayurveda Clinic",
     robots: { index: false, follow: false },
   };
 }
