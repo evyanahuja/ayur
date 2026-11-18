@@ -104,7 +104,7 @@ advice is accurate for each condition; pregnancy and paediatric precautions are 
    versions of medical copy require physician review by Dr. Priyanka Likhar before publishing drafts.
 3. **Images:** `doctor.webp` and `clinic-care.webp` / `cliniccare.webp` are AI-generated placeholders. Replace them with
    real photographs of Dr. Priyanka Likhar and the clinic. Do not use generated images of the doctor or the facility.
-4. **Brand naming:** the site uses "BalChikitsa Ayurved Clinic" for the clinic and "AyurvedDoctor" for the domain.
+4. **Brand naming:** the site uses "Prakriti Ayurveda Clinic" for the clinic and "AyurvedDoctor" for the domain.
    Choose one name for the header, footer, structured data and Google Business Profile.
 5. **Google Business Profile and directories:** confirm name, address, phone, hours and category match the website
    exactly. The website uses the clinic address and hours already published on the existing site.
