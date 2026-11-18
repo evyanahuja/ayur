@@ -36,7 +36,7 @@ function shell(title: string, subtitle: string, rows: [string, string][], note: 
     ${cta ? `<p style="margin:20px 0 0"><a href="${esc(cta.url)}" style="display:inline-block;max-width:100%;background:${BRAND};color:#fdf0d3;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:bold;word-break:break-word;overflow-wrap:anywhere">${esc(cta.label)}</a></p>` : ""}
     <p style="margin:18px 0 0">${esc(note)}</p>
     ${extraNote ? `<p style="margin:12px 0 0;padding:12px 14px;background:#fff9ec;border:1px solid #f0dfb8;border-radius:12px;font-size:13px;line-height:1.55">${esc(extraNote)}</p>` : ""}
-    <p style="margin:16px 0 0;font-size:12px;color:#6b7d73">Dr. Priyanka Likhar · BalChikitsa Ayurved Clinic · ${esc(CLINIC_PHONE)}</p>
+    <p style="margin:16px 0 0;font-size:12px;color:#6b7d73">Dr. Priyanka Likhar · Prakriti Ayurveda Clinic · ${esc(CLINIC_PHONE)}</p>
   </div></div>`;
 }
 

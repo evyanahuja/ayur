@@ -169,7 +169,7 @@ export async function calendarHealth(): Promise<{
         : "Google credentials accepted. Create a test booking to verify Meet generation.",
       senderEmail,
       senderAdvice:
-        "Parents see this Google account's name as the sender. Set its display name to “Dr. Priyanka Likhar – BalChikitsa” in Google Account → Personal info → Name, and add a profile photo, so the invite is recognised.",
+        "Parents see this Google account's name as the sender. Set its display name to “Dr. Priyanka Likhar – Prakriti Ayurveda Clinic” in Google Account → Personal info → Name, and add a profile photo, so the invite is recognised.",
     };
   } catch (error) {
     return { configured: true, reachable: false, message: error instanceof Error ? error.message : "Google token request failed." };

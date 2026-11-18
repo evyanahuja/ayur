@@ -153,7 +153,7 @@ export function smtpSenderFor(host: string, user: string, fromEmail: string): st
   // Quotes, backslashes and line breaks are stripped so the display name can
   // neither break the header nor inject extra headers.
   const cleanName = (named?.[1] ?? "").replace(/["\\\r\n]/g, "").trim();
-  const name = cleanName || "BalChikitsa Ayurved Clinic";
+  const name = cleanName || "Prakriti Ayurveda Clinic";
   const forcesLogin = /gmail|googlemail|office365|outlook/.test(host.toLowerCase());
   const bareAddress = configured.match(/<([^>]+)>/)?.[1] || (configured.includes("@") ? configured : "");
   const address = forcesLogin || !bareAddress ? user.trim() : bareAddress;
@@ -169,7 +169,7 @@ async function deliverViaResend(input: DeliveryInput): Promise<DeliveryResult> {
       method: "POST",
       headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY!.trim()}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: process.env.FROM_EMAIL?.trim() || "BalChikitsa <onboarding@resend.dev>",
+        from: process.env.FROM_EMAIL?.trim() || "Prakriti Ayurveda Clinic <onboarding@resend.dev>",
         to: [input.to],
         reply_to: input.replyTo || undefined,
         subject: input.subject,
@@ -314,7 +314,7 @@ function buildParentHtml(p: InquiryPayload, ref: string | null) {
         <tr class="bc-row"><td class="bc-k" style="padding:6px 8px 6px 14px;color:#6b7d73;width:34%;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">Plan of interest</td><td style="padding:6px 14px 6px 0;vertical-align:top;word-break:break-word;overflow-wrap:anywhere">${plan}</td></tr>
       </table>
       <p style="margin:18px 0 0">If urgent, please WhatsApp us and <strong>mention this reference</strong> so we can match you to your enquiry instantly.</p>
-      <p style="margin:18px 0 0;font-size:12px;color:#6b7d73">With care, Dr. Priyanka Likhar &middot; BalChikitsa</p>
+      <p style="margin:18px 0 0;font-size:12px;color:#6b7d73">With care, Dr. Priyanka Likhar &middot; Prakriti Ayurveda Clinic</p>
     </div>
   </div>`;
 }
@@ -331,7 +331,7 @@ function buildParentText(p: InquiryPayload, ref: string | null) {
     "",
     "You will hear back within 24 hours (usually the same day, Mon-Sat). For urgent help, please WhatsApp us and mention the reference above so we can match you to your enquiry instantly.",
     "",
-    "- BalChikitsa",
+    "- Prakriti Ayurveda Clinic",
   ].join("\n");
 }
 
