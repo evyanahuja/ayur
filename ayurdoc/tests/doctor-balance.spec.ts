@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 const languages = ["en", "hi", "mr", "gu"] as const;
 
 async function openDoctor(page: Page, language: (typeof languages)[number]) {
-  await page.addInitScript((lang) => window.localStorage.setItem("balchikitsa-lang", lang), language);
+  await page.addInitScript((lang) => window.localStorage.setItem("ayur-lang", lang), language);
   await page.goto("/", { waitUntil: "networkidle" });
   await page.evaluate(async () => { await document.fonts.ready; });
   await expect(page.locator("html")).toHaveAttribute("lang", language);

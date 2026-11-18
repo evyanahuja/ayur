@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 type Rect = { left: number; right: number; top: number; bottom: number };
 
 async function openLanguage(page: Page, language: "en" | "hi" | "mr" | "gu") {
-  await page.addInitScript((lang) => localStorage.setItem("balchikitsa-lang", lang), language);
+  await page.addInitScript((lang) => localStorage.setItem("ayur-lang", lang), language);
   await page.goto("/", { waitUntil: "networkidle" });
   await page.evaluate(async () => { await document.fonts.ready; });
   await expect(page.locator(".hero-actions")).toHaveCSS("opacity", "1");

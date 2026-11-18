@@ -94,10 +94,10 @@ test("invite lists the parent as a guest, is recognisable, and cannot be edited 
 
   // Recognisable title / location / source so it is clearly the clinic's invite.
   expect(body.summary).toContain("Dr. Priyanka Likhar");
-  expect(body.summary).toContain("BalChikitsa Ayurved Clinic");
+  expect(body.summary).toContain("Prakriti Ayurveda Clinic");
   expect(body.location).toContain("Google Meet");
-  expect(body.source.title).toBe("BalChikitsa Ayurved Clinic");
-  expect(body.description).toContain("sent by BalChikitsa Ayurved Clinic");
+  expect(body.source.title).toBe("Prakriti Ayurveda Clinic");
+  expect(body.description).toContain("sent by Prakriti Ayurveda Clinic");
 
   // Guests may join but not rewrite or forward the appointment.
   expect(body.guestsCanModify).toBe(false);

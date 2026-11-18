@@ -5,7 +5,7 @@ type Language = (typeof languages)[number];
 
 async function openHero(page: Page, language: Language) {
   await page.addInitScript((lang) => {
-    window.localStorage.setItem("balchikitsa-lang", lang);
+    window.localStorage.setItem("ayur-lang", lang);
   }, language);
   await page.goto("/", { waitUntil: "networkidle" });
   await page.evaluate(async () => { await document.fonts.ready; });
