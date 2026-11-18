@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Hero } from "@/components/Hero";
+import { ConditionsStrip } from "@/components/ConditionsStrip";
 import { DoctorIntro } from "@/components/DoctorIntro";
 import { Pricing } from "@/components/Pricing";
 import { BookingSection } from "@/components/BookingSection";
@@ -64,6 +65,7 @@ export default function HomePage() {
       />
       <main id="main" className="relative bg-white">
         <Hero />
+        <ConditionsStrip />
         <ConcernCards />
         <DoctorIntro />
         <TreatmentCards />
