@@ -112,7 +112,7 @@ Whichever you pick, configure these environment variables:
 | `DATABASE_URL` | Yes | Your Neon connection string |
 | `DOCTOR_EMAIL` | Yes | The inbox where patient enquiries should arrive |
 | `RESEND_API_KEY` | Yes (when using Resend) | Your Resend API key |
-| `FROM_EMAIL` | Recommended for production | A sender on your verified Resend domain, for example `BalChikitsa <enquiries@yourdomain.com>` |
+| `FROM_EMAIL` | Recommended for production | A sender on your verified Resend domain, for example `Prakriti Ayurveda Clinic <enquiries@yourdomain.com>` |
 
 > Resend's default `onboarding@resend.dev` sender can normally send only to the email address associated with your Resend account. To deliver to any doctor inbox, verify your domain in Resend and set `FROM_EMAIL` to an address on that domain. As an alternative to Resend, configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, and `SMTP_PASS`.
 
