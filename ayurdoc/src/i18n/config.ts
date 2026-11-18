@@ -8,7 +8,10 @@ export const LANGUAGES: { code: Language; label: string; native: string; short: 
 ];
 
 export const DEFAULT_LANGUAGE: Language = "en";
-export const STORAGE_KEY = "balchikitsa-lang";
+export const STORAGE_KEY = "ayur-lang";
+/** The key used before the clinic was renamed. It is read once so returning visitors
+ *  keep the language they chose, then removed. Safe to delete after a few months. */
+export const LEGACY_STORAGE_KEY = "balchikitsa-lang";
 
 export const languageNames: Record<Language, string> = {
   en: "English",

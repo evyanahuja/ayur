@@ -276,7 +276,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
       ],
     },
     footer: {
-      bio: "BalChikitsa Ayurved Clinic — individualised Ayurvedic care for children, adults and families in Indore & online.",
+      bio: "Prakriti Ayurveda Clinic — individualised Ayurvedic care for children, adults and families in Indore & online.",
       regBadge: "Reg. No. 63934 • MD Pediatrician (ITRA) • BAMS (Dr. Vandanatai J. Dhone Gramin Ayurved College, Patur)",
       conditionsTitle: "Conditions",
       allConditions: "All 22 conditions →",
@@ -474,7 +474,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         seoDesc: "Profile & verified qualifications of Dr. Priyanka Likhar (Reg. No. 63934): MD Pediatrician (Kaumarbhritya) from Institute of Teaching and Research in Ayurveda & BAMS from Dr. Vandanatai J. Dhone Gramin Ayurved College, Patur.",
         eyebrow: "Verified Practitioner Profile",
         h1: "About Dr. Priyanka Likhar",
-        intro: "Dr. Priyanka Likhar (Registration No. 63934) is an Ayurvedic Pediatrician (MD — Kaumarbhritya / Balarog) practising at BalChikitsa Ayurved Clinic, Indore and consulting families online across India and abroad.",
+        intro: "Dr. Priyanka Likhar (Registration No. 63934) is an Ayurvedic Pediatrician (MD — Kaumarbhritya / Balarog) practising at Prakriti Ayurveda Clinic, Indore and consulting families online across India and abroad.",
         crumb: "About the Doctor",
         regBadgeLabel: "Medical Registration No. 63934",
         qualsList: [
@@ -493,7 +493,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         ],
       },
       contact: {
-        seoTitle: "Contact & Book Appointment | BalChikitsa Ayurved Clinic Indore",
+        seoTitle: "Contact & Book Appointment | Prakriti Ayurveda Clinic Indore",
         seoDesc: "Book an in-clinic or online appointment with Dr. Priyanka Likhar (Reg. No. 63934): +91 98607 75010, Kanadia Road Indore timings & patient enquiry form.",
         eyebrow: "Appointments",
         h1: "Contact & Book an Appointment",
@@ -527,11 +527,11 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         openWaBtn: "Also message on WhatsApp",
       },
       privacy: {
-        seoTitle: "Privacy Policy | BalChikitsa Ayurved Clinic",
-        seoDesc: "Privacy policy of BalChikitsa Ayurved Clinic: how parent and child consultation enquiries are protected.",
+        seoTitle: "Privacy Policy | Prakriti Ayurveda Clinic",
+        seoDesc: "Privacy policy of Prakriti Ayurveda Clinic: how parent and child consultation enquiries are protected.",
         eyebrow: "Legal",
         h1: "Privacy Policy",
-        intro: "How BalChikitsa Ayurved Clinic collects, uses and safeguards parent and child enquiry details.",
+        intro: "How Prakriti Ayurveda Clinic collects, uses and safeguards parent and child enquiry details.",
         crumb: "Privacy Policy",
         items: [
           { strong: "What information we collect:", body: "Only the basic contact and consultation details you voluntarily submit (parent name, phone/WhatsApp, optional email, child's name, age, preferred consultation mode, and brief concern note)." },
@@ -543,8 +543,8 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         ],
       },
       terms: {
-        seoTitle: "Terms of Use | BalChikitsa Ayurved Clinic",
-        seoDesc: "Terms of use for BalChikitsa Ayurved Clinic website: educational guidance scope, emergency notice, and consultation policies.",
+        seoTitle: "Terms of Use | Prakriti Ayurveda Clinic",
+        seoDesc: "Terms of use for Prakriti Ayurveda Clinic website: educational guidance scope, emergency notice, and consultation policies.",
         eyebrow: "Legal",
         h1: "Terms of Use",
         intro: "Please read carefully what this website provides (health education & appointment booking) and its clinical boundaries.",
@@ -552,17 +552,17 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         items: [
           { strong: "Educational purpose only:", body: "Articles, condition guides, and therapy pages provide general health awareness and do not constitute individual medical diagnosis or prescription." },
           { strong: "Not an emergency service:", body: "Web forms, emails, and WhatsApp messages are not monitored for acute medical emergencies. In any emergency, visit your nearest hospital or paediatric emergency department immediately." },
-          { strong: "Appointments & consultations:", body: "Appointment slots, modes (in-clinic or online), and plans are confirmed directly by BalChikitsa Ayurved Clinic." },
+          { strong: "Appointments & consultations:", body: "Appointment slots, modes (in-clinic or online), and plans are confirmed directly by Prakriti Ayurveda Clinic." },
           { strong: "Individual outcomes:", body: "Healing timelines vary depending on a child's constitution, chronicity, diet adherence, and co-existing conditions. No guaranteed cures are promised." },
           { strong: "Intellectual property:", body: "Parents and educators are welcome to share page links freely; wholesale reproduction of clinical content without permission is prohibited." },
         ],
       },
       sitemap: {
-        seoTitle: "Sitemap — All Pages | BalChikitsa Ayurved Clinic",
+        seoTitle: "Sitemap — All Pages | Prakriti Ayurveda Clinic",
         seoDesc: "Complete directory of all child health condition guides, Ayurvedic treatments, parent articles, local Indore pages and clinic pages.",
         pagesCountSuffix: "public pages",
         h1: "Complete Site Directory (Sitemap)",
-        intro: "Browse every page available on BalChikitsa Ayurved Clinic — supported in English, Hindi, Marathi and Gujarati.",
+        intro: "Browse every page available on Prakriti Ayurveda Clinic — supported in English, Hindi, Marathi and Gujarati.",
         crumb: "Sitemap",
         mainHeading: "Main Clinic Pages",
         mainLinks: [
@@ -579,7 +579,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         legalHeading: "Legal Policies",
       },
       notFound: {
-        seoTitle: "Page Not Found | BalChikitsa Ayurved Clinic",
+        seoTitle: "Page Not Found | Prakriti Ayurveda Clinic",
         h1: "That page could not be found",
         desc: "The link may have changed. Explore our child health library or book a consultation directly below.",
         homeBtn: "Go to Home",
@@ -619,7 +619,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
       ],
     },
     footer: {
-      bio: "बालचिकित्सा आयुर्वेद क्लिनिक — इंदौर एवं ऑनलाइन में बच्चों, वयस्कों और परिवारों के लिए व्यक्तिगत आयुर्वेदिक देखभाल।",
+      bio: "प्रकृति आयुर्वेद क्लिनिक — इंदौर एवं ऑनलाइन में बच्चों, वयस्कों और परिवारों के लिए व्यक्तिगत आयुर्वेदिक देखभाल।",
       regBadge: "पंजीकरण क्र. 63934 • MD बालरोग विशेषज्ञ (ITRA) • BAMS (डॉ. वंदनाताई जे. ढोणे ग्रामीण आयुर्वेद कॉलेज, पातूर)",
       conditionsTitle: "प्रमुख समस्याएँ",
       allConditions: "सभी 22 समस्याएँ देखें →",
@@ -817,7 +817,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         seoDesc: "डॉ. प्रियंका लिखार (पंजीकरण संख्या 63934) की प्रमाणित योग्यता: इंस्टीट्यूट ऑफ टीचिंग एंड रिसर्च इन आयुर्वेद (ITRA) से MD बालरोग एवं डॉ. वंदनाताई जे. ढोणे ग्रामीण आयुर्वेद कॉलेज, पातूर से BAMS।",
         eyebrow: "प्रमाणित चिकित्सक परिचय",
         h1: "डॉ. प्रियंका लिखार के बारे में",
-        intro: "डॉ. प्रियंका लिखार (पंजीकरण संख्या: 63934) एक अनुभवी आयुर्वेदिक बालरोग विशेषज्ञ (MD — कौमारभृत्य / बालरोग) हैं, जो बालचिकित्सा आयुर्वेद क्लिनिक, इंदौर में तथा ऑनलाइन माध्यम से देश-विदेश के परिवारों को परामर्श देती हैं।",
+        intro: "डॉ. प्रियंका लिखार (पंजीकरण संख्या: 63934) एक अनुभवी आयुर्वेदिक बालरोग विशेषज्ञ (MD — कौमारभृत्य / बालरोग) हैं, जो प्रकृति आयुर्वेद क्लिनिक, इंदौर में तथा ऑनलाइन माध्यम से देश-विदेश के परिवारों को परामर्श देती हैं।",
         crumb: "डॉक्टर परिचय",
         regBadgeLabel: "चिकित्सा पंजीकरण संख्या: 63934",
         qualsList: [
@@ -836,7 +836,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         ],
       },
       contact: {
-        seoTitle: "संपर्क एवं अपॉइंटमेंट बुक करें | बालचिकित्सा आयुर्वेद क्लिनिक इंदौर",
+        seoTitle: "संपर्क एवं अपॉइंटमेंट बुक करें | प्रकृति आयुर्वेद क्लिनिक इंदौर",
         seoDesc: "डॉ. प्रियंका लिखार (पंजीकरण क्र. 63934) के साथ क्लिनिक या ऑनलाइन अपॉइंटमेंट बुक करें: +91 98607 75010, कनाडिया रोड इंदौर।",
         eyebrow: "अपॉइंटमेंट",
         h1: "संपर्क करें एवं अपॉइंटमेंट बुक करें",
@@ -870,11 +870,11 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         openWaBtn: "WhatsApp पर भी संदेश भेजें",
       },
       privacy: {
-        seoTitle: "गोपनीयता नीति | बालचिकित्सा आयुर्वेद क्लिनिक",
-        seoDesc: "बालचिकित्सा आयुर्वेद क्लिनिक की गोपनीयता नीति: माता-पिता व बच्चों की जानकारी की सुरक्षा।",
+        seoTitle: "गोपनीयता नीति | प्रकृति आयुर्वेद क्लिनिक",
+        seoDesc: "प्रकृति आयुर्वेद क्लिनिक की गोपनीयता नीति: माता-पिता व बच्चों की जानकारी की सुरक्षा।",
         eyebrow: "कानूनी जानकारी",
         h1: "गोपनीयता नीति (Privacy Policy)",
-        intro: "बालचिकित्सा आयुर्वेद क्लिनिक आपके और आपके बच्चे के परामर्श विवरणों की सुरक्षा कैसे करता है।",
+        intro: "प्रकृति आयुर्वेद क्लिनिक आपके और आपके बच्चे के परामर्श विवरणों की सुरक्षा कैसे करता है।",
         crumb: "गोपनीयता नीति",
         items: [
           { strong: "हम कौन-सी जानकारी एकत्र करते हैं:", body: "केवल वे आवश्यक संपर्क और परामर्श विवरण जो आप स्वयं फॉर्म या संदेश द्वारा साझा करते हैं (माता-पिता का नाम, फ़ोन/WhatsApp, वैकल्पिक ईमेल, बच्चे का नाम, उम्र, परामर्श माध्यम और संक्षिप्त समस्या)।" },
@@ -886,8 +886,8 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         ],
       },
       terms: {
-        seoTitle: "उपयोग की शर्तें | बालचिकित्सा आयुर्वेद क्लिनिक",
-        seoDesc: "बालचिकित्सा आयुर्वेद क्लिनिक वेबसाइट के उपयोग की शर्तें एवं चिकित्सा सीमाएँ।",
+        seoTitle: "उपयोग की शर्तें | प्रकृति आयुर्वेद क्लिनिक",
+        seoDesc: "प्रकृति आयुर्वेद क्लिनिक वेबसाइट के उपयोग की शर्तें एवं चिकित्सा सीमाएँ।",
         eyebrow: "कानूनी जानकारी",
         h1: "उपयोग की शर्तें (Terms of Use)",
         intro: "कृपया पढ़ें कि यह वेबसाइट क्या सेवा देती है (स्वास्थ्य शिक्षा व अपॉइंटमेंट अनुरोध) और इसकी सीमाएँ क्या हैं।",
@@ -901,11 +901,11 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         ],
       },
       sitemap: {
-        seoTitle: "साइटमैप — सभी पृष्ठ | बालचिकित्सा आयुर्वेद क्लिनिक",
+        seoTitle: "साइटमैप — सभी पृष्ठ | प्रकृति आयुर्वेद क्लिनिक",
         seoDesc: "सभी 22 बाल रोग गाइड, उपचार, स्वास्थ्य लेख और क्लिनिक पृष्ठों की पूरी सूची।",
         pagesCountSuffix: "सार्वजनिक पृष्ठ",
         h1: "संपूर्ण वेबसाइट सूची (साइटमैप)",
-        intro: "बालचिकित्सा आयुर्वेद क्लिनिक के सभी पृष्ठ — हिंदी, मराठी, गुजराती और अंग्रेज़ी में उपलब्ध।",
+        intro: "प्रकृति आयुर्वेद क्लिनिक के सभी पृष्ठ — हिंदी, मराठी, गुजराती और अंग्रेज़ी में उपलब्ध।",
         crumb: "साइटमैप",
         mainHeading: "मुख्य पृष्ठ",
         mainLinks: [
@@ -922,7 +922,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         legalHeading: "कानूनी नीतियाँ",
       },
       notFound: {
-        seoTitle: "पृष्ठ नहीं मिला | बालचिकित्सा आयुर्वेद क्लिनिक",
+        seoTitle: "पृष्ठ नहीं मिला | प्रकृति आयुर्वेद क्लिनिक",
         h1: "यह पृष्ठ उपलब्ध नहीं है",
         desc: "संभवतः लिंक बदल गया हो। नीचे दिए गए विकल्पों से मुख्य पृष्ठ या बाल स्वास्थ्य गाइड देखें।",
         homeBtn: "मुखपृष्ठ पर जाएँ",
@@ -962,7 +962,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
       ],
     },
     footer: {
-      bio: "बालचिकित्सा आयुर्वेद क्लिनिक — इंदूर आणि ऑनलाइनमध्ये मुलं, प्रौढ आणि कुटुंबांसाठी वैयक्तिक आयुर्वेदिक आरोग्य सेवा.",
+      bio: "प्रकृती आयुर्वेद क्लिनिक — इंदूर आणि ऑनलाइनमध्ये मुलं, प्रौढ आणि कुटुंबांसाठी वैयक्तिक आयुर्वेदिक आरोग्य सेवा.",
       regBadge: "नोंदणी क्र. 63934 • MD बालरोगतज्ज्ञ (ITRA) • BAMS (डॉ. वंदनाताई जे. ढोणे ग्रामीण आयुर्वेद कॉलेज, पातूर)",
       conditionsTitle: "प्रमुख समस्या",
       allConditions: "सर्व 22 समस्या पहा →",
@@ -1160,7 +1160,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         seoDesc: "डॉ. प्रियंका लिखार (नोंदणी क्र. 63934) यांची शैक्षणिक पात्रता: इन्स्टिट्यूट ऑफ टीचिंग अँड रिसर्च इन आयुर्वेद (ITRA) मधून MD बालरोग व डॉ. वंदनाताई जे. ढोणे ग्रामीण आयुर्वेद कॉलेज, पातूर येथून BAMS.",
         eyebrow: "प्रमाणित वैद्यकीय परिचय",
         h1: "डॉ. प्रियंका लिखार यांच्याबद्दल",
-        intro: "डॉ. प्रियंका लिखार (नोंदणी क्रमांक: 63934) या आयुर्वेदिक बालरोगतज्ज्ञ (MD — कौमारभृत्य / बालरोग) असून बालचिकित्सा आयुर्वेद क्लिनिक, इंदूर येथे प्रत्यक्ष आणि देश-विदेशातील पालकांना ऑनलाइन सल्ला देतात.",
+        intro: "डॉ. प्रियंका लिखार (नोंदणी क्रमांक: 63934) या आयुर्वेदिक बालरोगतज्ज्ञ (MD — कौमारभृत्य / बालरोग) असून प्रकृती आयुर्वेद क्लिनिक, इंदूर येथे प्रत्यक्ष आणि देश-विदेशातील पालकांना ऑनलाइन सल्ला देतात.",
         crumb: "डॉक्टर परिचय",
         regBadgeLabel: "वैद्यकीय नोंदणी क्रमांक: 63934",
         qualsList: [
@@ -1179,7 +1179,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         ],
       },
       contact: {
-        seoTitle: "संपर्क आणि अपॉइंटमेंट बुक करा | बालचिकित्सा आयुर्वेद क्लिनिक इंदूर",
+        seoTitle: "संपर्क आणि अपॉइंटमेंट बुक करा | प्रकृती आयुर्वेद क्लिनिक इंदूर",
         seoDesc: "डॉ. प्रियंका लिखार (नोंदणी क्र. 63934) यांच्याशी क्लिनिक किंवा ऑनलाइन अपॉइंटमेंट बुक करा: +91 98607 75010.",
         eyebrow: "अपॉइंटमेंट",
         h1: "संपर्क साधा व अपॉइंटमेंट बुक करा",
@@ -1213,11 +1213,11 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         openWaBtn: "WhatsApp वरही संदेश पाठवा",
       },
       privacy: {
-        seoTitle: "गोपनीयता धोरण | बालचिकित्सा आयुर्वेद क्लिनिक",
-        seoDesc: "बालचिकित्सा आयुर्वेद क्लिनिकचे गोपनीयता धोरण: पालक व मुलांच्या माहितीची सुरक्षितता.",
+        seoTitle: "गोपनीयता धोरण | प्रकृती आयुर्वेद क्लिनिक",
+        seoDesc: "प्रकृती आयुर्वेद क्लिनिकचे गोपनीयता धोरण: पालक व मुलांच्या माहितीची सुरक्षितता.",
         eyebrow: "कायदेशीर माहिती",
         h1: "गोपनीयता धोरण (Privacy Policy)",
-        intro: "बालचिकित्सा आयुर्वेद क्लिनिक पालक आणि मुलांच्या चौकशी माहितीची सुरक्षितता कशी राखते.",
+        intro: "प्रकृती आयुर्वेद क्लिनिक पालक आणि मुलांच्या चौकशी माहितीची सुरक्षितता कशी राखते.",
         crumb: "गोपनीयता धोरण",
         items: [
           { strong: "आम्ही कोणती माहिती घेतो:", body: "तुम्ही स्वतःहून दिलेली मूलभूत संपर्क व सल्ला माहिती (पालकांचे नाव, फोन/WhatsApp, ऐच्छिक ईमेल, मुलाचे नाव, वय, सल्ल्याचा प्रकार आणि संक्षिप्त तक्रार)." },
@@ -1229,8 +1229,8 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         ],
       },
       terms: {
-        seoTitle: "वापराच्या अटी | बालचिकित्सा आयुर्वेद क्लिनिक",
-        seoDesc: "बालचिकित्सा आयुर्वेद क्लिनिक वेबसाइट वापरण्याच्या अटी व वैद्यकीय मर्यादा.",
+        seoTitle: "वापराच्या अटी | प्रकृती आयुर्वेद क्लिनिक",
+        seoDesc: "प्रकृती आयुर्वेद क्लिनिक वेबसाइट वापरण्याच्या अटी व वैद्यकीय मर्यादा.",
         eyebrow: "कायदेशीर माहिती",
         h1: "वापराच्या अटी (Terms of Use)",
         intro: "ही वेबसाइट नेमकी कोणती सेवा देते (आरोग्य प्रबोधन व अपॉइंटमेंट विनंती) आणि तिच्या मर्यादा काय आहेत ते कृपया वाचा.",
@@ -1244,11 +1244,11 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         ],
       },
       sitemap: {
-        seoTitle: "साइटमॅप — सर्व पाने | बालचिकित्सा आयुर्वेद क्लिनिक",
+        seoTitle: "साइटमॅप — सर्व पाने | प्रकृती आयुर्वेद क्लिनिक",
         seoDesc: "सर्व 22 बाल आजार मार्गदर्शक, उपचार, आरोग्य लेख आणि क्लिनिक पानांची संपूर्ण यादी.",
         pagesCountSuffix: "सार्वजनिक पाने",
         h1: "संपूर्ण वेबसाइट सूची (साइटमॅप)",
-        intro: "बालचिकित्सा आयुर्वेद क्लिनिकवरील सर्व पाने — मराठी, हिंदी, गुजराती आणि इंग्रजीमध्ये उपलब्ध.",
+        intro: "प्रकृती आयुर्वेद क्लिनिकवरील सर्व पाने — मराठी, हिंदी, गुजराती आणि इंग्रजीमध्ये उपलब्ध.",
         crumb: "साइटमॅप",
         mainHeading: "मुख्य पाने",
         mainLinks: [
@@ -1265,7 +1265,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         legalHeading: "कायदेशीर धोरणे",
       },
       notFound: {
-        seoTitle: "पान सापडले नाही | बालचिकित्सा आयुर्वेद क्लिनिक",
+        seoTitle: "पान सापडले नाही | प्रकृती आयुर्वेद क्लिनिक",
         h1: "तुम्ही शोधत असलेले पान सापडले नाही",
         desc: " कदाचित लिंक बदलली असावी. खालील पर्यायांतून मुख्यपृष्ठ किंवा आजार मार्गदर्शिका पहा.",
         homeBtn: "मुख्यपृष्ठावर जा",
@@ -1305,7 +1305,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
       ],
     },
     footer: {
-      bio: "બાળચિકિત્સા આયુર્વેદ ક્લિનિક — ઇન્દોર અને ઓનલાઇનમાં બાળકો, પુખ્ત અને પરિવારો માટે વ્યક્તિગત આયુર્વેદિક આરોગ્ય સંભાળ.",
+      bio: "પ્રકૃતિ આયુર્વેદ ક્લિનિક — ઇન્દોર અને ઓનલાઇનમાં બાળકો, પુખ્ત અને પરિવારો માટે વ્યક્તિગત આયુર્વેદિક આરોગ્ય સંભાળ.",
       regBadge: "નોંધણી નં. 63934 • MD બાળરોગ નિષ્ણાત (ITRA) • BAMS (ડૉ. વંદનાતાઈ જે. ઢોણે ગ્રામીણ આયુર્વેદ કૉલેજ, પાતૂર)",
       conditionsTitle: "મુખ્ય સમસ્યાઓ",
       allConditions: "તમામ 22 સમસ્યાઓ જુઓ →",
@@ -1503,7 +1503,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         seoDesc: "ડૉ. પ્રિયંકા લિખાર (નોંધણી નં. 63934) ની પ્રમાણિત લાયકાત: ઇન્સ્ટિટ્યૂટ ઑફ ટીચિંગ એન્ડ રિસર્ચ ઇન આયુર્વેદ (ITRA) માંથી MD બાળરોગ અને ડૉ. વંદનાતાઈ જે. ઢોણે ગ્રામીણ આયુર્વેદ કૉલેજ, પાતૂરમાંથી BAMS.",
         eyebrow: "પ્રમાણિત તબીબી પરિચય",
         h1: "ડૉ. પ્રિયંકા લિખાર વિશે",
-        intro: "ડૉ. પ્રિયંકા લિખાર (નોંધણી નંબર: 63934) એક નિષ્ણાત આયુર્વેદિક બાળરોગ ચિકિત્સક (MD — કૌમારભૃત્ય / બાળરોગ) છે, જેઓ બાળચિકિત્સા આયુર્વેદ ક્લિનિક, ઇન્દોર ખાતે તેમજ દેશ-વિદેશના પરિવારોને ઓનલાઇન પરામર્શ આપે છે.",
+        intro: "ડૉ. પ્રિયંકા લિખાર (નોંધણી નંબર: 63934) એક નિષ્ણાત આયુર્વેદિક બાળરોગ ચિકિત્સક (MD — કૌમારભૃત્ય / બાળરોગ) છે, જેઓ પ્રકૃતિ આયુર્વેદ ક્લિનિક, ઇન્દોર ખાતે તેમજ દેશ-વિદેશના પરિવારોને ઓનલાઇન પરામર્શ આપે છે.",
         crumb: "ડૉક્ટર પરિચય",
         regBadgeLabel: "તબીબી નોંધણી નંબર: 63934",
         qualsList: [
@@ -1522,7 +1522,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         ],
       },
       contact: {
-        seoTitle: "સંપર્ક અને એપોઇન્ટમેન્ટ બુક કરો | બાળચિકિત્સા આયુર્વેદ ક્લિનિક ઇન્દોર",
+        seoTitle: "સંપર્ક અને એપોઇન્ટમેન્ટ બુક કરો | પ્રકૃતિ આયુર્વેદ ક્લિનિક ઇન્દોર",
         seoDesc: "ડૉ. પ્રિયંકા લિખાર (નોંધણી નં. 63934) સાથે ક્લિનિક કે ઓનલાઇન એપોઇન્ટમેન્ટ બુક કરો: +91 98607 75010.",
         eyebrow: "એપોઇન્ટમેન્ટ",
         h1: "સંપર્ક કરો અને એપોઇન્ટમેન્ટ બુક કરો",
@@ -1556,11 +1556,11 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         openWaBtn: "WhatsApp પર પણ સંદેશ મોકલો",
       },
       privacy: {
-        seoTitle: "ગોપનીયતા નીતિ | બાળચિકિત્સા આયુર્વેદ ક્લિનિક",
-        seoDesc: "બાળચિકિત્સા આયુર્વેદ ક્લિનિકની ગોપનીયતા નીતિ: વાલી અને બાળકોની વિગતોની સુરક્ષા.",
+        seoTitle: "ગોપનીયતા નીતિ | પ્રકૃતિ આયુર્વેદ ક્લિનિક",
+        seoDesc: "પ્રકૃતિ આયુર્વેદ ક્લિનિકની ગોપનીયતા નીતિ: વાલી અને બાળકોની વિગતોની સુરક્ષા.",
         eyebrow: "કાનૂની માહિતી",
         h1: "ગોપનીયતા નીતિ (Privacy Policy)",
-        intro: "બાળચિકિત્સા આયુર્વેદ ક્લિનિક વાલી અને બાળકોની પરામર્શ માહિતીનું રક્ષણ કેવી રીતે કરે છે.",
+        intro: "પ્રકૃતિ આયુર્વેદ ક્લિનિક વાલી અને બાળકોની પરામર્શ માહિતીનું રક્ષણ કેવી રીતે કરે છે.",
         crumb: "ગોપનીયતા નીતિ",
         items: [
           { strong: "અમે કઈ માહિતી એકત્ર કરીએ છીએ:", body: "માત્ર તમે સ્વૈચ્છિક રીતે આપેલી મૂળભૂત સંપર્ક અને પરામર્શ વિગતો (વાલીનું નામ, ફોન/WhatsApp, વૈકલ્પિક ઈમેલ, બાળકનું નામ, ઉંમર, પરામર્શ પ્રકાર અને સંક્ષિપ્ત સમસ્યા)." },
@@ -1572,8 +1572,8 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         ],
       },
       terms: {
-        seoTitle: "ઉપયોગની શરતો | બાળચિકિત્સા આયુર્વેદ ક્લિનિક",
-        seoDesc: "બાળચિકિત્સા આયુર્વેદ ક્લિનિક વેબસાઇટના ઉપયોગની શરતો અને તબીબી મર્યાદાઓ.",
+        seoTitle: "ઉપયોગની શરતો | પ્રકૃતિ આયુર્વેદ ક્લિનિક",
+        seoDesc: "પ્રકૃતિ આયુર્વેદ ક્લિનિક વેબસાઇટના ઉપયોગની શરતો અને તબીબી મર્યાદાઓ.",
         eyebrow: "કાનૂની માહિતી",
         h1: "ઉપયોગની શરતો (Terms of Use)",
         intro: "આ વેબસાઇટ શું સેવા આપે છે (આરોગ્ય શિક્ષણ અને એપોઇન્ટમેન્ટ વિનંતી) અને તેની મર્યાદાઓ શું છે તે કૃપા કરીને વાંચો.",
@@ -1587,11 +1587,11 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         ],
       },
       sitemap: {
-        seoTitle: "સાઇટમેપ — તમામ પૃષ્ઠો | બાળચિકિત્સા આયુર્વેદ ક્લિનિક",
+        seoTitle: "સાઇટમેપ — તમામ પૃષ્ઠો | પ્રકૃતિ આયુર્વેદ ક્લિનિક",
         seoDesc: "તમામ 22 બાળ રોગ ગાઇડ, સારવાર, આરોગ્ય લેખો અને ક્લિનિક પૃષ્ઠોની યાદી.",
         pagesCountSuffix: "જાહેર પૃષ્ઠો",
         h1: "સંપૂર્ણ વેબસાઇટ યાદી (સાઇટમેપ)",
-        intro: "બાળચિકિત્સા આયુર્વેદ ક્લિનિકના તમામ પૃષ્ઠો — ગુજરાતી, હિન્દી, મરાઠી અને અંગ્રેજીમાં ઉપલબ્ધ.",
+        intro: "પ્રકૃતિ આયુર્વેદ ક્લિનિકના તમામ પૃષ્ઠો — ગુજરાતી, હિન્દી, મરાઠી અને અંગ્રેજીમાં ઉપલબ્ધ.",
         crumb: "સાઇટમેપ",
         mainHeading: "મુખ્ય પૃષ્ઠો",
         mainLinks: [
@@ -1608,7 +1608,7 @@ export const PAGES_DICTIONARY: Record<Language, PagesI18n> = {
         legalHeading: "કાનૂની નીતિઓ",
       },
       notFound: {
-        seoTitle: "પૃષ્ઠ મળ્યું નથી | બાળચિકિત્સા આયુર્વેદ ક્લિનિક",
+        seoTitle: "પૃષ્ઠ મળ્યું નથી | પ્રકૃતિ આયુર્વેદ ક્લિનિક",
         h1: "આ પૃષ્ઠ ઉપલબ્ધ નથી",
         desc: "કદાચ લિંક બદલાઈ હોઈ શકે. નીચેના વિકલ્પોમાંથી મુખ્ય પૃષ્ઠ અથવા બાળ આરોગ્ય ગાઇડ જુઓ.",
         homeBtn: "મુખ્ય પૃષ્ઠ પર જાઓ",

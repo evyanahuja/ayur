@@ -156,14 +156,14 @@ export const en = {
     footerPost: "— I'll guide you.",
   },
   method: {
-    eyebrow: "The BalChikitsa Method™",
+    eyebrow: "The Prakriti Method™",
     headingPre: "Not a 5-minute prescription.",
     headingHighlight: "A complete healing journey.",
     desc: "Transparent, trackable, and gentle — here's exactly what happens after you fill the form below.",
     steps: [
       { title: "Deep Prakruti Assessment", time: "Day 1 • 30 mins", desc: "30 mins first visit: birth history, feeding, sleep, digestion, immunity timeline, growth charts & prior reports — nothing rushed." },
       { title: "Root-Cause Mapping", time: "Day 1–2", desc: "We identify the real driver — weak Agni, Ama (toxins), low Ojas, Vata aggravation or faulty routine — with clear explanation to parents." },
-      { title: "Personalised BalChikitsa Plan", time: "Week 1 onwards", desc: "Child-safe herbs, tasty formulations, food chart, dinacharya, plus therapies like Abhyanga or Suvarnaprashan where needed." },
+      { title: "Personalised Prakriti Plan", time: "Week 1 onwards", desc: "Child-safe herbs, tasty formulations, food chart, dinacharya, plus therapies like Abhyanga or Suvarnaprashan where needed." },
       { title: "Track, Tweak & Strengthen", time: "Every 2–4 weeks", desc: "Growth, sleep, stool, skin & school performance tracked. Doses tapered as your child strengthens — goal is independence, not lifelong medicine." },
     ],
     therapiesTitle: "Signature therapies parents love",
@@ -410,14 +410,14 @@ export const en = {
   site: {
     doctorName: "Dr. Priyanka Likhar",
     shortDoctorName: "Dr. Priyanka",
-    clinicName: "BalChikitsa Ayurved Clinic",
+    clinicName: "Prakriti Ayurveda Clinic",
     qualification: "BAMS • MD (Pediatrician — Kaumarbhritya)",
     shortCreds: "MD (Pediatrics) • BAMS • Reg. 63934",
     hours: "Mon–Sat • 10 AM–2 PM & 5 PM–8 PM IST",
     hoursNote: "Evening + NRI-friendly online slots",
     languages: "Hindi • Marathi • English • Gujarati",
     whatsappMessage: "Namaste Doctor Priyanka, I want to consult for my child.",
-    addressShort: "BalChikitsa Ayurved Clinic + Online worldwide",
+    addressShort: "Prakriti Ayurveda Clinic + Online worldwide",
     addressFull: "Sanchar Nagar Extension, Kanadia Road, Indore M.P. 452016",
   },
   common: {

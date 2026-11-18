@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { DEFAULT_LANGUAGE, STORAGE_KEY, type Language } from "./config";
+import { DEFAULT_LANGUAGE, LEGACY_STORAGE_KEY, STORAGE_KEY, type Language } from "./config";
 import { getDictionary, type Dictionary } from "./index";
 
 type LanguageContextValue = {
@@ -15,7 +15,8 @@ const LanguageContext = createContext<LanguageContextValue | null>(null);
 function readInitial(): Language {
   if (typeof window === "undefined") return DEFAULT_LANGUAGE;
   try {
-    const saved = window.localStorage.getItem(STORAGE_KEY) as Language | null;
+    const saved = (window.localStorage.getItem(STORAGE_KEY) ??
+      window.localStorage.getItem(LEGACY_STORAGE_KEY)) as Language | null;
     if (saved === "en" || saved === "hi" || saved === "mr" || saved === "gu") return saved;
   } catch {
     /* ignore */
@@ -38,6 +39,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     document.documentElement.lang = lang;
     try {
       window.localStorage.setItem(STORAGE_KEY, lang);
+      window.localStorage.removeItem(LEGACY_STORAGE_KEY);
     } catch {
       /* ignore */
     }

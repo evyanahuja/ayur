@@ -359,8 +359,8 @@ export const HI_CONTENT_OVERRIDES: Record<string, string> = {
     "1. सत्यापित योग्यता: BAMS अनिवार्य है; MD विशेषज्ञता आपकी आवश्यकता से मेल खानी चाहिए (हमारी: पंजीकरण संख्या 63934, MD — बाल-चिकित्सक / कौमारभृत्य, ITRA से; BAMS, डॉ. वंदनाताई जे. ढोने ग्रामीण आयुर्वेद कॉलेज, पातुर से)",
   "Our answers: MD Kaumarbhritya, child-focused, 30 mins first visit, written plans, Hindi/Marathi/English/Gujarati, WhatsApp follow-up window.":
     "हमारे उत्तर: MD कौमारभृत्य, बच्चों पर केंद्रित, पहली विज़िट 30 मिनट, लिखित योजना, हिंदी/मराठी/अंग्रेज़ी/गुजराती, व्हाट्सऐप पर फ़ॉलो-अप का निश्चित समय।",
-  "Bachchon ke doctor in Indore dhoondh rahe hain? BalChikitsa Ayurved Clinic focuses on children's health through Ayurveda's child specialty (Kaumarbhritya/Balarog): growth and appetite, skin, recurrent infections, digestion, sleep and developmental support — coordinated with your paediatrician, never competing with them.":
-    "इंदौर में बच्चों के डॉक्टर खोज रहे हैं? बालचिकित्सा आयुर्वेद क्लिनिक आयुर्वेद की बाल-चिकित्सा विशेषज्ञता (कौमारभृत्य/बालरोग) के माध्यम से बच्चों के स्वास्थ्य पर केंद्रित है: विकास और भूख, त्वचा, बार-बार संक्रमण, पाचन, नींद और विकासात्मक सहायता — आपके बाल-चिकित्सक के साथ समन्वय में, उनसे प्रतिस्पर्धा नहीं।",
+  "Bachchon ke doctor in Indore dhoondh rahe hain? Prakriti Ayurveda Clinic focuses on children's health through Ayurveda's child specialty (Kaumarbhritya/Balarog): growth and appetite, skin, recurrent infections, digestion, sleep and developmental support — coordinated with your paediatrician, never competing with them.":
+    "इंदौर में बच्चों के डॉक्टर खोज रहे हैं? प्रकृति आयुर्वेद क्लिनिक आयुर्वेद की बाल-चिकित्सा विशेषज्ञता (कौमारभृत्य/बालरोग) के माध्यम से बच्चों के स्वास्थ्य पर केंद्रित है: विकास और भूख, त्वचा, बार-बार संक्रमण, पाचन, नींद और विकासात्मक सहायता — आपके बाल-चिकित्सक के साथ समन्वय में, उनसे प्रतिस्पर्धा नहीं।",
   "Bilkul nahi. Routine vaccination schedule par hi hoga — Suvarnaprashan sahayak parampara hai, vikalp nahi.":
     "बिल्कुल नहीं। नियमित टीकाकरण कार्यक्रम के अनुसार ही होगा — सुवर्णप्राशन सहायक परंपरा है, टीके का विकल्प नहीं।",
   "Panchakarma Treatment in Indore: Assessment-First Approach":
