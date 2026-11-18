@@ -90,7 +90,7 @@ export function VopdAdminConsole() {
   const [summary, setSummary] = useState({ total: 0, pending: 0, confirmed: 0, verified_payments: 0, rejected: 0, completed: 0 });
   const [emailProvider, setEmailProvider] = useState<string | null>(null);
   const [planDraft, setPlanDraft] = useState(emptyPlanDraft);
-  const [calendar, setCalendar] = useState<{ configured: boolean; reachable: boolean; message: string } | null>(null);
+  const [calendar, setCalendar] = useState<{ configured: boolean; reachable: boolean; message: string; senderEmail?: string | null; senderAdvice?: string } | null>(null);
   const [upiConfigured, setUpiConfigured] = useState(true);
   const [filter, setFilter] = useState("PAYMENT_VERIFICATION_PENDING");
   const [query, setQuery] = useState("");
@@ -391,7 +391,11 @@ export function VopdAdminConsole() {
         )}
         {calendar && (
           <p className={cn("mt-3 flex items-start gap-2 rounded-xl border px-4 py-3 text-[13px]", calendar.configured && calendar.reachable ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-amber-300 bg-amber-50 text-amber-900")}>
-            <Video className="mt-0.5 h-4 w-4 shrink-0" /> {calendar.message}
+            <Video className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>
+              {calendar.message}
+              {calendar.senderEmail && calendar.senderAdvice ? <span className="mt-1 block text-[12px] opacity-80">{calendar.senderAdvice}</span> : null}
+            </span>
           </p>
         )}
         {notice && <p role="status" className="mt-3 rounded-xl border border-forest-900/15 bg-white px-4 py-3 text-[13px] text-forest-900">{notice}</p>}
