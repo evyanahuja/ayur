@@ -5,7 +5,7 @@ import { CLINIC_LOCATION, CLINIC_DIRECTIONS_URL, CLINIC_MAP_EMBED_URL as MAP_EMB
 export const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL || "https://ayurveddoctor.netlify.app"
 ).replace(/\/+$/, "");
-export const SITE_NAME = "BalChikitsa Ayurved Clinic";
+export const SITE_NAME = "Prakriti Ayurveda Clinic";
 export const DOCTOR_NAME = "Dr. Priyanka Likhar";
 export const DOCTOR_REG_NO = SITE.registrationNumber;
 export const DOCTOR_REG_AUTHORITY = SITE.registrationAuthority;
