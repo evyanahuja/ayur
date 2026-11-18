@@ -49,7 +49,6 @@ export type VopdDict = {
   stepHeadings: string[];
   stepCounter: string;
   paymentHeading: string;
-  paymentHeadingInternational: string;
   unavailable: string;
   patient: {
     who: string; child: string; adult: string;
@@ -92,6 +91,7 @@ export type VopdDict = {
     greeting: string; ackTitle: string; ackBadge: string; ackNote: string; adminSubject: string; adminTitle: string;
     paymentTitle: string; paymentNote: string; confirmTitle: string; confirmBadge: string; confirmNote: string;
     confirmNoMeet: string; meetCta: string; meetNote: string; meetSubject: string;
+    calendarInviteNote: string;
   };
 };
 
@@ -114,7 +114,6 @@ const en: VopdDict = {
   ],
   stepCounter: "Step {current} of {total}",
   paymentHeading: "Complete UPI Payment",
-  paymentHeadingInternational: "Complete International Payment",
   unavailable: "Online slot reservation is temporarily unavailable. Please call {phone} or message on WhatsApp.",
   patient: {
     who: "Consultation is for", child: "Child", adult: "Adult",
@@ -224,6 +223,7 @@ const en: VopdDict = {
     confirmNoMeet: "The clinic will share your Google Meet link before the appointment. Please keep reports and a medicine list ready.",
     meetCta: "Join Google Meet",
     meetNote: "Join a few minutes before your appointment time.",
+    calendarInviteNote: "You will also receive a Google Calendar invitation from {sender}. If Gmail or Google Calendar says “unknown sender”, this is genuinely from our clinic — click “Yes” on the invitation, or add {sender} to your contacts.",
     meetSubject: "Your Google Meet link",
   },
 };
@@ -247,7 +247,6 @@ const hi: VopdDict = {
   ],
   stepCounter: "चरण {current} / {total}",
   paymentHeading: "UPI भुगतान पूरा करें",
-  paymentHeadingInternational: "अंतरराष्ट्रीय भुगतान पूरा करें",
   unavailable: "ऑनलाइन स्लॉट बुकिंग अभी उपलब्ध नहीं है। कृपया {phone} पर कॉल करें या WhatsApp करें।",
   patient: {
     who: "परामर्श किसके लिए है", child: "बच्चा", adult: "वयस्क",
@@ -357,6 +356,7 @@ const hi: VopdDict = {
     confirmNoMeet: "अपॉइंटमेंट से पहले क्लिनिक Google Meet लिंक साझा करेगा। रिपोर्ट और दवाओं की सूची तैयार रखें।",
     meetCta: "Google Meet से जुड़ें",
     meetNote: "अपॉइंटमेंट समय से कुछ मिनट पहले जुड़ें।",
+    calendarInviteNote: "आपको {sender} की ओर से Google Calendar का निमंत्रण भी मिलेगा। यदि Gmail या Google Calendar “अज्ञात प्रेषक” दिखाए, तो यह वास्तव में हमारे क्लिनिक की ओर से है — निमंत्रण पर “हाँ” दबाएँ या {sender} को अपने संपर्कों में जोड़ लें।",
     meetSubject: "आपका Google Meet लिंक",
   },
 };
@@ -380,7 +380,6 @@ const mr: VopdDict = {
   ],
   stepCounter: "टप्पा {current} / {total}",
   paymentHeading: "UPI पेमेंट पूर्ण करा",
-  paymentHeadingInternational: "आंतरराष्ट्रीय पेमेंट पूर्ण करा",
   unavailable: "ऑनलाइन स्लॉट बुकिंग तात्पुरती अनुपलब्ध आहे. कृपया {phone} वर कॉल करा किंवा WhatsApp करा.",
   patient: {
     who: "सल्ला कोणासाठी आहे", child: "मूल", adult: "प्रौढ",
@@ -490,6 +489,7 @@ const mr: VopdDict = {
     confirmNoMeet: "क्लिनिक अपॉइंटमेंटपूर्वी Google Meet लिंक पाठवेल. अहवाल व औषधांची यादी तयार ठेवा.",
     meetCta: "Google Meet मध्ये सामील व्हा",
     meetNote: "अपॉइंटमेंटच्या काही मिनिटे आधी सामील व्हा.",
+    calendarInviteNote: "तुम्हाला {sender} कडून Google Calendar चे आमंत्रणही मिळेल. Gmail किंवा Google Calendar “अज्ञात प्रेषक” दाखवत असल्यास, ते खरोखर आमच्या क्लिनिककडून आहे — आमंत्रणावर “होय” निवडा किंवा {sender} तुमच्या संपर्कांमध्ये जोडा.",
     meetSubject: "तुमची Google Meet लिंक",
   },
 };
@@ -513,7 +513,6 @@ const gu: VopdDict = {
   ],
   stepCounter: "પગલું {current} / {total}",
   paymentHeading: "UPI પેમેન્ટ પૂર્ણ કરો",
-  paymentHeadingInternational: "આંતરરાષ્ટ્રીય ચુકવણી પૂર્ણ કરો",
   unavailable: "ઓનલાઇન સ્લોટ બુકિંગ હાલ ઉપલબ્ધ નથી. કૃપા કરીને {phone} પર કૉલ કરો અથવા WhatsApp કરો.",
   patient: {
     who: "પરામર્શ કોના માટે છે", child: "બાળક", adult: "પુખ્ત",
@@ -623,6 +622,7 @@ const gu: VopdDict = {
     confirmNoMeet: "ક્લિનિક એપોઇન્ટમેન્ટ પહેલાં Google Meet લિંક શેર કરશે. રિપોર્ટ અને દવાઓની યાદી તૈયાર રાખો.",
     meetCta: "Google Meet માં જોડાઓ",
     meetNote: "એપોઇન્ટમેન્ટના સમયથી થોડી મિનિટ પહેલાં જોડાઓ.",
+    calendarInviteNote: "તમને {sender} તરફથી Google Calendar નું આમંત્રણ પણ મળશે. જો Gmail કે Google Calendar “અજાણ્યો મોકલનાર” બતાવે, તો તે ખરેખર અમારા ક્લિનિક તરફથી છે — આમંત્રણ પર “હા” પસંદ કરો અથવા {sender} ને તમારા સંપર્કોમાં ઉમેરો.",
     meetSubject: "તમારી Google Meet લિંક",
   },
 };
