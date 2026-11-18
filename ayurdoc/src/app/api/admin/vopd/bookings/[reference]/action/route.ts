@@ -84,6 +84,7 @@ async function confirmWithCalendar(reference: string, admin: string): Promise<{
   calendar: string;
   meetUrl?: string | null;
   message: string;
+  calendarSender?: string | null;
   email?: MailOutcome;
 }> {
   const booking = await getBooking(reference);
@@ -99,7 +100,12 @@ async function confirmWithCalendar(reference: string, admin: string): Promise<{
   try {
     const event = await createCalendarEvent(booking);
     const confirmed = await recordCalendarResult(reference, admin, event);
-    const email = confirmed ? await notifyConfirmation(reference, admin, sendConfirmation) : undefined;
+    // Tell the parent which address Google's invite comes from, so an
+    // "unknown sender" banner is recognised as ours rather than ignored.
+    const calendarSender = event.organizer.email;
+    const email = confirmed
+      ? await notifyConfirmation(reference, admin, (booking) => sendConfirmation(booking, { calendarSender }))
+      : undefined;
     return {
       confirmed: true,
       calendar: "CREATED",
@@ -108,8 +114,10 @@ async function confirmWithCalendar(reference: string, admin: string): Promise<{
         event.meetUrl
           ? "Calendar event and Google Meet link created."
           : "Calendar event created, but Google returned no Meet link.",
+        event.organizer.email ? `Calendar invite sent from ${event.organizer.email}.` : "",
         email ? email.message : "No confirmation email was sent because the calendar step did not complete.",
-      ].join(" "),
+      ].filter(Boolean).join(" "),
+      calendarSender: event.organizer.email,
       ...(email ? { email } : {}),
     };
   } catch (error) {
