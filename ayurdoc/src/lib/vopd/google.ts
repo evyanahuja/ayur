@@ -5,9 +5,13 @@
    end-to-end confirmation test succeeds. */
 import type { VopdBooking } from "@/db/schema";
 import { VOPD_CONCERN_LABELS, type VopdConcernId } from "@/content/vopd";
-import { isGoogleConfigured, TIME_ZONE } from "./config";
+import { CLINIC_PHONE, isGoogleConfigured, TIME_ZONE } from "./config";
+import { SITE } from "@/content/site";
 
-type CalendarResult = { eventId: string; meetUrl: string | null; htmlLink: string | null };
+/** The Google account that owns the calendar. Google sends the invite email
+ *  from this identity, so it is exactly what the parent sees as the sender. */
+export type CalendarOrganizer = { email: string | null; displayName: string | null };
+export type CalendarResult = { eventId: string; meetUrl: string | null; htmlLink: string | null; organizer: CalendarOrganizer };
 
 let cachedToken: { value: string; expiresAt: number } | null = null;
 
@@ -47,15 +51,27 @@ export async function createCalendarEvent(booking: VopdBooking): Promise<Calenda
   const attendees = booking.email ? [{ email: booking.email.trim(), displayName: patientLabel }] : [];
 
   const body = {
-    summary: `VOPD · ${patientLabel} · ${booking.reference}`,
+    // Leads with the doctor and clinic so the invite is recognisable even when
+    // Gmail flags the sender as unknown.
+    summary: `Video consultation · Dr. Priyanka Likhar · ${SITE.clinicName} (${booking.reference})`,
     description: [
-      `Video OPD consultation with Dr. Priyanka Likhar.`,
+      `Your video consultation with Dr. Priyanka Likhar at ${SITE.clinicName}.`,
+      `This invitation was sent by ${SITE.clinicName} because you booked online at ${SITE.siteUrl}.`,
+      ``,
       `Booking reference: ${booking.reference}`,
       `Patient: ${patientLabel}${booking.guardianName ? ` · Guardian: ${booking.guardianName}` : ""}`,
       `Category: ${concern}`,
       `Plan: ${booking.planName} (${booking.durationMinutes} minutes)`,
       `Phone: ${booking.phone}`,
+      ``,
+      `Questions or need to reschedule? Call or WhatsApp ${CLINIC_PHONE}.`,
     ].join("\n"),
+    location: `Online — Google Meet · ${SITE.clinicName}`,
+    source: { title: SITE.clinicName, url: SITE.siteUrl },
+    // Guests may join, but cannot rewrite the appointment or forward it on.
+    guestsCanModify: false,
+    guestsCanInviteOthers: false,
+    guestsCanSeeOtherGuests: false,
     start: { dateTime: startIso, timeZone: TIME_ZONE },
     end: { dateTime: endIso, timeZone: TIME_ZONE },
     // Google Calendar ignores conferenceData unless conferenceDataVersion=1 is sent.
@@ -88,11 +104,12 @@ export async function createCalendarEvent(booking: VopdBooking): Promise<Calenda
     id?: string;
     hangoutLink?: string;
     htmlLink?: string;
+    organizer?: { email?: string; displayName?: string };
     conferenceData?: { entryPoints?: { entryPointType?: string; uri?: string }[] };
     error?: { message?: string };
   };
 
-  // An unwell-formed guest must never block the confirmation itself: fall back
+  // A malformed guest address must never block the confirmation itself: fall back
   // to creating the event without attendees (the patient then gets our own
   // confirmation email with the Meet link instead).
   if (!response.ok && attendees.length && /attendee|invalid|permission/i.test(payload.error?.message || "")) {
@@ -111,17 +128,49 @@ export async function createCalendarEvent(booking: VopdBooking): Promise<Calenda
     payload.conferenceData?.entryPoints?.find((entry) => entry.entryPointType === "video")?.uri ??
     null;
 
-  return { eventId: payload.id, meetUrl, htmlLink: payload.htmlLink ?? null };
+  return {
+    eventId: payload.id,
+    meetUrl,
+    htmlLink: payload.htmlLink ?? null,
+    organizer: { email: payload.organizer?.email ?? null, displayName: payload.organizer?.displayName ?? null },
+  };
 }
 
 /** Diagnostic used by the admin console: reports configuration without exposing secrets. */
-export async function calendarHealth(): Promise<{ configured: boolean; reachable: boolean; message: string }> {
+export async function calendarHealth(): Promise<{
+  configured: boolean;
+  reachable: boolean;
+  message: string;
+  /** Account Google will show as the sender of every invite. */
+  senderEmail?: string | null;
+  senderAdvice?: string;
+}> {
   if (!isGoogleConfigured()) {
     return { configured: false, reachable: false, message: "Google OAuth credentials are not configured. Use a manual Meet link." };
   }
   try {
-    await accessToken();
-    return { configured: true, reachable: true, message: "Google credentials accepted. Create a test booking to verify Meet generation." };
+    const token = await accessToken();
+    const calendarId = encodeURIComponent(process.env.GOOGLE_CALENDAR_ID?.trim() || "primary");
+    let senderEmail: string | null = null;
+    try {
+      const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${calendarId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const calendar = (await response.json().catch(() => ({}))) as { id?: string };
+      if (response.ok && calendar.id) senderEmail = calendar.id;
+    } catch {
+      /* identity lookup is informational only */
+    }
+    return {
+      configured: true,
+      reachable: true,
+      message: senderEmail
+        ? `Google credentials accepted. Calendar invites are sent from ${senderEmail}.`
+        : "Google credentials accepted. Create a test booking to verify Meet generation.",
+      senderEmail,
+      senderAdvice:
+        "Parents see this Google account's name as the sender. Set its display name to “Dr. Priyanka Likhar – BalChikitsa” in Google Account → Personal info → Name, and add a profile photo, so the invite is recognised.",
+    };
   } catch (error) {
     return { configured: true, reachable: false, message: error instanceof Error ? error.message : "Google token request failed." };
   }
