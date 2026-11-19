@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Hero } from "@/components/Hero";
 import { ConditionsStrip } from "@/components/ConditionsStrip";
 import { DoctorIntro } from "@/components/DoctorIntro";
+import { Benefits } from "@/components/Benefits";
 import { Pricing } from "@/components/Pricing";
 import { BookingSection } from "@/components/BookingSection";
 import { SectionMandalas } from "@/components/ScrollMandala";
@@ -71,6 +72,7 @@ export default function HomePage() {
         <TreatmentCards />
         <ConsultationSteps />
         <WhyChoose />
+        <Benefits />
         <PopularGuides />
         <ArticlePreview />
         <Pricing />
