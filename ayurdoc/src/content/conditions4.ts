@@ -6,7 +6,7 @@ import type { ConditionPage } from "./conditions";
 export const CONDITIONS_4: ConditionPage[] = [
   {
     slug: "hair-fall",
-    status: "draft",
+    status: "published",
     primaryKeyword: "hair fall Ayurvedic treatment",
     title: "Hair Fall",
     h1: "Hair Fall and Thinning Hair: Causes, When to Worry and Ayurvedic Care",
@@ -132,7 +132,7 @@ export const CONDITIONS_4: ConditionPage[] = [
   },
   {
     slug: "pcos-pcod",
-    status: "draft",
+    status: "published",
     primaryKeyword: "PCOS Ayurvedic treatment Indore",
     title: "PCOS / PCOD",
     h1: "PCOS and PCOD: Symptoms, Diagnosis and Ayurvedic Care Approach",
@@ -263,7 +263,7 @@ export const CONDITIONS_4: ConditionPage[] = [
   },
   {
     slug: "knee-pain",
-    status: "draft",
+    status: "published",
     primaryKeyword: "knee pain Ayurvedic treatment Indore",
     title: "Knee Pain",
     h1: "Knee Pain: Causes, Red Flags and Ayurvedic Care Approach",
@@ -394,7 +394,7 @@ export const CONDITIONS_4: ConditionPage[] = [
   },
   {
     slug: "migraine",
-    status: "draft",
+    status: "published",
     primaryKeyword: "migraine treatment Ayurveda",
     title: "Migraine",
     h1: "Migraine: Symptoms, Triggers and Ayurvedic Care Approach",
@@ -521,7 +521,7 @@ export const CONDITIONS_4: ConditionPage[] = [
   },
   {
     slug: "insomnia",
-    status: "draft",
+    status: "published",
     primaryKeyword: "insomnia Ayurvedic treatment Indore",
     title: "Insomnia & Disturbed Sleep",
     h1: "Insomnia and Disturbed Sleep: Causes, Warning Signs and Ayurvedic Care Approach",
