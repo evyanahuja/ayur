@@ -8,12 +8,10 @@ import { BookingSection } from "@/components/BookingSection";
 import { SectionMandalas } from "@/components/ScrollMandala";
 import { AuthorBox, CtaBand } from "@/components/seo";
 import {
-  ArticlePreview,
   ClinicLocation,
   ConcernCards,
   ConsultationSteps,
   HomeFaq,
-  PopularGuides,
   TreatmentCards,
   WhyChoose,
 } from "@/components/HomeSections";
@@ -73,8 +71,6 @@ export default function HomePage() {
         <ConsultationSteps />
         <WhyChoose />
         <Benefits />
-        <PopularGuides />
-        <ArticlePreview />
         <Pricing showCurrencyNote={false} />
         <HomeFaq />
         <section className="mandala-section relative overflow-hidden py-8">
