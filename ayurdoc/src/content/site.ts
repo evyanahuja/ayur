@@ -34,7 +34,7 @@ export const SITE = {
   phoneHref: "+919860775010",
   // WhatsApp number (country code, NO plus sign, NO spaces)
   whatsapp: "919860775010",
-  whatsappMessage: "Namaste Doctor Priyanka, I want to consult for my child.",
+  whatsappMessage: "Namaste Doctor Priyanka, I would like to book a consultation.",
 
   // ✉️ Public email shown on the website
   email: "drpriyankalikhar@gmail.com",
