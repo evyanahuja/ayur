@@ -7,7 +7,7 @@ import type { ConditionPage } from "./conditions";
 export const CONDITIONS_3: ConditionPage[] = [
   {
     slug: "acidity-gerd",
-    status: "draft",
+    status: "published",
     primaryKeyword: "acidity treatment Ayurveda",
     title: "Acidity & GERD",
     h1: "Acidity and GERD: Causes, Symptoms and Ayurvedic Treatment Approach",
@@ -135,7 +135,7 @@ export const CONDITIONS_3: ConditionPage[] = [
   },
   {
     slug: "piles-hemorrhoids",
-    status: "draft",
+    status: "published",
     primaryKeyword: "piles treatment Ayurveda",
     title: "Piles (Haemorrhoids)",
     h1: "Piles (Haemorrhoids): Symptoms, Causes and Ayurvedic Treatment Approach",
@@ -262,7 +262,7 @@ export const CONDITIONS_3: ConditionPage[] = [
   },
   {
     slug: "constipation-adults",
-    status: "draft",
+    status: "published",
     primaryKeyword: "constipation treatment Ayurveda adults",
     title: "Constipation in Adults",
     h1: "Constipation in Adults and Older People: Causes, Warning Signs and Ayurvedic Approach",
@@ -390,7 +390,7 @@ export const CONDITIONS_3: ConditionPage[] = [
   },
   {
     slug: "psoriasis",
-    status: "draft",
+    status: "published",
     primaryKeyword: "psoriasis Ayurvedic treatment",
     title: "Psoriasis",
     h1: "Psoriasis: Symptoms, Causes and Ayurvedic Care Approach",
@@ -514,7 +514,7 @@ export const CONDITIONS_3: ConditionPage[] = [
   },
   {
     slug: "eczema",
-    status: "draft",
+    status: "published",
     primaryKeyword: "eczema treatment Ayurveda",
     title: "Eczema (Atopic Dermatitis)",
     h1: "Eczema (Atopic Dermatitis): Symptoms, Triggers and Ayurvedic Care Approach",
