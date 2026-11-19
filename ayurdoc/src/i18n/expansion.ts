@@ -265,7 +265,7 @@ const en: ExpansionDict = {
       },
     ],
     whyEyebrow: "Why patients choose us",
-    whyTitle: "Why choose AyurvedDoctor in Indore",
+    whyTitle: "Why choose Dr. Priyanka Likhar in Indore",
     whyPoints: [
       {
         title: "Paediatric specialist training",
@@ -556,7 +556,7 @@ const hi: ExpansionDict = {
       },
     ],
     whyEyebrow: "मरीज़ हमें क्यों चुनते हैं",
-    whyTitle: "इंदौर में AyurvedDoctor क्यों चुनें",
+    whyTitle: "इंदौर में डॉ. प्रियंका को क्यों चुनें?",
     whyPoints: [
       {
         title: "बालरोग विशेषज्ञ प्रशिक्षण",
@@ -847,7 +847,7 @@ const mr: ExpansionDict = {
       },
     ],
     whyEyebrow: "रुग्ण आम्हाला का निवडतात",
-    whyTitle: "इंदूरमध्ये AyurvedDoctor का निवडावे",
+    whyTitle: "इंदूरमध्ये डॉ. प्रियंकाला का निवडावे?",
     whyPoints: [
       {
         title: "बालरोग तज्ञ प्रशिक्षण",
@@ -1138,7 +1138,7 @@ const gu: ExpansionDict = {
       },
     ],
     whyEyebrow: "દર્દીઓ અમને શા માટે પસંદ કરે છે",
-    whyTitle: "ઇન્દોરમાં AyurvedDoctor શા માટે પસંદ કરવું",
+    whyTitle: "ઇન્દોરમાં ડૉ. પ્રિયંકા શા માટે પસંદ કરવું",
     whyPoints: [
       {
         title: "બાળરોગ નિષ્ણાત તાલીમ",
