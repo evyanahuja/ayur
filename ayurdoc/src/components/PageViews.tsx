@@ -431,7 +431,7 @@ export function HomeContent() {
       </section>
 
       <Testimonials />
-      <Pricing />
+      <Pricing showCurrencyNote={false} />
       <FAQ />
       <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8">
         <AuthorBox />
