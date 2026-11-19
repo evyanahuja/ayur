@@ -10,7 +10,7 @@ import type { VopdPlan } from "@/content/vopd";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useRegionCurrency } from "@/lib/useRegionCurrency";
 
-export function Pricing() {
+export function Pricing({ showCurrencyNote = true }: { showCurrencyNote?: boolean }) {
   const { t } = useLanguage();
   const currency = useRegionCurrency();
   const [mode, setMode] = useState<"online" | "clinic">("online");
@@ -88,9 +88,11 @@ export function Pricing() {
           <p className="mt-5 text-[16px] text-forest-800/65 leading-[1.75]">
             {t.pricing.desc}
           </p>
-          <p className="mt-3 inline-flex items-center rounded-full bg-white/80 gold-hairline px-4 py-2 text-[11.5px] font-semibold tracking-wide text-forest-700 shadow-luxe">
-            {currency === "USD" ? t.pricing.internationalNote : t.pricing.indiaNote}
-          </p>
+          {showCurrencyNote && (
+            <p className="mt-3 inline-flex items-center rounded-full bg-white/80 gold-hairline px-4 py-2 text-[11.5px] font-semibold tracking-wide text-forest-700 shadow-luxe">
+              {currency === "USD" ? t.pricing.internationalNote : t.pricing.indiaNote}
+            </p>
+          )}
 
           <div className="mt-6 inline-flex rounded-full bg-white gold-hairline p-1.5 shadow-luxe" role="tablist" aria-label={t.pricing.modeAria}>
             {modes.map((m) => (
