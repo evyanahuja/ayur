@@ -75,7 +75,7 @@ export default function HomePage() {
         <Benefits />
         <PopularGuides />
         <ArticlePreview />
-        <Pricing />
+        <Pricing showCurrencyNote={false} />
         <HomeFaq />
         <section className="mandala-section relative overflow-hidden py-8">
           <SectionMandalas id="home-reviewer" palette="marigold" side="left" />
