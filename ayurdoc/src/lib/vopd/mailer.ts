@@ -1,6 +1,6 @@
 /* VOPD emails. Reuses the shared Resend/SMTP transport from src/lib/email.ts. */
 import { sendSystemEmail } from "@/lib/email";
-import { formatClinicDateTime, formatMinor, VOPD_CONCERN_LABELS, type VopdConcernId } from "@/content/vopd";
+import { formatClinicDateTime, formatDobDisplay, formatMinor, VOPD_CONCERN_LABELS, type VopdConcernId } from "@/content/vopd";
 import type { VopdBooking } from "@/db/schema";
 import { CLINIC_EMAIL, CLINIC_PHONE } from "./config";
 import { vopdDict } from "@/i18n/vopd";
@@ -61,7 +61,7 @@ function baseRows(booking: VopdBooking): [string, string][] {
     [d.review.patient, `${booking.patientName} (${kind})`],
     ["Gender", booking.gender || "Not provided"],
     ["Consultation", booking.mode.toUpperCase()],
-    [d.review.dob, booking.ageOrDob],
+    [d.review.dob, formatDobDisplay(booking.ageOrDob, mailLocale(booking))],
     ...(booking.guardianName ? [[d.review.guardian, booking.guardianName] as [string, string]] : []),
     [d.review.plan, `${booking.planName} · ${booking.durationMinutes} ${d.review.mins}`],
     [d.review.when, `${formatClinicDateTime(booking.slotStart.toISOString())} (IST)`],
