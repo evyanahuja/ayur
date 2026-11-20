@@ -12,7 +12,7 @@ export function isDateString(value: string): boolean {
   return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
 }
 
-/** "YYYY-MM-DD" + "HH:mm" in clinic time -> UTC instant. */
+/** "DD-MM-YYYY" + "HH:mm" in clinic time -> UTC instant. */
 export function clinicWallTimeToUtc(dateString: string, timeString: string): Date {
   const [year, month, day] = dateString.split("-").map(Number);
   const [hour, minute] = timeString.split(":").map(Number);
@@ -75,7 +75,11 @@ export function candidateSlots(
   const sessions = options.sessions ?? SESSIONS;
   const breaks = options.breaks ?? [];
   const slots: SlotCandidate[] = [];
-  for (const session of sessions) {
+  // Sessions are sorted by start time (see parseRanges), so the first block is
+  // always the morning session and any later block belongs to the evening group.
+  // Name by block position — NOT by wall-clock time — otherwise 12:00–13:30
+  // slots inside the 10:00–14:00 morning block would be mislabeled evening.
+  for (const [sessionIndex, session] of sessions.entries()) {
     const sessionStart = minutesFromTime(session.start);
     const sessionEnd = minutesFromTime(session.end);
     for (let minute = sessionStart; minute + safeDuration <= sessionEnd; minute += interval) {
@@ -83,7 +87,7 @@ export function candidateSlots(
       const time = `${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
       const start = clinicWallTimeToUtc(dateString, time);
       const end = new Date(start.getTime() + safeDuration * 60_000);
-      slots.push({ startIso: start.toISOString(), endIso: end.toISOString(), label: slotLabel(start), session: minute < 12 * 60 ? "morning" : "evening" });
+      slots.push({ startIso: start.toISOString(), endIso: end.toISOString(), label: slotLabel(start), session: sessionIndex === 0 ? "morning" : "evening" });
     }
   }
   return slots;
