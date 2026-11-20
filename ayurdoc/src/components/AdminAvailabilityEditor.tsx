@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Save, Trash2 } from "lucide-react";
 import { formatIsoDateToDDMMYYYY } from "@/content/vopd";
 
@@ -65,14 +65,25 @@ export function AdminAvailabilityEditor({ view }: { view: "weekly" | "dates" }) 
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
 
-  const refresh = useCallback(async () => {
-    const response = await fetch("/api/admin/vopd/schedule", { cache: "no-store" });
-    const data = await response.json();
-    if (!response.ok || !data.ok) throw new Error(data.error || "Could not load clinic hours.");
-    setWeekly(data.weekly);
-    setExceptions(data.exceptions);
+  useEffect(() => {
+    let active = true;
+
+    async function loadSchedule() {
+      try {
+        const response = await fetch("/api/admin/vopd/schedule", { cache: "no-store" });
+        const data = await response.json();
+        if (!response.ok || !data.ok) throw new Error(data.error || "Could not load clinic hours.");
+        if (!active) return;
+        setWeekly(data.weekly);
+        setExceptions(data.exceptions);
+      } catch (error) {
+        if (active) setNotice(error instanceof Error ? error.message : "Could not load clinic hours.");
+      }
+    }
+
+    void loadSchedule();
+    return () => { active = false; };
   }, []);
-  useEffect(() => { void refresh().catch((error) => setNotice(error.message)); }, [refresh]);
 
   async function save(method: "PATCH" | "POST" | "DELETE", body: Record<string, unknown> | null, targetDate?: string) {
     setBusy(true); setNotice("");
