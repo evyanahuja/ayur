@@ -49,11 +49,6 @@ export function SiteHeader() {
   const ex = useExpansion(lang);
 
   useEffect(() => {
-    setOpen(false);
-    setDrop(null);
-  }, [pathname]);
-
-  useEffect(() => {
     if (!open) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -98,6 +93,11 @@ export function SiteHeader() {
       active ? "text-forest-950 bg-forest-950/5" : "text-forest-800/75 hover:text-forest-950 hover:bg-forest-950/5"
     );
 
+  const closeNavigation = () => {
+    setOpen(false);
+    setDrop(null);
+  };
+
   return (
     <header ref={headerRef} className={cn("fixed top-0 left-0 right-0 z-50 transition-all duration-500", scrolled ? "py-2" : "py-3 sm:py-4")}>
       <div className="mx-auto max-w-[1380px] px-3 sm:px-6">
@@ -108,7 +108,7 @@ export function SiteHeader() {
             scrolled ? "shadow-luxe py-2" : "py-2.5 shadow-sm"
           )}
         >
-          <Link href="/" className="group flex min-w-0 flex-1 items-center gap-2 sm:gap-2.5 lg:flex-none lg:max-w-[156px] xl:max-w-[205px] 2xl:max-w-none" aria-label={`${t.site.doctorName} — ${p.header.homeAria}`}>
+          <Link href="/" onClick={closeNavigation} className="group flex min-w-0 flex-1 items-center gap-2 sm:gap-2.5 lg:flex-none lg:max-w-[156px] xl:max-w-[205px] 2xl:max-w-none" aria-label={`${t.site.doctorName} — ${p.header.homeAria}`}>
             <span className="relative grid place-items-center w-10 h-10 rounded-xl bg-gradient-to-br from-forest-800 via-forest-900 to-forest-950 text-saffron-300 shadow shrink-0 group-hover:scale-105 transition-transform">
               <Leaf className="w-[17px] h-[17px]" />
             </span>
@@ -121,15 +121,16 @@ export function SiteHeader() {
           </Link>
 
           <div className="hidden lg:flex min-w-0 items-center gap-0.5">
-            <Link href="/" className={navClass(isExact("/"))}>
+            <Link href="/" onClick={closeNavigation} className={navClass(isExact("/"))}>
               {p.header.home}
             </Link>
-            <Link href="/about-doctor" className={navClass(pathname.startsWith("/about-doctor"))}>
+            <Link href="/about-doctor" onClick={closeNavigation} className={navClass(pathname.startsWith("/about-doctor"))}>
               {p.header.doctor}
             </Link>
             <div className="relative" onMouseEnter={() => setDrop("cond")} onMouseLeave={() => setDrop(null)}>
               <Link
                 href="/conditions"
+                onClick={closeNavigation}
                 className={cn(navClass(pathname.startsWith("/conditions")), "flex items-center gap-1")}
               >
                 {p.header.conditions} <ChevronDown className="w-3 h-3" />
@@ -143,7 +144,7 @@ export function SiteHeader() {
                         <Link
                           key={cat.slug}
                           href={`/health-concerns/${cat.slug}`}
-                          onClick={() => setDrop(null)}
+                          onClick={closeNavigation}
                           className="rounded-xl px-3 py-2 text-[13px] text-forest-900/80 hover:bg-forest-50 hover:text-forest-950"
                         >
                           <span className="block font-medium">{cat.title}</span>
@@ -153,7 +154,7 @@ export function SiteHeader() {
                     })}
                     <Link
                       href="/conditions"
-                      onClick={() => setDrop(null)}
+                      onClick={closeNavigation}
                       className="col-span-2 mt-2 border-t border-forest-900/10 px-3 pt-3 text-[12.5px] font-semibold text-saffron-700 hover:text-forest-950"
                     >
                       {ex.nav.browseAllConditions}
@@ -165,6 +166,7 @@ export function SiteHeader() {
             <div className="relative" onMouseEnter={() => setDrop("treat")} onMouseLeave={() => setDrop(null)}>
               <Link
                 href="/treatments"
+                onClick={closeNavigation}
                 className={cn(navClass(pathname.startsWith("/treatments") || pathname.startsWith("/services")), "flex items-center gap-1")}
               >
                 {p.header.treatments} <ChevronDown className="w-3 h-3" />
@@ -176,26 +178,27 @@ export function SiteHeader() {
                       <Link
                         key={tr.slug}
                         href={`/${tr.base}/${tr.slug}`}
+                        onClick={closeNavigation}
                         className="rounded-xl px-3 py-2 text-[13px] hover:bg-forest-50"
                       >
                         <span className="block font-medium text-forest-950">{trText(tr.title, lang)}</span>
                         <span className="block text-[11px] text-forest-800/50">{p.categories[tr.category] ?? tr.category}</span>
                       </Link>
                     ))}
-                    <Link href="/treatments" onClick={() => setDrop(null)} className="col-span-2 mt-2 border-t border-forest-900/10 px-3 pt-3 text-[12.5px] font-semibold text-saffron-700 hover:text-forest-950">
+                    <Link href="/treatments" onClick={closeNavigation} className="col-span-2 mt-2 border-t border-forest-900/10 px-3 pt-3 text-[12.5px] font-semibold text-saffron-700 hover:text-forest-950">
                       {formatCount(p.homeHubs.allTreatments, TREATMENTS.length)}
                     </Link>
                   </div>
                 </div>
               )}
             </div>
-            <Link href="/articles" className={navClass(pathname.startsWith("/articles"))}>
+            <Link href="/articles" onClick={closeNavigation} className={navClass(pathname.startsWith("/articles"))}>
               {p.header.articles}
             </Link>
-            <Link href="/faq" className={navClass(pathname.startsWith("/faq"))}>
+            <Link href="/faq" onClick={closeNavigation} className={navClass(pathname.startsWith("/faq"))}>
               {p.header.faq}
             </Link>
-            <Link href="/contact" className={navClass(pathname.startsWith("/contact"))}>
+            <Link href="/contact" onClick={closeNavigation} className={navClass(pathname.startsWith("/contact"))}>
               {p.header.contact}
             </Link>
           </div>
@@ -220,6 +223,7 @@ export function SiteHeader() {
             </a>
             <Link
               href="/contact"
+              onClick={closeNavigation}
               className="btn-shine hidden sm:inline-flex items-center gap-2 rounded-full bg-forest-950 text-cream-50 px-3.5 xl:px-4 py-2.5 text-[12.5px] font-medium shadow hover:bg-forest-900 transition-colors whitespace-nowrap"
             >
               <CalendarCheck className="w-4 h-4 text-saffron-400 shrink-0" /> {p.header.bookVisit}
@@ -240,7 +244,7 @@ export function SiteHeader() {
       </div>
 
       {open && (
-        <div className="fixed inset-x-0 bottom-0 z-40 flex flex-col bg-forest-950/40 p-3 pt-1 backdrop-blur-sm lg:hidden" style={{ top: headerBottom }} onClick={() => setOpen(false)}>
+        <div className="fixed inset-x-0 bottom-0 z-40 flex flex-col bg-forest-950/40 p-3 pt-1 backdrop-blur-sm lg:hidden" style={{ top: headerBottom }} onClick={closeNavigation}>
           <div
             id="mobile-navigation"
             className="flex min-h-0 max-h-full flex-col overflow-hidden rounded-3xl border border-saffron-500/25 bg-cream-50 shadow-luxe-lg"
@@ -248,7 +252,7 @@ export function SiteHeader() {
           >
             <div className="grid min-h-0 gap-1 overflow-y-auto overscroll-contain p-3 text-[15px] font-medium text-forest-950">
               {p.header.mobileLinks.map(({ href, label }) => (
-                <Link key={href} href={href} onClick={() => setOpen(false)} className="flex min-h-12 items-center justify-between gap-3 rounded-2xl px-4 py-3 hover:bg-forest-50">
+                <Link key={href} href={href} onClick={closeNavigation} className="flex min-h-12 items-center justify-between gap-3 rounded-2xl px-4 py-3 hover:bg-forest-50">
                   {label} <span aria-hidden>→</span>
                 </Link>
               ))}
@@ -267,10 +271,10 @@ export function SiteHeader() {
             </div>
             <Link
               href="/contact"
-              onClick={() => setOpen(false)}
+              onClick={closeNavigation}
               className="btn-shine mt-2.5 flex items-center justify-center gap-2 rounded-full bg-forest-950 text-cream-50 px-4 py-3.5 text-center text-sm font-medium"
             >
-              <CalendarCheck className="w-5 h-5 text-saffron-400" /> {p.header.bookChildVisit}
+              <CalendarCheck className="w-5 h-5 text-saffron-400" /> {p.header.bookVisit ?? p.header.bookChildVisit}
             </Link>
             </div>
           </div>
