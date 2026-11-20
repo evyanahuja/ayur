@@ -67,6 +67,12 @@ function escapeHtml(value: string | undefined) {
     .replaceAll("'", "&#039;");
 }
 
+/** Display dates from `<input type="date">` (YYYY-MM-DD) as DD-MM-YYYY. */
+function toDDMMYYYY(value: string | undefined): string {
+  const match = (value ?? "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return match ? `${match[3]}-${match[2]}-${match[1]}` : (value ?? "");
+}
+
 function referenceLabel(ref: string | null) {
   return ref ? ` ${ref}` : "";
 }
@@ -80,7 +86,7 @@ function buildHtml(p: InquiryPayload, ref: string | null) {
   const childGender = escapeHtml(p.childGender);
   const concern = escapeHtml(concernLabel(p.concernCategory));
   const symptoms = escapeHtml(p.symptoms) || "—";
-  const preferredDate = escapeHtml(p.preferredDate) || "Flexible";
+  const preferredDate = escapeHtml(toDDMMYYYY(p.preferredDate)) || "Flexible";
   const preferredTime = escapeHtml(p.preferredTime);
   const planInterest = escapeHtml(planLabel(p.planInterest, p.currency)) || "Not specified";
   const message = escapeHtml(p.message);
@@ -115,7 +121,7 @@ Parent: ${p.parentName} (${p.phone}, ${p.email || "no email"})
 Child: ${p.childName}, ${p.childAge}${p.childGender ? `, ${p.childGender}` : ""}
 Concern: ${concernLabel(p.concernCategory)}
 Symptoms: ${p.symptoms || "-"}
-Mode: ${p.preferredMode} | Slot: ${p.preferredDate || "Flexible"} ${p.preferredTime || ""}
+Mode: ${p.preferredMode} | Slot: ${toDDMMYYYY(p.preferredDate) || "Flexible"} ${p.preferredTime || ""}
 Plan: ${planLabel(p.planInterest, p.currency) || "-"}
 Message: ${p.message || "-"}`;
 }
@@ -294,7 +300,7 @@ function buildParentHtml(p: InquiryPayload, ref: string | null) {
   const childAge = escapeHtml(p.childAge);
   const plan = escapeHtml(planLabel(p.planInterest, p.currency)) || "&mdash;";
   const slot =
-    escapeHtml(p.preferredDate || "Flexible") +
+    escapeHtml(toDDMMYYYY(p.preferredDate) || "Flexible") +
     (p.preferredTime ? ` &middot; ${escapeHtml(p.preferredTime)}` : "");
   const refRow = ref ? escapeHtml(ref) : "&mdash;";
   return `
@@ -327,7 +333,7 @@ function buildParentText(p: InquiryPayload, ref: string | null) {
     "",
     `Reference: ${ref || "(pending)"}`,
     `Plan of interest: ${planLabel(p.planInterest, p.currency) || "-"}`,
-    `Preferred slot: ${p.preferredDate || "Flexible"}${p.preferredTime ? " " + p.preferredTime : ""}`,
+    `Preferred slot: ${toDDMMYYYY(p.preferredDate) || "Flexible"}${p.preferredTime ? " " + p.preferredTime : ""}`,
     "",
     "You will hear back within 24 hours (usually the same day, Mon-Sat). For urgent help, please WhatsApp us and mention the reference above so we can match you to your enquiry instantly.",
     "",
