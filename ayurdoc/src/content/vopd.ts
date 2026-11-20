@@ -207,18 +207,41 @@ export function formatMinor(amountMinor: number, currency: "INR" | "USD"): strin
   }).format(amountMinor / 100);
 }
 
-/** Format an ISO instant into the clinic's wall-clock time (Asia/Kolkata). */
+/** Site-wide display date: DD-MM-YYYY (e.g. 20-11-2026). Internal/SEO values stay ISO. */
+export function formatIsoDateToDDMMYYYY(value: string): string {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return value;
+  return `${match[3]}-${match[2]}-${match[1]}`;
+}
+
+/** Format an ISO instant into the clinic's wall-clock time (Asia/Kolkata).
+ *  Date part is always DD-MM-YYYY (e.g. "Fri, 20-11-2026, 10:30 AM"). */
 export function formatClinicDateTime(iso: string): string {
-  return new Intl.DateTimeFormat("en-IN", {
-    timeZone: VOPD_TIME_ZONE,
-    weekday: "short",
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  }).format(new Date(iso));
+  const dt = new Date(iso);
+  try {
+    const parts = new Intl.DateTimeFormat("en-IN", {
+      timeZone: VOPD_TIME_ZONE,
+      weekday: "short",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).formatToParts(dt);
+    const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+    return `${get("weekday")}, ${get("day")}-${get("month")}-${get("year")}, ${get("hour")}:${get("minute")} ${get("dayPeriod").toUpperCase()}`;
+  } catch {
+    return new Intl.DateTimeFormat("en-GB", {
+      timeZone: VOPD_TIME_ZONE,
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(dt);
+  }
 }
 
 /** Current date (YYYY-MM-DD) in Asia/Kolkata timezone, safe in browser and Node. */
@@ -256,18 +279,9 @@ export function computeAgeFromDob(dob: string, todayIso = clinicTodayIso()): { y
   return { years, months, short: years === 1 ? "1 yr" : `${years} yrs` };
 }
 
-/** Format a YYYY-MM-DD DOB nicely (e.g. "14 May 2020"). */
-export function formatDobDisplay(dob: string, locale = "en"): string {
-  const isoMatch = dob.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (!isoMatch) return dob;
-  const [, y, m, d] = isoMatch;
-  const dt = new Date(Date.UTC(Number(y), Number(m) - 1, Number(d)));
-  const tag = locale === "en" ? "en-IN" : `${locale}-IN`;
-  try {
-    return new Intl.DateTimeFormat(tag, { timeZone: "UTC", day: "2-digit", month: "short", year: "numeric" }).format(dt);
-  } catch {
-    return `${d}-${m}-${y}`;
-  }
+/** Format a YYYY-MM-DD DOB as DD-MM-YYYY (e.g. "14-05-2020"). Locale-independent digits. */
+export function formatDobDisplay(dob: string, _locale = "en"): string {
+  return formatIsoDateToDDMMYYYY(dob);
 }
 
 /** Booking reference shown to the patient and used in the admin screen. */
