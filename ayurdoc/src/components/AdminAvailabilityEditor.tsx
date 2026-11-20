@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Plus, Save, Trash2 } from "lucide-react";
+import { formatIsoDateToDDMMYYYY } from "@/content/vopd";
 
 type Range = { start: string; end: string };
 type Schedule = { closed: boolean; sessions: Range[]; breaks: Range[]; intervalMinutes: number; reason?: string };
@@ -124,7 +125,7 @@ export function AdminAvailabilityEditor({ view }: { view: "weekly" | "dates" }) 
           </div>
           <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {exceptions.map((item) => <li key={item.date} className="rounded-xl border border-forest-900/10 p-3 text-sm">
-              <strong>{item.date}</strong> · {item.closed ? "Closed" : item.sessions.map((range) => `${range.start}–${range.end}`).join(", ")}
+              <strong>{formatIsoDateToDDMMYYYY(item.date)}</strong> · {item.closed ? "Closed" : item.sessions.map((range) => `${range.start}–${range.end}`).join(", ")}
               {item.reason && <span className="block text-forest-700">{item.reason}</span>}
               <button disabled={busy} onClick={() => void save("DELETE", null, item.date)} className="mt-2 text-xs font-semibold text-red-700 underline">Remove override</button>
             </li>)}
