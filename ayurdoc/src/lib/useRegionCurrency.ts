@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 export type Currency = "INR" | "USD";
 
@@ -97,33 +97,32 @@ async function detectCurrencyOnce(): Promise<Currency> {
  * Automatic location-based currency (IN -> INR, outside IN -> USD).
  * No manual currency switching is exposed anywhere on the site.
  */
+function subscribeToCurrencyChanges(onChange: () => void) {
+  window.addEventListener(CHANGE_EVENT, onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    window.removeEventListener(CHANGE_EVENT, onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
+
+function getCurrencySnapshot(): Currency {
+  return resolvedSessionCurrency ?? readAutoCurrency() ?? "INR";
+}
+
+function getServerCurrencySnapshot(): Currency {
+  return "INR";
+}
+
 export function useRegionCurrency(): Currency {
-  // Start at INR so SSR and initial client hydration match cleanly.
-  const [currency, setCurrency] = useState<Currency>("INR");
+  const currency = useSyncExternalStore(
+    subscribeToCurrencyChanges,
+    getCurrencySnapshot,
+    getServerCurrencySnapshot
+  );
 
   useEffect(() => {
-    let cancelled = false;
-
-    const sync = () => {
-      const next = resolvedSessionCurrency ?? readAutoCurrency() ?? "INR";
-      setCurrency(next);
-    };
-
-    const cached = resolvedSessionCurrency ?? readAutoCurrency();
-    if (cached) setCurrency(cached);
-
-    window.addEventListener(CHANGE_EVENT, sync);
-    window.addEventListener("storage", sync);
-
-    void detectCurrencyOnce().then((detected) => {
-      if (!cancelled) setCurrency(detected);
-    });
-
-    return () => {
-      cancelled = true;
-      window.removeEventListener(CHANGE_EVENT, sync);
-      window.removeEventListener("storage", sync);
-    };
+    void detectCurrencyOnce();
   }, []);
 
   return currency;
