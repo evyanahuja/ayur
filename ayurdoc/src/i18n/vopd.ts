@@ -9,37 +9,59 @@ export function isVopdLocale(value: unknown): value is VopdLocale {
   return typeof value === "string" && (VOPD_LOCALES as readonly string[]).includes(value);
 }
 
-/** Clinic-date formatting in the visitor's language (still Asia/Kolkata time). */
+/** Numeric DD-MM-YYYY from parts (locale-independent digits, site-wide standard). */
+function toDDMMYYYY(day: string, month: string, year: string): string {
+  return `${day.padStart(2, "0")}-${month.padStart(2, "0")}-${year}`;
+}
+
+/** Clinic-date formatting in the visitor's language (still Asia/Kolkata time).
+ *  Date part is always DD-MM-YYYY (e.g. "Fri, 20-11-2026, 10:30 AM"); only the
+ *  weekday name is localized. */
 export function formatVopdDateTime(iso: string, locale: VopdLocale = "en"): string {
   const tag = locale === "en" ? "en-IN" : `${locale}-IN`;
+  const dt = new Date(iso);
   try {
-    return new Intl.DateTimeFormat(tag, {
+    // Weekday in the visitor's language; date/time digits always Latin so the
+    // DD-MM-YYYY standard looks identical across en/hi/mr/gu.
+    const weekday = new Intl.DateTimeFormat(tag, { timeZone: "Asia/Kolkata", weekday: "short" }).format(dt);
+    const parts = new Intl.DateTimeFormat("en-GB", {
       timeZone: "Asia/Kolkata",
-      weekday: "short",
       day: "2-digit",
-      month: "short",
+      month: "2-digit",
       year: "numeric",
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
-    }).format(new Date(iso));
+    }).formatToParts(dt);
+    const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+    return `${weekday}, ${toDDMMYYYY(get("day"), get("month"), get("year"))}, ${get("hour")}:${get("minute")} ${get("dayPeriod").toUpperCase()}`;
   } catch {
-    return new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));
+    return new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(dt);
   }
 }
 
-/** Short date pill label (e.g. "Mon, 18 May") in Asia/Kolkata calendar. */
+/** Short date pill label (DD-MM-YYYY, e.g. "18-11-2026") in Asia/Kolkata calendar. */
 export function formatShortClinicDate(dateString: string, locale: VopdLocale = "en"): { weekday: string; dayMonth: string } {
   const [y, m, d] = dateString.split("-").map(Number);
   const dt = new Date(Date.UTC(y, m - 1, d));
+  const fallback = { weekday: "", dayMonth: `${String(d).padStart(2, "0")}-${String(m).padStart(2, "0")}-${y}` };
+  if (!y || !m || !d || Number.isNaN(dt.getTime())) return fallback;
   const tag = locale === "en" ? "en-IN" : `${locale}-IN`;
   try {
     return {
       weekday: new Intl.DateTimeFormat(tag, { timeZone: "UTC", weekday: "short" }).format(dt),
-      dayMonth: new Intl.DateTimeFormat(tag, { timeZone: "UTC", day: "numeric", month: "short" }).format(dt),
+      dayMonth: toDDMMYYYY(String(d), String(m), String(y)),
     };
   } catch {
-    return { weekday: "", dayMonth: dateString };
+    return fallback;
   }
 }
 
