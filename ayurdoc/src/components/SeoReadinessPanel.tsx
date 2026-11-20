@@ -308,7 +308,7 @@ export function SeoReadinessPanel({ summary }: { summary: SeoAuditSummary }) {
           Canonical Route Inventory ({summary.totalUrls} URLs)
         </h2>
         <p className="mt-1 text-[13.5px] text-forest-800/70">
-          These URLs come from the site's content configuration. Validate the deployed HTTP responses, canonical tags, rendered content and structured data separately. This inventory does not confirm search-engine indexing or rich-result eligibility.
+          These URLs come from the site&apos;s content configuration. Validate the deployed HTTP responses, canonical tags, rendered content and structured data separately. This inventory does not confirm search-engine indexing or rich-result eligibility.
         </p>
         <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
           {summary.urls.map((item) => (
