@@ -61,11 +61,12 @@ export function LanguageSwitcher({
   useEffect(() => {
     if (!mobile || !open) return;
     const previousOverflow = document.body.style.overflow;
+    const trigger = triggerRef.current;
     document.body.style.overflow = "hidden";
     sheetRef.current?.querySelector<HTMLButtonElement>('button[aria-pressed="true"]')?.focus();
     return () => {
       document.body.style.overflow = previousOverflow;
-      triggerRef.current?.focus();
+      trigger?.focus();
     };
   }, [mobile, open]);
 
