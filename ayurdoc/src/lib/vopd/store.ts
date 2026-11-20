@@ -15,6 +15,7 @@ import {
 import {
   BUILTIN_PLAN_IDS,
   canTransition,
+  formatClinicDateTime,
   type BookingStatus,
   type PaymentStatus,
   type VopdPlan,
@@ -797,7 +798,7 @@ export async function rescheduleBooking(reference: string, newStartIso: string, 
       fromStatus: existing.status,
       toStatus: updated.status,
       actor: admin,
-      note: `Moved to ${start.toISOString()} (Asia/Kolkata display).${
+      note: `Moved to ${formatClinicDateTime(start.toISOString())} IST.${
         existing.calendarEventId ? " Existing Calendar event must be updated or retried." : ""
       }`,
     });
