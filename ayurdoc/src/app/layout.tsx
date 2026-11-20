@@ -78,6 +78,17 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Keep this stylesheet as a <link> here. Moving it to an @import in
+            globals.css does NOT work: the production CSS bundler drops remote
+            @import rules, so no @font-face is ever loaded and the site silently
+            falls back to system fonts. The lint rule below targets the Pages
+            Router (_document); in the App Router the root layout is the shared
+            document, so this one link already covers every route. */}
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Gujarati:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
       </head>
       <body className="bg-[#fffdf8] text-slate-900 antialiased min-h-screen">
         <LanguageProvider>
