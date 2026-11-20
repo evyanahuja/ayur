@@ -206,7 +206,7 @@ export function VopdAdminConsole() {
         body: JSON.stringify({ date, reason }),
       });
       const data = await response.json();
-      setNotice(data.ok ? `Blocked ${date}.` : data.error || "Could not block date.");
+      setNotice(data.ok ? `Blocked ${formatIsoDateToDDMMYYYY(date)}.` : data.error || "Could not block date.");
       setBlockDateValue("");
       setBlockReason("");
       await load();
