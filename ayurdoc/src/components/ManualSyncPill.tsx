@@ -1,19 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FileCode2 } from "lucide-react";
 
-export function ManualSyncPill() {
-  const [show, setShow] = useState(false);
-  const pathname = usePathname() || "/";
+function subscribeToHostChanges() {
+  // The hostname cannot change during a page session.
+  return () => {};
+}
 
-  useEffect(() => {
-    if (window.location.hostname !== "ayurveddoctor.netlify.app") {
-      setShow(true);
-    }
-  }, []);
+function shouldShowManualSyncPill() {
+  return typeof window !== "undefined" && window.location.hostname !== "ayurveddoctor.netlify.app";
+}
+
+function hideManualSyncPillOnServer() {
+  return false;
+}
+
+export function ManualSyncPill() {
+  const show = useSyncExternalStore(
+    subscribeToHostChanges,
+    shouldShowManualSyncPill,
+    hideManualSyncPillOnServer
+  );
+  const pathname = usePathname() || "/";
 
   if (!show || pathname.startsWith("/manual-file-sync")) return null;
 
