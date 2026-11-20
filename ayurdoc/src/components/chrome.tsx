@@ -44,9 +44,20 @@ export function SiteHeader() {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const [headerBottom, setHeaderBottom] = useState(88);
   const pathname = usePathname() || "/";
+  const [menuPathname, setMenuPathname] = useState(pathname);
   const { lang, t } = useLanguage();
   const p = usePagesDict(lang);
   const ex = useExpansion(lang);
+
+  // Link clicks close the menu via closeNavigation(). This covers route changes
+  // that do not come from those links (browser Back/Forward, swipe-back), where
+  // the menu overlay and its scroll lock would otherwise stay on the new page.
+  // Derived during render, so no effect and no extra committed render.
+  if (menuPathname !== pathname) {
+    setMenuPathname(pathname);
+    setOpen(false);
+    setDrop(null);
+  }
 
   useEffect(() => {
     if (!open) return;
