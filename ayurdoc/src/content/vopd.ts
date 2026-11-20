@@ -1,138 +1,290 @@
-"use client";
+/* VOPD configuration and pure domain types shared by server and client.
+   No secrets here. Base prices/durations come from PLANS (site.ts), and custom
+   plans created by the administrator merge seamlessly into the Consultation Plan list. */
 
-import { useCallback, useEffect, useState } from "react";
-import { Plus, Save, Trash2 } from "lucide-react";
-import { formatIsoDateToDDMMYYYY } from "@/content/vopd";
+export const VOPD_TIME_ZONE = "Asia/Kolkata";
 
-type Range = { start: string; end: string };
-type Schedule = { closed: boolean; sessions: Range[]; breaks: Range[]; intervalMinutes: number; reason?: string };
-type Weekly = Schedule & { weekday: number; configured: boolean };
-type Exception = Schedule & { date: string; updatedBy: string };
-const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const newRange = (): Range => ({ start: "10:00", end: "11:00" });
-const defaultSpecial = (): Schedule => ({ closed: true, sessions: [{ start: "10:00", end: "14:00" }], breaks: [], intervalMinutes: 30, reason: "" });
+export type ConsultationMode = "vopd" | "opd";
+export type PatientKind = "child" | "adult";
 
-function Ranges({ label, value, onChange }: { label: string; value: Range[]; onChange: (value: Range[]) => void }) {
-  return (
-    <fieldset className="space-y-2">
-      <legend className="mb-1 text-xs font-semibold text-forest-900">{label}</legend>
-      {value.map((range, index) => (
-        <div key={index} className="flex flex-wrap items-center gap-2 text-xs">
-          <input type="time" aria-label={`${label} ${index + 1} start`} value={range.start} onChange={(e) => onChange(value.map((item, i) => i === index ? { ...item, start: e.target.value } : item))}
-            className="min-w-0 rounded-lg border border-forest-900/20 bg-white px-2 py-1.5" />
-          <span>–</span>
-          <input type="time" aria-label={`${label} ${index + 1} end`} value={range.end} onChange={(e) => onChange(value.map((item, i) => i === index ? { ...item, end: e.target.value } : item))}
-            className="min-w-0 rounded-lg border border-forest-900/20 bg-white px-2 py-1.5" />
-          <button type="button" aria-label={`Remove ${label} ${index + 1}`} onClick={() => onChange(value.filter((_, i) => i !== index))}
-            className="rounded-lg border border-red-200 p-2 text-red-700"><Trash2 className="h-3.5 w-3.5" /></button>
-        </div>
-      ))}
-      <button type="button" onClick={() => onChange([...value, newRange()])} className="inline-flex items-center gap-1 rounded-lg border border-forest-900/20 px-2.5 py-1.5 text-xs font-semibold">
-        <Plus className="h-3 w-3" /> Add {label === "Working sessions" ? "session" : "break"}
-      </button>
-    </fieldset>
-  );
+export const BOOKING_STATUSES = [
+  "SLOT_RESERVED",
+  "PAYMENT_PENDING",
+  "PAYMENT_VERIFICATION_PENDING",
+  "PAYMENT_VERIFIED",
+  "CONFIRMED",
+  "REJECTED",
+  "CANCELLED",
+  "COMPLETED",
+  "EXPIRED",
+] as const;
+export type BookingStatus = (typeof BOOKING_STATUSES)[number];
+
+/** Status changes allowed by the server. CONFIRMED is reachable only after PAYMENT_VERIFIED. */
+export const ALLOWED_TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
+  SLOT_RESERVED: ["PAYMENT_PENDING", "PAYMENT_VERIFICATION_PENDING", "EXPIRED", "CANCELLED"],
+  PAYMENT_PENDING: ["PAYMENT_VERIFICATION_PENDING", "EXPIRED", "CANCELLED"],
+  PAYMENT_VERIFICATION_PENDING: ["PAYMENT_VERIFIED", "REJECTED", "CANCELLED", "EXPIRED"],
+  PAYMENT_VERIFIED: ["CONFIRMED", "CANCELLED"],
+  CONFIRMED: ["COMPLETED", "CANCELLED"],
+  REJECTED: [],
+  CANCELLED: [],
+  COMPLETED: [],
+  EXPIRED: [],
+};
+
+export function canTransition(from: BookingStatus, to: BookingStatus): boolean {
+  return ALLOWED_TRANSITIONS[from]?.includes(to) ?? false;
 }
 
-function Fields({ value, onChange }: { value: Schedule; onChange: (value: Schedule) => void }) {
-  return (
-    <div className="space-y-3">
-      <label className="inline-flex items-center gap-2 text-sm font-semibold">
-        <input type="checkbox" checked={value.closed} onChange={(e) => onChange({ ...value, closed: e.target.checked })} /> Clinic closed
-      </label>
-      {!value.closed && (
-        <>
-          <label className="flex flex-wrap items-center gap-2 text-xs font-medium">
-            VOPD slot start interval (minutes)
-            <input type="number" min={5} max={60} step={5} value={value.intervalMinutes}
-              onChange={(e) => onChange({ ...value, intervalMinutes: Number(e.target.value) })}
-              className="w-20 rounded-lg border border-forest-900/20 px-2 py-1.5" />
-          </label>
-          <p className="text-[11px] text-forest-700">The interval sets start times; each plan retains its own consultation duration.</p>
-          <Ranges label="Working sessions" value={value.sessions} onChange={(sessions) => onChange({ ...value, sessions })} />
-          <Ranges label="Break periods" value={value.breaks} onChange={(breaks) => onChange({ ...value, breaks })} />
-        </>
-      )}
-    </div>
-  );
+export const PAYMENT_STATUSES = [
+  "PENDING",
+  "SUBMITTED",
+  "VERIFIED",
+  "REJECTED",
+  "NOT_REQUIRED",
+] as const;
+export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
+
+export const BUILTIN_PLAN_IDS = ["first", "followup", "suvarna", "unsure"] as const;
+export type BuiltinPlanId = (typeof BUILTIN_PLAN_IDS)[number];
+/** PlanId supports both built-in clinic plans and custom admin-added consultation plans. */
+export type PlanId = BuiltinPlanId | (string & {});
+
+export type VopdPlan = {
+  id: PlanId;
+  name: string;
+  subtitle?: string;
+  period?: string;
+  /** Human-readable INR price label. */
+  priceLabel: string;
+  strikeLabel?: string;
+  /** Human-readable USD reference label for international visitors. */
+  usdPrice?: string;
+  usdStrike?: string;
+  /** Minor units (paise for INR). Null for enquiry-only plans. */
+  amountMinor: number | null;
+  amountMinorUsd?: number | null;
+  currency: "INR" | "USD";
+  /** Calendar time reserved for the appointment (in minutes). */
+  bookingMinutes: number;
+  followUpCount: number;
+  followUpMinutes: number;
+  requiresPayment: boolean;
+  description: string;
+  inclusions: string[];
+  showOnPricing?: boolean;
+  featured?: boolean;
+  isCustom?: boolean;
+  active?: boolean;
+  sortOrder?: number;
+};
+
+/** Machine-readable amounts derived from PLANS (single source of truth) plus
+ *  VOPD booking metadata. Additional consultation plans can be added dynamically
+ *  via the VOPD Admin Console (/admin/vopd) or appended here + in PLANS. */
+export const VOPD_PLAN_META: Record<BuiltinPlanId, {
+  bookingMinutes: number;
+  followUpCount: number;
+  followUpMinutes: number;
+  requiresPayment: boolean;
+  amountMinorINR: number | null;
+  amountMinorUSD: number | null;
+  sortOrder: number;
+}> = {
+  first: { bookingMinutes: 30, followUpCount: 0, followUpMinutes: 0, requiresPayment: true, amountMinorINR: 40000, amountMinorUSD: 7500, sortOrder: 10 },
+  followup: { bookingMinutes: 20, followUpCount: 0, followUpMinutes: 0, requiresPayment: true, amountMinorINR: 30000, amountMinorUSD: 5000, sortOrder: 20 },
+  suvarna: { bookingMinutes: 30, followUpCount: 0, followUpMinutes: 0, requiresPayment: false, amountMinorINR: null, amountMinorUSD: null, sortOrder: 90 },
+  unsure: { bookingMinutes: 30, followUpCount: 0, followUpMinutes: 0, requiresPayment: false, amountMinorINR: null, amountMinorUSD: null, sortOrder: 100 },
+};
+
+export type VopdConfig = {
+  slotIntervalMinutes: number;
+  bufferMinutes: number;
+  reservationHoldMinutes: number;
+  advanceBookingDays: number;
+  contactPhone: string;
+  whatsappNumber: string;
+  upi: {
+    configured: boolean;
+    beneficiaryName: string;
+    upiId: string;
+    /** Optional static QR override. Empty string means "generate the QR server-side". */
+    qrImagePath: string;
+    /** True only when VOPD_UPI_DEMO=true (sandbox testing). Never enable in production. */
+    demo: boolean;
+    instructions: string[];
+  };
+  google: { configured: boolean };
+  /** Public instructions for arranging a manual USD transfer; never a card/UPI conversion. */
+  usdPaymentInstructions: string;
+};
+
+export const VOPD_DEFAULTS = {
+  slotIntervalMinutes: 30,
+  bufferMinutes: 0,
+  reservationHoldMinutes: 15,
+  advanceBookingDays: 30,
+  sessionStart: "10:00",
+  sessionEnd: "14:00",
+  eveningStart: "17:00",
+  eveningEnd: "20:00",
+  minSameDayLeadMinutes: 30,
+} as const;
+
+export const PATIENT_KIND_LABEL: Record<PatientKind, string> = {
+  child: "Child",
+  adult: "Adult",
+};
+
+/** Stable VOPD category IDs. The first ten reuse the existing health-concern
+ *  categories; the last three cover treatments and general enquiries. */
+export const VOPD_CONCERN_IDS = [
+  "childrens-health",
+  "skin-hair-conditions",
+  "digestive-disorders",
+  "respiratory-conditions",
+  "neurological-conditions",
+  "joint-bone-disorders",
+  "womens-health",
+  "mens-health",
+  "metabolic-lifestyle-disorders",
+  "senior-citizen-health",
+  "panchakarma",
+  "general",
+  "other",
+] as const;
+
+export type VopdConcernId = (typeof VOPD_CONCERN_IDS)[number];
+
+export const VOPD_CONCERN_LABELS: Record<VopdConcernId, string> = {
+  "childrens-health": "Children's Health",
+  "skin-hair-conditions": "Skin & Hair",
+  "digestive-disorders": "Digestive Health",
+  "respiratory-conditions": "Respiratory Health",
+  "neurological-conditions": "Neurological & Mental Wellness",
+  "joint-bone-disorders": "Joint & Bone Health",
+  "womens-health": "Women's Health",
+  "mens-health": "Men's Health",
+  "metabolic-lifestyle-disorders": "Metabolic & Lifestyle Disorders",
+  "senior-citizen-health": "Senior Citizen Health",
+  panchakarma: "Panchakarma",
+  general: "General Consultation",
+  other: "Other",
+};
+
+export function isVopdConcernId(value: unknown): value is VopdConcernId {
+  return typeof value === "string" && (VOPD_CONCERN_IDS as readonly string[]).includes(value);
 }
 
-export function AdminAvailabilityEditor({ view }: { view: "weekly" | "dates" }) {
-  const [weekly, setWeekly] = useState<Weekly[]>([]);
-  const [exceptions, setExceptions] = useState<Exception[]>([]);
-  const [date, setDate] = useState("");
-  const [special, setSpecial] = useState<Schedule>(defaultSpecial);
-  const [busy, setBusy] = useState(false);
-  const [notice, setNotice] = useState("");
+/** One shared eligibility policy for browser, OPD enquiry, and VOPD API.
+ *  Neutral skin, digestive, respiratory and neurological concerns suit children
+ *  and adults; senior/joint/metabolic/Panchakarma are adult-only in this list. */
+const CHILD_CATEGORIES: ReadonlySet<VopdConcernId> = new Set([
+  "childrens-health", "skin-hair-conditions", "digestive-disorders",
+  "respiratory-conditions", "neurological-conditions", "general", "other",
+]);
 
-  const refresh = useCallback(async () => {
-    const response = await fetch("/api/admin/vopd/schedule", { cache: "no-store" });
-    const data = await response.json();
-    if (!response.ok || !data.ok) throw new Error(data.error || "Could not load clinic hours.");
-    setWeekly(data.weekly);
-    setExceptions(data.exceptions);
-  }, []);
-  useEffect(() => { void refresh().catch((error) => setNotice(error.message)); }, [refresh]);
+export function allowedConcerns(patientKind: PatientKind, gender?: string): VopdConcernId[] {
+  return VOPD_CONCERN_IDS.filter((category) => {
+    if (patientKind === "child") return CHILD_CATEGORIES.has(category);
+    if (category === "childrens-health") return false;
+    if (category === "womens-health") return gender === "Female";
+    if (category === "mens-health") return gender === "Male";
+    return true;
+  });
+}
 
-  async function save(method: "PATCH" | "POST" | "DELETE", body: Record<string, unknown> | null, targetDate?: string) {
-    setBusy(true); setNotice("");
-    try {
-      const url = method === "DELETE" ? `/api/admin/vopd/schedule?date=${encodeURIComponent(targetDate || "")}` : "/api/admin/vopd/schedule";
-      const response = await fetch(url, { method, headers: body ? { "Content-Type": "application/json" } : undefined, body: body ? JSON.stringify(body) : undefined });
-      const data = await response.json();
-      if (!response.ok || !data.ok) throw new Error(data.error || "Schedule could not be saved.");
-      setWeekly(data.weekly); setExceptions(data.exceptions);
-      setNotice("Schedule saved. Confirmed appointments were not changed.");
-    } catch (error) { setNotice(error instanceof Error ? error.message : "Save failed."); }
-    finally { setBusy(false); }
+export function isAllowedConcern(category: unknown, patientKind: PatientKind, gender?: string): category is VopdConcernId {
+  return isVopdConcernId(category) && allowedConcerns(patientKind, gender).includes(category);
+}
+
+export function formatMinor(amountMinor: number, currency: "INR" | "USD"): string {
+  return new Intl.NumberFormat(currency === "INR" ? "en-IN" : "en-US", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: amountMinor % 100 === 0 ? 0 : 2,
+  }).format(amountMinor / 100);
+}
+
+/** Site-wide display date: DD-MM-YYYY (e.g. 20-11-2026). Internal/SEO values stay ISO. */
+export function formatIsoDateToDDMMYYYY(value: string): string {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return value;
+  return `${match[3]}-${match[2]}-${match[1]}`;
+}
+
+/** Format an ISO instant into the clinic's wall-clock time (Asia/Kolkata).
+ *  Date part is always DD-MM-YYYY (e.g. "Fri, 20-11-2026, 10:30 AM"). */
+export function formatClinicDateTime(iso: string): string {
+  const dt = new Date(iso);
+  try {
+    const parts = new Intl.DateTimeFormat("en-IN", {
+      timeZone: VOPD_TIME_ZONE,
+      weekday: "short",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).formatToParts(dt);
+    const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+    return `${get("weekday")}, ${get("day")}-${get("month")}-${get("year")}, ${get("hour")}:${get("minute")} ${get("dayPeriod").toUpperCase()}`;
+  } catch {
+    return new Intl.DateTimeFormat("en-GB", {
+      timeZone: VOPD_TIME_ZONE,
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(dt);
   }
+}
 
-  return (
-    <section className="mt-5 rounded-2xl border border-forest-900/10 bg-white p-4 sm:p-6">
-      <h2 className="font-display text-xl text-forest-950">{view === "weekly" ? "Clinic availability" : "Holidays & special dates"}</h2>
-      <p className="mt-1 text-sm text-forest-700">Asia/Kolkata timezone · changes affect only new reservations; existing confirmed appointments stay intact.</p>
-      {notice && <p role="status" className="mt-3 rounded-lg bg-cream-100 p-3 text-sm text-forest-900">{notice}</p>}
-      {view === "weekly" ? (
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          {weekly.map((day) => (
-            <article key={day.weekday} className="min-w-0 rounded-xl border border-forest-900/10 bg-cream-50/60 p-4">
-              <h3 className="mb-3 font-semibold text-forest-950">{DAYS[day.weekday]} {day.configured ? "" : "· default"}</h3>
-              <Fields value={day} onChange={(next) => setWeekly((rows) => rows.map((row) => row.weekday === day.weekday ? { ...row, ...next } : row))} />
-              <button disabled={busy} onClick={() => void save("PATCH", day)} className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-forest-950 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50">
-                <Save className="h-3.5 w-3.5" /> Save {DAYS[day.weekday]}
-              </button>
-            </article>
-          ))}
-        </div>
-      ) : (
-        <>
-          <div className="mt-4 max-w-xl space-y-3 rounded-xl border border-forest-900/10 bg-cream-50/60 p-4">
-            <label className="block text-sm font-semibold">Date (IST)
-              <input type="date" value={date} onChange={(e) => {
-                const next = e.target.value; setDate(next);
-                const found = exceptions.find((item) => item.date === next);
-                setSpecial(found ? { ...found } : defaultSpecial());
-              }} className="mt-1 block w-full rounded-lg border border-forest-900/20 bg-white px-3 py-2" />
-            </label>
-            <label className="block text-sm font-semibold">Reason / holiday name
-              <input value={special.reason || ""} maxLength={200} onChange={(e) => setSpecial({ ...special, reason: e.target.value })}
-                className="mt-1 block w-full rounded-lg border border-forest-900/20 bg-white px-3 py-2" />
-            </label>
-            <Fields value={special} onChange={setSpecial} />
-            <button disabled={busy || !date} onClick={() => void save("POST", { date, ...special })} className="rounded-full bg-forest-950 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
-              Save holiday / special hours
-            </button>
-          </div>
-          <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {exceptions.map((item) => <li key={item.date} className="rounded-xl border border-forest-900/10 p-3 text-sm">
-              <strong>{formatIsoDateToDDMMYYYY(item.date)}</strong> · {item.closed ? "Closed" : item.sessions.map((range) => `${range.start}–${range.end}`).join(", ")}
-              {item.reason && <span className="block text-forest-700">{item.reason}</span>}
-              <button disabled={busy} onClick={() => void save("DELETE", null, item.date)} className="mt-2 text-xs font-semibold text-red-700 underline">Remove override</button>
-            </li>)}
-            {exceptions.length === 0 && <li className="text-sm text-forest-700">No date exceptions saved.</li>}
-          </ul>
-        </>
-      )}
-    </section>
-  );
+/** Current date (YYYY-MM-DD) in Asia/Kolkata timezone, safe in browser and Node. */
+export function clinicTodayIso(now = new Date()): string {
+  const shifted = new Date(now.getTime() + 330 * 60_000);
+  return shifted.toISOString().slice(0, 10);
+}
+
+/** Validate a YYYY-MM-DD date of birth: real calendar date, >= 1905-01-01 and <= today (IST). */
+export function isValidDobString(value: string, todayIso = clinicTodayIso()): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [y, m, d] = value.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== m - 1 || dt.getUTCDate() !== d) return false;
+  if (value < "1905-01-01" || value > todayIso) return false;
+  return true;
+}
+
+/** Compute concise clinical age summary from a YYYY-MM-DD date of birth. */
+export function computeAgeFromDob(dob: string, todayIso = clinicTodayIso()): { years: number; months: number; short: string } | null {
+  if (!isValidDobString(dob, todayIso)) return null;
+  const [by, bm, bd] = dob.split("-").map(Number);
+  const [ty, tm, td] = todayIso.split("-").map(Number);
+  let totalMonths = (ty - by) * 12 + (tm - bm);
+  if (td < bd) totalMonths -= 1;
+  if (totalMonths < 0) totalMonths = 0;
+  const years = Math.floor(totalMonths / 12);
+  const months = totalMonths % 12;
+  if (years === 0) {
+    return { years, months, short: months <= 1 ? `${Math.max(0, months)} mo` : `${months} mos` };
+  }
+  if (years < 5 && months > 0) {
+    return { years, months, short: `${years} yr ${months} mo` };
+  }
+  return { years, months, short: years === 1 ? "1 yr" : `${years} yrs` };
+}
+
+/** Format a YYYY-MM-DD DOB as DD-MM-YYYY (e.g. "14-05-2020"). Locale-independent digits. */
+export function formatDobDisplay(dob: string, _locale = "en"): string {
+  return formatIsoDateToDDMMYYYY(dob);
+}
+
+/** Booking reference shown to the patient and used in the admin screen. */
+export function isBookingReference(value: string): boolean {
+  return /^VOPD-[A-Z0-9]{6,12}$/.test(value);
 }
