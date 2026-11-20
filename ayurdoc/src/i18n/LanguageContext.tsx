@@ -13,8 +13,14 @@ type LanguageContextValue = {
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 const LANGUAGE_CHANGE_EVENT = "ayur-language-change";
 
+// Set only when localStorage rejects the write (site data / cookies blocked).
+// Without it the language switcher silently does nothing for those visitors,
+// because the store would have nowhere to keep their choice.
+let sessionLanguage: Language | null = null;
+
 function readInitial(): Language {
   if (typeof window === "undefined") return DEFAULT_LANGUAGE;
+  if (sessionLanguage) return sessionLanguage;
   try {
     const saved = (window.localStorage.getItem(STORAGE_KEY) ??
       window.localStorage.getItem(LEGACY_STORAGE_KEY)) as Language | null;
@@ -49,8 +55,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     try {
       window.localStorage.setItem(STORAGE_KEY, l);
       window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+      sessionLanguage = null; // storage accepted it: storage stays the single source of truth
     } catch {
-      /* ignore */
+      sessionLanguage = l; // storage unavailable: remember the choice for this tab
     }
     window.dispatchEvent(new Event(LANGUAGE_CHANGE_EVENT));
   }, []);
