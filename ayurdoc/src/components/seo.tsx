@@ -12,6 +12,7 @@ import {
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePagesDict } from "@/i18n/pagesDictionary";
 import { useExpansion } from "@/i18n/expansion";
+import { formatIsoDateToDDMMYYYY } from "@/content/vopd";
 
 /* ---------- Sync browser tab <title> dynamically when visitor switches language ---------- */
 export function LanguageTitleSync({ title }: { title: string }) {
@@ -70,7 +71,7 @@ export function AuthorBox({ date = REVIEW_DATE }: { date?: string }) {
         <p className="mt-1 text-forest-800/80 text-[12.5px]">{p.seoBlocks.pgLine}</p>
         <p className="text-forest-800/80 text-[12.5px]">{p.seoBlocks.ugLine}</p>
         <p className="mt-1 text-forest-800/65 text-[12px]">
-          {p.seoBlocks.reviewerRole} • {date === "pending" ? ex.conversion.pendingReview : `${p.seoBlocks.reviewedOn}: ${date}`}
+          {p.seoBlocks.reviewerRole} • {date === "pending" ? ex.conversion.pendingReview : `${p.seoBlocks.reviewedOn}: ${formatIsoDateToDDMMYYYY(date)}`}
         </p>
         <p className="mt-1 text-forest-800/60 text-[12px]">{p.seoBlocks.authorNote}</p>
       </div>
