@@ -12,7 +12,7 @@ export function isDateString(value: string): boolean {
   return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
 }
 
-/** "DD-MM-YYYY" + "HH:mm" in clinic time -> UTC instant. */
+/** "YYYY-MM-DD" + "HH:mm" in clinic time -> UTC instant. */
 export function clinicWallTimeToUtc(dateString: string, timeString: string): Date {
   const [year, month, day] = dateString.split("-").map(Number);
   const [hour, minute] = timeString.split(":").map(Number);
