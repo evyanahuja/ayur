@@ -5,7 +5,7 @@ import {
   AlertTriangle, CalendarClock, CheckCircle2, Eye, EyeOff, Loader2, LogOut,
   Plus, RefreshCw, ShieldCheck, Sparkles, Trash2, Video, XCircle,
 } from "lucide-react";
-import { formatClinicDateTime, formatMinor, type VopdPlan } from "@/content/vopd";
+import { formatClinicDateTime, formatIsoDateToDDMMYYYY, formatMinor, type VopdPlan } from "@/content/vopd";
 import { SectionMandalas } from "./ScrollMandala";
 import { cn } from "@/lib/cn";
 import { AdminAvailabilityEditor } from "./AdminAvailabilityEditor";
@@ -459,7 +459,7 @@ export function VopdAdminConsole() {
                   <td className="px-3 py-2 font-mono">{row.reference}</td>
                   <td className="px-3 py-2">
                     <strong>{row.patientName}</strong> <span className="text-forest-700">({row.patientKind})</span>
-                    {row.ageOrDob && <span className="block text-[11px] text-forest-700">DOB: {row.ageOrDob}</span>}
+                    {row.ageOrDob && <span className="block text-[11px] text-forest-700">DOB: {formatIsoDateToDDMMYYYY(row.ageOrDob)}</span>}
                     {row.guardianName && <span className="block text-[11px] text-forest-700">Guardian: {row.guardianName}</span>}
                     <span className="block text-[11px] text-forest-700">{row.phone}</span>
                   </td>
@@ -496,7 +496,7 @@ export function VopdAdminConsole() {
               <dl className="mt-3 grid gap-x-6 gap-y-1.5 text-[13px] sm:grid-cols-2">
                 {[
                   ["Patient", `${selected.patientName} (${selected.patientKind}${selected.gender ? ` · ${selected.gender}` : ""})`],
-                  ["Date of birth", selected.ageOrDob || "—"],
+                  ["Date of birth", selected.ageOrDob ? formatIsoDateToDDMMYYYY(selected.ageOrDob) : "—"],
                   ["Parent / Guardian", selected.guardianName || "—"],
                   ["Phone", selected.phone],
                   ["Email", selected.email || "—"],
@@ -878,7 +878,7 @@ export function VopdAdminConsole() {
           <ul className="mt-3 flex flex-wrap gap-2 text-[12px]">
             {blocked.map((row) => (
               <li key={row.id} className="inline-flex items-center gap-2 rounded-full border border-forest-900/15 px-3 py-1">
-                {row.blockedDate}{row.reason ? ` · ${row.reason}` : ""}
+                {formatIsoDateToDDMMYYYY(row.blockedDate)}{row.reason ? ` · ${row.reason}` : ""}
                 <button onClick={() => void unblock(row.id)} className="font-semibold text-red-700">Remove</button>
               </li>
             ))}
