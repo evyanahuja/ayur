@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useSyncExternalStore, type ReactNode } from "react";
 import { DEFAULT_LANGUAGE, LEGACY_STORAGE_KEY, STORAGE_KEY, type Language } from "./config";
 import { getDictionary, type Dictionary } from "./index";
 
@@ -11,6 +11,7 @@ type LanguageContextValue = {
 };
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
+const LANGUAGE_CHANGE_EVENT = "ayur-language-change";
 
 function readInitial(): Language {
   if (typeof window === "undefined") return DEFAULT_LANGUAGE;
@@ -24,29 +25,34 @@ function readInitial(): Language {
   return DEFAULT_LANGUAGE;
 }
 
+function subscribeToLanguageChanges(onChange: () => void) {
+  window.addEventListener(LANGUAGE_CHANGE_EVENT, onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    window.removeEventListener(LANGUAGE_CHANGE_EVENT, onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
+
+function getServerLanguage(): Language {
+  return DEFAULT_LANGUAGE;
+}
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Language>(DEFAULT_LANGUAGE);
-  const [hydrated, setHydrated] = useState(false);
+  const lang = useSyncExternalStore(subscribeToLanguageChanges, readInitial, getServerLanguage);
 
   useEffect(() => {
-    setLangState(readInitial());
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    // Restore the saved language before writing any preference back to storage.
-    if (!hydrated) return;
     document.documentElement.lang = lang;
+  }, [lang]);
+
+  const setLang = useCallback((l: Language) => {
     try {
-      window.localStorage.setItem(STORAGE_KEY, lang);
+      window.localStorage.setItem(STORAGE_KEY, l);
       window.localStorage.removeItem(LEGACY_STORAGE_KEY);
     } catch {
       /* ignore */
     }
-  }, [lang, hydrated]);
-
-  const setLang = useCallback((l: Language) => {
-    setLangState(l);
+    window.dispatchEvent(new Event(LANGUAGE_CHANGE_EVENT));
   }, []);
 
   const t = useMemo(() => getDictionary(lang), [lang]);
