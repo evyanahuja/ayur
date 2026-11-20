@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -740,7 +741,7 @@ export function AboutDoctorView() {
       >
         <div className="rounded-3xl border border-forest-900/10 bg-white p-6 sm:p-8 grid md:grid-cols-[220px_1fr] gap-6 items-start">
           <div className="mx-auto w-44 md:mx-0 md:w-full">
-            <img src={IMAGES.doctorPortrait} alt={copy.portraitAlt} width={400} height={520} loading="eager" className="w-full h-56 md:h-64 object-cover object-top rounded-2xl shadow-md" />
+            <Image src={IMAGES.doctorPortrait} alt={copy.portraitAlt} width={400} height={520} priority sizes="(min-width: 768px) 220px, 176px" className="w-full h-56 md:h-64 object-cover object-top rounded-2xl shadow-md" />
             {/* The verified registration badge sits with the portrait so the
                 number is shown once, not repeated across the page. */}
             <p className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-2 text-center text-[12px] font-semibold text-emerald-900">
