@@ -50,7 +50,7 @@ export const MEDICAL_REVIEWER = {
   role: "Author & Medical Reviewer",
 };
 
-export const REVIEW_DATE = "2026-04-15";
+export const REVIEW_DATE = "2026-11-20";
 
 export function canonical(path: string) {
   const p = path.startsWith("/") ? path : `/${path}`;
